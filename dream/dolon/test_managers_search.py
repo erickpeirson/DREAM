@@ -3,8 +3,14 @@ from managers import GoogleImageSearchManager, spawnSearch
 from models import QueryResult, QueryItem, Engine, QueryEvent, QueryString
 import json
 
+from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
+
 apikey = "AIzaSyDhlbNOLTRRVebYs5PNx9snu6SZOsQFYnM"
 cx = "002775406652749371248:l-zbbsqhcte"
+
+cg_path = './dolon/callgraphs/'
+
 
 class TestGoogleImageSearchManager(TestCase):
     def setUp(self):
@@ -17,7 +23,11 @@ class TestGoogleImageSearchManager(TestCase):
         """
         Should return a string containing parseable JSON.
         """
-        response = self.G.imageSearch(self.parameters, self.query)
+        
+        with PyCallGraph(output=GraphvizOutput(
+                output_file=cg_path + 'managers.GoogleImageSearchManager.imageSearch.png')):
+            response = self.G.imageSearch(self.parameters, self.query)
+
         self.assertIsInstance(response,str, 'Response is not a string.')
         self.assertGreater(len(response), 0, 'Response is empty')
 
@@ -33,10 +43,14 @@ class TestGoogleImageSearchManager(TestCase):
         Should return a :class:`.QueryResult` instance and a list of
         :class:`.QueryItem` instances.
         """
+
         with open('./dolon/testdata/testresponse.json', 'r') as f:
             response = f.read()
         
-        qr, qi = self.G.handleResults(response)
+        with PyCallGraph(output=GraphvizOutput(
+                output_file=cg_path + 'managers.GoogleImageSearchManager.handleResults.png')):
+            qr, qi = self.G.handleResults(response)
+
         self.assertIsInstance(qr, QueryResult)
         self.assertIsInstance(qi, list)
         self.assertIsInstance(qi[0], QueryItem)
@@ -59,7 +73,10 @@ class TestSearch(TestCase):
                             rangeEnd = 20,
                             engine = E  )
         QE.save()
-        result = spawnSearch(QE)
+
+        with PyCallGraph(output=GraphvizOutput(
+                output_file=cg_path + 'managers.spawnSearch.png')):
+            result = spawnSearch(QE)
 
         res = result.queryresults.all()
         

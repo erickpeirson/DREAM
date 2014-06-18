@@ -1,3 +1,6 @@
+from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
+
 from django.test import TestCase
 from managers import ImageRetriever
 from models import Thumbnail, Image, Context
@@ -7,6 +10,7 @@ thumburl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLchzhwk-ADaYk
 imageurl = 'http://wendycarrillo.files.wordpress.com/2010/11/antoine-dodsen-dream-act-3.jpg'
 contexturl = 'http://wendycarrillo.wordpress.com/2010/11/24/fox-news-attacks-the-dream-act/'
 
+cg_path = './dolon/callgraphs/'
 
 class TestImageRetriever(TestCase):
     def setUp(self):
@@ -18,8 +22,11 @@ class TestImageRetriever(TestCase):
         
         TODO: check that a real image has been downloaded?
         """
+        
+        with PyCallGraph(output=GraphvizOutput(
+                output_file=cg_path + 'managers.retrieveThumbnail.png')):
+            result = self.R.retrieveThumbnail(thumburl)
 
-        result = self.R.retrieveThumbnail(thumburl)
         self.assertIsInstance(result, Thumbnail)
         self.assertEqual(result.url, thumburl)
         self.assertGreater(result.height, 0)
@@ -35,7 +42,10 @@ class TestImageRetriever(TestCase):
         TODO: check that a real image has been downloaded?
         """
 
-        result = self.R.retrieveImage(imageurl)
+        with PyCallGraph(output=GraphvizOutput(
+                output_file=cg_path + 'managers.retrieveImage.png')):
+            result = self.R.retrieveImage(imageurl)
+            
         self.assertIsInstance(result, Image)
         self.assertEqual(result.url, imageurl)
         self.assertGreater(result.height, 0)
@@ -48,8 +58,10 @@ class TestImageRetriever(TestCase):
         """
         Should return a :class:`.Context` instance.
         """
-
-        result = self.R.retrieveContext(contexturl)
+        
+        with PyCallGraph(output=GraphvizOutput(
+                output_file=cg_path + 'managers.retrieveContext.png')):
+            result = self.R.retrieveContext(contexturl)
 
         self.assertIsInstance(result, Context)
         self.assertEqual(result.url, contexturl)
