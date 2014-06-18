@@ -35,7 +35,31 @@ class ListField(models.TextField):
         return self.get_db_prep_value(value)
 
 class QueryString(models.Model):
-    querystring = models.CharField(max_length=1000)
+    class Meta:
+        verbose_name = 'Search term'
+        verbose_name_plural = 'Search terms'
+
+    qs_helptext = 'Enter some search terms to use in your queries.'
+    querystring = models.CharField(max_length=1000, verbose_name='Search terms',
+                                                    help_text=qs_helptext)
+
+    def __unicode__(self):
+        return unicode(self.querystring)
+
+    def _Nevents(self):
+        return unicode(len(self.queryevents.all()) )
+    
+    def _Nitems(self):
+        I = QueryItem.objects.filter(queryresult__event__querystring__id=self.id)
+        return unicode(len(I))
+    
+    def _latestEvent(self):
+        E = self.queryevents.latest('datetime')
+        return unicode(E.datetime)
+
+    events = property(_Nevents)
+    latest = property(_latestEvent)
+    items = property(_Nitems)
 
 class Engine(models.Model):
     """
@@ -43,16 +67,36 @@ class Engine(models.Model):
     """
     parameters = ListField()
     manager = models.CharField(max_length=100, choices=engineManagers)
+    
+    class Meta:
+        verbose_name_plural = 'Custom search engines'
+        verbose_name = 'Custom search engine'
+
+    def __unicode__(self):
+        return unicode(self.manager)
 
 
 class QueryEvent(models.Model):
     """
     Generated whenever a user creates and dispatches a new query.
     """
-    querystring = models.ForeignKey('QueryString')
+    
+    class Meta:
+        verbose_name = 'Search event'
+        verbose_name_plural = 'Search events'
+    
+    querystring = models.ForeignKey('QueryString', related_name='queryevents')
     rangeStart = models.IntegerField()
     rangeEnd = models.IntegerField()
     datetime = models.DateTimeField(auto_now_add=True)
+    
+    def __unicode__(self):
+        return unicode(self.querystring)
+    
+    def _queryItems(self):
+        return unicode(len(QueryItem.objects.filter(queryresult__event__id=self.id)))
+    
+    items = property(_queryItems)
 
 #    user = models.ForeignKey(User)
     queryresults = models.ManyToManyField('QueryResult', related_name='event', blank=True, null=True)
@@ -66,12 +110,17 @@ class QueryResult(models.Model):
     rangeEnd = models.IntegerField()
     result = models.TextField()     # Holds full JSON response.
 
-    items = models.ManyToManyField('QueryItem')
+    items = models.ManyToManyField('QueryItem', 'result')
 
 class QueryItem(models.Model):
     """
     Generated from an individual item in a :class:`.QueryResult`\.
     """
+    
+    class Meta:
+        verbose_name = 'Search result'
+        verbose_name_plural = 'Search results'
+    
     PENDING = 'PG'
     REJECTED = 'RJ'
     APPROVED = 'AP'

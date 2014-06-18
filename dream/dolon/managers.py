@@ -7,7 +7,6 @@ from unidecode import unidecode
 
 from BeautifulSoup import BeautifulSoup
 
-
 def spawnSearch(queryevent, getThumb=True):
     """
     Executes a series of searches based on the parameters of a 
