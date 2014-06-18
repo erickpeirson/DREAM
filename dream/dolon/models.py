@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
+
 from django.db import models
 import ast
 
@@ -78,7 +80,7 @@ class Engine(models.Model):
 
 class QueryEvent(models.Model):
     """
-    Generated whenever a user creates and dispatches a new query.
+    Generated whenever a user creates a new query.
     """
     
     class Meta:
@@ -88,19 +90,20 @@ class QueryEvent(models.Model):
     querystring = models.ForeignKey('QueryString', related_name='queryevents')
     rangeStart = models.IntegerField()
     rangeEnd = models.IntegerField()
-    datetime = models.DateTimeField(auto_now_add=True)
+    datetime = models.DateTimeField(auto_now=True)
     
-    def __unicode__(self):
-        return unicode(self.querystring)
-    
-    def _queryItems(self):
-        return unicode(len(QueryItem.objects.filter(queryresult__event__id=self.id)))
-    
-    items = property(_queryItems)
+    dispatched = models.BooleanField(default=False)
 
 #    user = models.ForeignKey(User)
     queryresults = models.ManyToManyField('QueryResult', related_name='event', blank=True, null=True)
     engine = models.ForeignKey(Engine)
+
+    def __unicode__(self):
+        return unicode(self.querystring)
+
+    def _queryItems(self):
+        return unicode(len(QueryItem.objects.filter(result__event__id=self.id)))
+    items = property(_queryItems)
 
 class QueryResult(models.Model):
     """
@@ -110,7 +113,7 @@ class QueryResult(models.Model):
     rangeEnd = models.IntegerField()
     result = models.TextField()     # Holds full JSON response.
 
-    items = models.ManyToManyField('QueryItem', 'result')
+    items = models.ManyToManyField('QueryItem', related_name='result')
 
 class QueryItem(models.Model):
     """
@@ -148,6 +151,15 @@ class QueryItem(models.Model):
     context = models.ForeignKey('Context', related_name='queryItems',
                                                           blank=True, null=True)
 
+    def thumbimage(self):
+        return '<img src="{0}"/>'.format(self.thumbnail.image.url)
+    thumbimage.allow_tags = True
+
+    def queryevents(self):
+        events = [ e for r in self.result.all() for e in r.event.all() ]
+        pattern = '<li>{0}, {1}, {2}</li>'
+        return '\n'.join( [ pattern.format( e.querystring.querystring, e.datetime, e.engine ) for e in events ] )
+    queryevents.allow_tags = True
 
 class Thumbnail(models.Model):
     """

@@ -5,6 +5,13 @@ import urllib2
 import os
 from unidecode import unidecode
 
+import warnings
+
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel('DEBUG')
+
 from BeautifulSoup import BeautifulSoup
 
 def spawnSearch(queryevent, getThumb=True):
@@ -22,10 +29,19 @@ def spawnSearch(queryevent, getThumb=True):
         (default: True) If True, retrieves thumbnail image for each item.
     """
 
+    if queryevent.dispatched:
+        warnings.warn('Attempting to spawnSearch() for QueryEvent that has already been dispatched.', RuntimeWarning)
+        return queryevent
+
     querystring = queryevent.querystring.querystring
     start = queryevent.rangeStart
     end = queryevent.rangeEnd
     engine = engineManagers[queryevent.engine.manager]()
+
+    logger.debug('spawnSearch() for QueryEvent {0}'.format(queryevent.id) + \
+                 ', with term "{0}", start: {1}, end: {2}'
+                                               .format(querystring, start, end))
+    logger.debug('spawnSearch(): using Engine {0}'.format(engine.name))
 
     for s in xrange(start, end, 10):
         e = s + 9   # Maximum of 10 results per query.
@@ -41,6 +57,8 @@ def spawnSearch(queryevent, getThumb=True):
 
         queryevent.queryresults.add(result)
         queryevent.save()
+        
+    logger.debug('spawnSearch(): done.')
 
     return queryevent
 
@@ -239,11 +257,16 @@ class GoogleImageSearchManager(object):
         response : string
             JSON response.
         """
+        
+        logger.debug('imageSearch() with params {0}'.format(params))
+        
         params += [ "q={0}".format(urllib2.quote(query)),
                     "start={0}".format(start),
                     "searchType=image"  ]
 
         request = self.endpoint + "&".join(params)
+        logger.debug('imageSearch(): request: {0}'.format(request))
+        
         response = urllib2.urlopen(request)
         return response.read()
 

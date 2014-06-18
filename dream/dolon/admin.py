@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from models import QueryEvent, QueryResult, QueryItem, Engine, QueryString
+from managers import spawnSearch
 
 
 class QueryEventInline(admin.TabularInline):
@@ -36,9 +37,17 @@ class QueryStringAdmin(admin.ModelAdmin):
             return super(QueryStringAdmin, self).get_inline_instances(request, obj)
         return []
 
+def dispatch(modeladmin, request, queryset):
+    for obj in queryset:
+        obj = spawnSearch(obj)
+        obj.dispatched = True
+        obj.save()
+dispatch.short_description = 'Dispatch selected search events'
+
 class QueryEventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'querystring', 'datetime', 'rangeStart', 'rangeEnd', 'items')
+    list_display = ('id', 'querystring', 'datetime', 'rangeStart', 'rangeEnd', 'items', 'dispatched')
     list_display_links = ('querystring',)
+    actions = [dispatch]
     
     def get_readonly_fields(self, request, obj=None):
         """
@@ -46,7 +55,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
 
         if obj:
-            return ('querystring', 'rangeStart', 'rangeEnd', 'engine') + self.readonly_fields
+            return ('querystring', 'rangeStart', 'rangeEnd', 'engine', 'dispatched', 'queryresults') + self.readonly_fields
         return self.readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
@@ -55,14 +64,17 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
         
         if obj is None:
-            self.exclude = ['queryresults']
+            self.exclude = ['queryresults', 'dispatched']
 
         return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
+
+class QueryItemAdmin(admin.ModelAdmin):
+    list_display = ('thumbimage','title', 'height','width', 'status', 'queryevents')
 
 # Register your models here.
 admin.site.register(QueryEvent, QueryEventAdmin)
 admin.site.register(QueryResult)    # TODO: this should be removed eventually.
-admin.site.register(QueryItem)
+admin.site.register(QueryItem, QueryItemAdmin)
 admin.site.register(QueryString, QueryStringAdmin)
 
 
