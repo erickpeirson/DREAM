@@ -4,6 +4,9 @@ from django.core.urlresolvers import reverse
 from django.db import models
 import ast
 
+from celery.result import AsyncResult
+
+
 engineManagers = (( 'GoogleImageSearchManager', 'Google'),)
 
 # Create your models here.
@@ -92,7 +95,11 @@ class QueryEvent(models.Model):
     rangeEnd = models.IntegerField()
     datetime = models.DateTimeField(auto_now=True)
     
+    # Tasks and dispathing.
     dispatched = models.BooleanField(default=False)
+    search_task = models.ForeignKey('Task', null=True, blank=True, related_name='searchtaskevent')
+    thumbnail_tasks = models.ManyToManyField('Task', related_name='thumbtaskevent')
+
 
 #    user = models.ForeignKey(User)
     queryresults = models.ManyToManyField('QueryResult', related_name='event', blank=True, null=True)
@@ -104,6 +111,50 @@ class QueryEvent(models.Model):
     def _queryItems(self):
         return unicode(len(QueryItem.objects.filter(result__event__id=self.id)))
     items = property(_queryItems)
+    
+    def _searchTaskStatus(self):
+        if self.search_task is not None:
+            return self.search_task.state()
+        return 'UNSTARTED'
+    searchstatus = property(_searchTaskStatus)
+
+    def _thumbnailTaskStatus(self):
+        alltasks = self.thumbnail_tasks.all()
+        Ntasks = len(alltasks)
+        if Ntasks > 0:
+            for t in alltasks:
+                print t.state()
+            done = float(len([ t for t in alltasks if t.state == 'SUCCESS' ]))
+            return '{0}% COMPLETE'.format(done*100/Ntasks)
+        return 'UNSTARTED'
+    thumbnailstatus = property(_thumbnailTaskStatus)
+
+class Task(models.Model):
+    """
+    Represents a Celery task.
+    """
+
+    task_id = models.CharField(max_length=100)
+    dispatched = models.DateTimeField(auto_now_add=True)
+    
+    def state(self):
+        """
+        Get the task state. Possible values: PENDING, STARTED, RETRY, FAILURE,
+        SUCCESS.
+        """
+
+        result = AsyncResult(self.task_id)
+        return result.state
+    
+    def result(self):
+        """
+        Get the result of this task. If not ready, returns None.
+        """
+        
+        result = AsyncResult(self.task_id)
+#        if result.read():
+        return result.result
+#        return None
 
 class QueryResult(models.Model):
     """
