@@ -1,6 +1,8 @@
 ## Broker settings.
 BROKER_URL = 'amqp://dream:dreamer@localhost:5672/dreamhost'
 CELERY_RESULT_BACKEND = "amqp"
+#CELERY_TASK_SERIALIZER = "json"
+#CELERY_ACCEPT_CONTENT = ['json', 'msgpack', 'yaml']
 
 ## List of modules to import when celery starts.
 #CELERY_IMPORTS = ('myapp.tasks', )

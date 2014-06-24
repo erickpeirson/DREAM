@@ -14,12 +14,13 @@ import tempfile
 import urllib2
 import os
 
+import dolon.search_managers as M
 from dolon.models import *
 
 from celery import shared_task, group
 
 @shared_task
-def search(qstring, start, end, manager, params):
+def search(qstring, start, end, manager_name, params, **kwargs):
     """
     Perform a search for ``string`` using a provided ``manager`` instance.
     
@@ -31,7 +32,7 @@ def search(qstring, start, end, manager, params):
         Start index for results.
     end : int
         End index for results.
-    manager : :class:`.BaseSearchManager`
+    manager : __name__ of a manager in :mod:`.search_managers`
     params : list
         A list of parameters to pass to the remote search service.
     
@@ -43,12 +44,20 @@ def search(qstring, start, end, manager, params):
         Full parsed JSON response.
     """
     
-    result, response = manager.imageSearch(params, qstring, start=start)
+#    manager = getattr(M, manager_name)
+
+    #result, response = manager.imageSearch(params, qstring, start=start)
     
+    import cPickle as pickle
+    with open('./dolon/testdata/searchresult.pickle', 'r') as f:
+        result = pickle.load(f)
+    with open('./dolon/testdata/searchresponse.pickle', 'r') as f:
+        response = pickle.load(f)
+        
     return result, response
     
 @shared_task
-def processSearch(searchresult, queryeventid):
+def processSearch(searchresult, queryeventid, **kwargs):
     """
     Create a :class:`.QueryResult` and a set of :class:`.QueryItem` from a
     search result.
@@ -68,8 +77,6 @@ def processSearch(searchresult, queryeventid):
     
     result, response = searchresult
     
-    print result
-
     queryResult = QueryResult(  rangeStart=result['start'],
                                 rangeEnd=result['end'],
                                 result=response )
@@ -95,14 +102,16 @@ def processSearch(searchresult, queryeventid):
         queryItems.append(queryItem)
 
     queryResult.save()
-    queryevent = QueryEvent.objects.get(id=queryeventid)
-    queryevent.queryresults.add(queryResult)
-    queryevent.save()
+
+    if not kwargs.get('testing', False):
+        queryevent = QueryEvent.objects.get(id=queryeventid)
+        queryevent.queryresults.add(queryResult)
+        queryevent.save()
 
     return queryResult, queryItems   
     
 @shared_task
-def spawnThumbnails(processresult, queryeventid):
+def spawnThumbnails(processresult, queryeventid, **kwargs):
     """
     Dispatch tasks to retrieve and store thumbnails. Updates the corresponding
     :class:`.QueryEvent` `thumbnail_task` property with task id.
@@ -116,7 +125,7 @@ def spawnThumbnails(processresult, queryeventid):
     queryresult, queryitems = processresult
     
     logger.debug('spawnThumbnails: creating jobs')    
-    job = group( ( getFile.s(item.url) 
+    job = group( ( getFile.s(item.thumbnailURL) 
                     | storeThumbnail.s(item.id) 
                     ) for item in queryitems )
 
@@ -125,7 +134,8 @@ def spawnThumbnails(processresult, queryeventid):
     
     logger.debug('spawnThumbnails: jobs dispatched')
 
-    task = Task(task_id=result.id)
+    task = GroupTask(   task_id=result.id,
+                        subtask_ids=[r.id for r in result.results ] )
     task.save()
     
     logger.debug('created new Task object')
@@ -204,7 +214,7 @@ def storeThumbnail(result, itemid):
 
     os.remove(fpath)
 
-    item = Item.objects.get(id=itemid)
+    item = QueryItem.objects.get(id=itemid)
     item.thumbnail = thumbnail
     item.save()
 
@@ -239,7 +249,7 @@ def storeImage(result, itemid):
         image.image.save(filename, file, True)
         image.save()
 
-    item = Item.objects.get(id=itemid)
+    item = QueryItem.objects.get(id=itemid)
     item.image = image
     item.save()
         
@@ -271,10 +281,11 @@ def getStoreContext(url, itemid):
                         content = response  )
     context.save()
     
-    item = Item.objects.get(id=itemid)
+    item = QueryItem.objects.get(id=itemid)
     item.context = context
     item.save()    
     
     return context.id
+
 
 

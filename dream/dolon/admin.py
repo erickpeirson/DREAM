@@ -40,7 +40,7 @@ class QueryStringAdmin(admin.ModelAdmin):
 def dispatch(modeladmin, request, queryset):
     for obj in queryset:
         task_id = spawnSearch(obj)
-        task = Task(task_id=task_id)
+        task = GroupTask(task_id=task_id)
         task.save()
         print 'asdf', obj, task, task.state()
         obj.search_task = task

@@ -7,6 +7,7 @@ from unidecode import unidecode
 
 from celery import group, chain
 from tasks import search, processSearch, spawnThumbnails
+from search_managers import *
 
 import warnings
 
@@ -17,7 +18,7 @@ logger.setLevel('DEBUG')
 
 from BeautifulSoup import BeautifulSoup
 
-def spawnSearch(queryevent):
+def spawnSearch(queryevent, **kwargs):
     """
     Executes a series of searches based on the parameters of a 
     :class:`.QueryEvent` and updates it accordingly.
@@ -60,104 +61,20 @@ def spawnSearch(queryevent):
     # QueryEvent.id gets passed around so that the various tasks can attach
     #  the resulting objects to it.
     logger.debug('spawnSearch: creating jobs')
-    job = group(  ( search.s(qstring, start, start+9, engine, params) 
-                    | processSearch.s(queryevent.id) 
-                    | spawnThumbnails.s(queryevent.id)
-                    ) for start in xrange(start, end, 10) )                   
+    job = group(  ( search.s(qstring, start, start+9, queryevent.engine.manager, params, **kwargs) 
+                    | processSearch.s(queryevent.id, **kwargs) 
+                    | spawnThumbnails.s(queryevent.id, **kwargs)
+                    ) for start in xrange(start, end, 10) )
+                    
 
     logger.debug('spawnSearch: dispatching jobs')
     result = job.apply_async()
     
     logger.debug('spawnSearch: jobs dispatched')
     
-    return result.id
+    return result.id, [ r.id for r in result.results ]
     
-class BaseSearchManager(object):
-    """
-    Base class for search managers.
-    """
-    def __init__(self):
-        pass
 
-class GoogleImageSearchManager(BaseSearchManager):
-    """
-    Search manager for Google Custom Search api.
-    """
-
-    endpoint = "https://www.googleapis.com/customsearch/v1?"
-    name = 'Google'
-
-    def imageSearch(self, params, query, start=1):
-        """
-        Performs an image search for ``query`` via the Google Custom Search API.
-
-        Parameters
-        ----------
-        params : list
-            Should contain at least ``apikey`` and ``cx`` parameters.
-        query : str
-            Search query.
-        start : int
-            (default: 1) Start item.
-
-        Returns
-        -------
-        response : string
-            JSON response.
-        """
-        
-        logger.debug('imageSearch() with params {0}'.format(params))
-        
-        params += [ "q={0}".format(urllib2.quote(query)),
-                    "start={0}".format(start),
-                    "searchType=image"  ]
-
-        request = self.endpoint + "&".join(params)
-        logger.debug('imageSearch(): request: {0}'.format(request))
-        
-        response = urllib2.urlopen(request)
-        
-        return self._handleResponse(response.read())
-
-    def _handleResponse(self, response):
-        """
-        Extracts information of interest from an :func:`.imageSearch` response.
-
-        Parameters
-        ----------
-        response : str
-            JSON response from :func:`.imageSearch`\.
-        
-        Returns
-        -------
-        result : dict
-            Limited results, amenable to :class:`.QueryItem`\.
-        rjson : dict
-            Full parsed JSON response.
-        """
-        
-        rjson = json.loads(response)
-
-        result = {}
-        
-        result['start'] = rjson['queries']['request'][0]['startIndex']
-        result['end'] = result['start'] + rjson['queries']['request'][0]['count'] - 1        
-        
-        result['items'] = []
-        for item in rjson['items']:
-            i = {
-                    'url': item['link'],
-                    'title': item['title'],
-                    'size': item['image']['byteSize'],
-                    'height': item['image']['height'],
-                    'width': item['image']['width'],
-                    'mime': item['mime'],
-                    'contextURL': item['image']['contextLink'],
-                    'thumbnailURL': item['image']['thumbnailLink']      
-                }
-            result['items'].append(i)
-
-        return result, rjson
 
 
 engineManagers = {
