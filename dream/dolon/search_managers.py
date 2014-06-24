@@ -1,3 +1,15 @@
+from django.core.files import File
+from models import *
+import json
+import urllib2
+import os
+from unidecode import unidecode
+
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel('DEBUG')
+
 class BaseSearchManager(object):
     """
     Base class for search managers.
