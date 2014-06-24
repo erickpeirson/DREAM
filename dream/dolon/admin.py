@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from models import QueryEvent, QueryResult, QueryItem, Engine, QueryString
+from models import *
 from managers import spawnSearch
 
 
@@ -39,15 +39,23 @@ class QueryStringAdmin(admin.ModelAdmin):
 
 def dispatch(modeladmin, request, queryset):
     for obj in queryset:
-        obj = spawnSearch(obj)
+        task_id = spawnSearch(obj)
+        task = Task(task_id=task_id)
+        task.save()
+        print 'asdf', obj, task, task.state()
+        obj.search_task = task
         obj.dispatched = True
         obj.save()
+
 dispatch.short_description = 'Dispatch selected search events'
 
 class QueryEventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'querystring', 'datetime', 'rangeStart', 'rangeEnd', 'items', 'dispatched')
+    list_display = ('id', 'querystring', 'datetime', 'rangeStart', 'rangeEnd', 
+                    'items', 'dispatched', 'searchstatus', 'thumbnailstatus')
     list_display_links = ('querystring',)
     actions = [dispatch]
+    exclude = ['search_task', 'thumbnail_tasks']
+    
     
     def get_readonly_fields(self, request, obj=None):
         """
@@ -64,7 +72,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
         
         if obj is None:
-            self.exclude = ['queryresults', 'dispatched']
+            self.exclude += ['queryresults', 'dispatched']
 
         return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
 
@@ -76,6 +84,8 @@ admin.site.register(QueryEvent, QueryEventAdmin)
 admin.site.register(QueryResult)    # TODO: this should be removed eventually.
 admin.site.register(QueryItem, QueryItemAdmin)
 admin.site.register(QueryString, QueryStringAdmin)
+
+admin.site.register(Task)
 
 
 admin.site.register(Engine)
