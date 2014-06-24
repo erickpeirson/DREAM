@@ -6,7 +6,7 @@ from managers import spawnSearch
 
 class QueryEventInline(admin.TabularInline):
     model = QueryEvent
-    readonly_fields = ('rangeStart', 'rangeEnd', 'datetime', 'engine', 'queryresults')
+    readonly_fields = ('rangeStart', 'rangeEnd', 'datetime', 'engine')#, 'queryresults')
 
     extra = 0
     def has_delete_permission(self, request, obj=None):
@@ -16,7 +16,7 @@ class QueryEventInline(admin.TabularInline):
         return False
 
 class QueryStringAdmin(admin.ModelAdmin):
-    list_display = ('querystring', 'events', 'latest', 'items')
+    list_display = ('querystring', 'events', 'latest')#, 'items')
     inlines = (QueryEventInline,)
     
     def get_readonly_fields(self, request, obj=None):
@@ -51,10 +51,11 @@ dispatch.short_description = 'Dispatch selected search events'
 
 class QueryEventAdmin(admin.ModelAdmin):
     list_display = ('id', 'querystring', 'datetime', 'rangeStart', 'rangeEnd', 
-                    'items', 'dispatched', 'searchstatus', 'thumbnailstatus')
+                    'items', 'dispatched', 'search_status', 'thumbnail_status')
     list_display_links = ('querystring',)
     actions = [dispatch]
     exclude = ['search_task', 'thumbnail_tasks']
+    readonly_fields = ('items',)
     
     
     def get_readonly_fields(self, request, obj=None):
@@ -63,7 +64,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
 
         if obj:
-            return ('querystring', 'rangeStart', 'rangeEnd', 'engine', 'dispatched', 'queryresults') + self.readonly_fields
+            return ('querystring', 'rangeStart', 'rangeEnd', 'engine', 'dispatched', 'queryresults', 'search_status', 'thumbnail_status') + self.readonly_fields
         return self.readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
@@ -77,13 +78,19 @@ class QueryEventAdmin(admin.ModelAdmin):
         return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
 
 class QueryItemAdmin(admin.ModelAdmin):
-    list_display = ('thumbimage','title', 'height','width', 'status', 'queryevents')
-
+    list_display = ('thumbimage','title', 'height','width', 'status', 'queryevents')#,'result',)
+    readonly_fields = ('thumbimage', 'title', 'url', 'status', 'size', 'height', 'width', 'mime', 'contextURL', 'thumbnailURL', 'queryevents',)
+    exclude = ('image', 'context')
+    list_filter = ('status',)#'queryevents')
+    list_select_related = True # ('result',)
+    search_fields = ['title',]
+    
 # Register your models here.
 admin.site.register(QueryEvent, QueryEventAdmin)
 admin.site.register(QueryResult)    # TODO: this should be removed eventually.
 admin.site.register(QueryItem, QueryItemAdmin)
 admin.site.register(QueryString, QueryStringAdmin)
+admin.site.register(Thumbnail)
 
 admin.site.register(Task)
 
