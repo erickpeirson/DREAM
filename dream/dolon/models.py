@@ -108,16 +108,15 @@ class QueryEvent(models.Model):
     def __unicode__(self):
         return unicode(self.querystring)
 
-    def _queryItems(self):
+    def items(self):
         return unicode(len(QueryItem.objects.filter(result__event__id=self.id)))
-    items = property(_queryItems)
     
-    def searchstatus(self):
+    def search_status(self):
         if self.search_task is not None:
             return self.search_task.state()
         return 'PENDING'
 
-    def thumbnailstatus(self):
+    def thumbnail_status(self):
         alltasks = self.thumbnail_tasks.all()
         Ntasks = len(alltasks)
         if Ntasks > 0:
@@ -197,7 +196,7 @@ class QueryItem(models.Model):
     statuses = (
         (PENDING, 'Pending'),
         (REJECTED, 'Rejected'),
-        (APPROVED, 'Apprived')
+        (APPROVED, 'Approved')
     )
 
     url = models.URLField(max_length=2000, unique=True)
@@ -219,13 +218,15 @@ class QueryItem(models.Model):
                                                           blank=True, null=True)
 
     def thumbimage(self):
-        return '<img src="{0}"/>'.format(self.thumbnail.image.url)
+        if self.thumbnail is not None:
+            return '<img src="{0}"/>'.format(self.thumbnail.image.url)
+        return None
     thumbimage.allow_tags = True
 
     def queryevents(self):
         events = [ e for r in self.result.all() for e in r.event.all() ]
-        pattern = '<li>{0}, {1}, {2}</li>'
-        return '\n'.join( [ pattern.format( e.querystring.querystring, e.datetime, e.engine ) for e in events ] )
+        pattern = '<a href="/admin/dolon/queryevent/{0}/"><li>{1}, {2}, {3}</li></a>'
+        return '\n'.join( [ pattern.format(e.id, e.querystring.querystring, e.datetime, e.engine ) for e in events ] )
     queryevents.allow_tags = True
 
 class Thumbnail(models.Model):
