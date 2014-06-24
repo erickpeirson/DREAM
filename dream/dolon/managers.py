@@ -5,6 +5,9 @@ import urllib2
 import os
 from unidecode import unidecode
 
+from celery import group, chain
+from tasks import search, processSearch, spawnThumbnails
+
 import warnings
 
 import logging
@@ -14,228 +17,73 @@ logger.setLevel('DEBUG')
 
 from BeautifulSoup import BeautifulSoup
 
-def spawnSearch(queryevent, getThumb=True):
+def spawnSearch(queryevent):
     """
     Executes a series of searches based on the parameters of a 
     :class:`.QueryEvent` and updates it accordingly.
     
-    TODO: this should eventually be the point of action for dispatching via
-    Celery.
-    
     Parameters
     ----------
     queryevent : :class:`.QueryEvent`
-    getThumb : bool
-        (default: True) If True, retrieves thumbnail image for each item.
+        
+    Returns
+    -------
+    result.id : str
+        UUID for the Celery search task group.
     """
 
     if queryevent.dispatched:
-        warnings.warn('Attempting to spawnSearch() for QueryEvent that has already been dispatched.', RuntimeWarning)
+        warnings.warn('Attempting to spawnSearch() for QueryEvent that has ' + \
+                      ' already been dispatched.', RuntimeWarning)
         return queryevent
 
-    querystring = queryevent.querystring.querystring
+    qstring = queryevent.querystring.querystring
     start = queryevent.rangeStart
     end = queryevent.rangeEnd
     engine = engineManagers[queryevent.engine.manager]()
 
-    logger.debug('spawnSearch() for QueryEvent {0}'.format(queryevent.id) + \
-                 ', with term "{0}", start: {1}, end: {2}'
-                                               .format(querystring, start, end))
-    logger.debug('spawnSearch(): using Engine {0}'.format(engine.name))
+    logger.debug('spawnSearch() for QueryEvent {0},'.format(queryevent.id)    +\
+        ' with term "{0}", start: {1}, end: {2},'.format(qstring, start, end) +\
+        ' using Engine: {0}'.format(engine.name))
 
-    for s in xrange(start, end, 10):
-        e = s + 9   # Maximum of 10 results per query.
+    params = [ p for p in queryevent.engine.parameters ]
+    
+    # Dispatch a group of search chains to Celery, divided into 10-item pages.
+    #
+    #   * search() performs the image search for a 10-item page,
+    #   |
+    #   * processSearch() parses the search results and creates QueryResult 
+    #   | and QueryItem instances.
+    #   * spawnThumbnails() launches tasks to retrieve and store Thumbnail
+    #     instances. 
+    #   
+    # QueryEvent.id gets passed around so that the various tasks can attach
+    #  the resulting objects to it.
+    logger.debug('spawnSearch: creating jobs')
+    job = group(  ( search.s(qstring, start, start+9, engine, params) 
+                    | processSearch.s(queryevent.id) 
+                    | spawnThumbnails.s(queryevent.id)
+                    ) for start in xrange(start, end, 10) )                   
 
-        P = [ p for p in queryevent.engine.parameters ] # Avoid scoping issue.
-        response = engine.imageSearch(P, querystring, start=s)
-        result, items = engine.handleResults(response)
-
-        if getThumb:    # Retrieve thumbnails.
-            for item in items:
-                if item.thumbnail is None:
-                    getThumbnail(item)
-
-        queryevent.queryresults.add(result)
-        queryevent.save()
-        
-    logger.debug('spawnSearch(): done.')
-
-    return queryevent
-
-def getThumbnail(queryitem):
+    logger.debug('spawnSearch: dispatching jobs')
+    result = job.apply_async()
+    
+    logger.debug('spawnSearch: jobs dispatched')
+    
+    return result.id
+    
+class BaseSearchManager(object):
     """
-    Retrieve a :class:`.Thumbnail` for a :class:`.QueryItem`\.
-    
-    Parameters
-    ----------
-    queryitem : :class:`.QueryItem`
-    
-    Returns
-    -------
-    success : bool
+    Base class for search managers.
     """
+    def __init__(self):
+        pass
 
-    try:
-        R = ImageRetriever()
-        thumbnail = R.retrieveThumbnail(queryitem.thumbnailURL)
-        queryitem.thumbnail = thumbnail
-        queryitem.save()
-    except:
-        return False
-    return True
-
-def getImage(queryitem):
+class GoogleImageSearchManager(BaseSearchManager):
     """
-    Retrieve a :class:`.Image` for a :class:`.QueryItem`\.
-    
-    Parameters
-    ----------
-    queryitem : :class:`.QueryItem`
-    
-    Returns
-    -------
-    success : bool
+    Search manager for Google Custom Search api.
     """
 
-    try:
-        R = ImageRetriever()
-        image = R.retrieveImage(queryitem.url)
-        queryitem.image = image
-        queryitem.save()
-    except:
-        return False
-    return True
-
-def getContext(queryitem):
-    """
-    Retrieve a :class:`.Context` for a :class:`.QueryItem`\.
-    
-    Parameters
-    ----------
-    queryitem : :class:`.QueryItem`
-    
-    Returns
-    -------
-    success : bool
-    """
-
-    try:
-        R = ImageRetriever()
-        context = R.retrieveImage(queryitem.contextURL)
-        queryitem.context = context
-        queryitem.save()
-    except:
-        return False
-    return True
-
-class ImageRetriever(object):
-    temppath = 'tempI'
-
-    def getFile(self, url):
-        """
-        
-        Parameters
-        ----------
-        url : str
-            Location of a file.
-        
-        Returns
-        -------
-        filename : str
-        file : :class:`.File`
-        """
-
-        filename = url.split('/')[-1]
-        response = urllib2.urlopen(url)
-        
-        mime = dict(response.info())['content-type']
-        size = dict(response.info())['content-length']
-        
-        with open(self.temppath, 'wb') as f:
-            f.write(response.read())
-
-        self.f = open(self.temppath, 'r')
-        file = File(self.f)
-
-        return filename, file, mime, size
-
-    def _cleanup(self):
-        self.f.close()
-        os.remove(self.temppath)
-
-    def retrieveThumbnail(self, url):
-        """
-        
-        Parameters
-        ----------
-        url : str
-            Location of the thumbnail image.
-        
-        Returns
-        -------
-        thumbnail : :class:`.Thumbnail`
-        """
-        
-        filename, imagefile, mime, size = self.getFile(url)
-
-        thumbnail = Thumbnail(  url = url,
-                                mime = mime,
-                                size = size )
-        thumbnail.image.save(filename, imagefile, True)
-        thumbnail.save()
-
-        self._cleanup()
-        return thumbnail
-
-    def retrieveImage(self, url):
-        """
-        
-        Parameters
-        ----------
-        url : str
-            Location of the image.
-            
-        Returns
-        -------
-        image : :class:`.Image`
-        """
-
-        filename, imagefile, mime, size = self.getFile(url)
-
-        image = Image(  url = url,
-                        mime = mime,
-                        size = size )
-
-        image.image.save(filename, imagefile, True)
-        image.save()
-
-        self._cleanup()
-        return image
-
-    def retrieveContext(self, url):
-        """
-        
-        Parameters
-        ----------
-        url : str
-            Location of the context document.
-            
-        context : :class:`.Context`
-        """
-
-        response = urllib2.urlopen(url).read()
-        soup = BeautifulSoup(response)
-        text = ' '.join([ p.getText() for p in soup.findAll('p') ])
-        title = soup.title.getText()
-
-        context = Context(  url = url,
-                            title = title,
-                            content = text  )
-        context.save()
-
-        return context
-
-class GoogleImageSearchManager(object):
     endpoint = "https://www.googleapis.com/customsearch/v1?"
     name = 'Google'
 
@@ -268,9 +116,10 @@ class GoogleImageSearchManager(object):
         logger.debug('imageSearch(): request: {0}'.format(request))
         
         response = urllib2.urlopen(request)
-        return response.read()
+        
+        return self._handleResponse(response.read())
 
-    def handleResults(self, response):
+    def _handleResponse(self, response):
         """
         Extracts information of interest from an :func:`.imageSearch` response.
 
@@ -281,42 +130,34 @@ class GoogleImageSearchManager(object):
         
         Returns
         -------
-        queryResult : :class:`.QueryResult`
-        queryItems : list
-            A list of :class:`.QueryItem` instances.
+        result : dict
+            Limited results, amenable to :class:`.QueryItem`\.
+        rjson : dict
+            Full parsed JSON response.
         """
-
-        rjson = json.loads(response)
         
-        start = rjson['queries']['request'][0]['startIndex']
-        end = start + rjson['queries']['request'][0]['count'] - 1
+        rjson = json.loads(response)
 
-        queryResult = QueryResult(  rangeStart=start,
-                                    rangeEnd=end,
-                                    result=response )
-        queryResult.save()
-
-        queryItems = []
+        result = {}
+        
+        result['start'] = rjson['queries']['request'][0]['startIndex']
+        result['end'] = result['start'] + rjson['queries']['request'][0]['count'] - 1        
+        
+        result['items'] = []
         for item in rjson['items']:
-            # Should only be one QueryItem per URI.
-            queryItem = QueryItem.objects.get_or_create(
-                            url = item['link'],
-                            defaults = {
-                                'title': item['title'],
-                                'size': item['image']['byteSize'],
-                                'height': item['image']['height'],
-                                'width': item['image']['width'],
-                                'mime': item['mime'],
-                                'contextURL': item['image']['contextLink'],
-                                'thumbnailURL': item['image']['thumbnailLink']
-                            }   )[0]
+            i = {
+                    'url': item['link'],
+                    'title': item['title'],
+                    'size': item['image']['byteSize'],
+                    'height': item['image']['height'],
+                    'width': item['image']['width'],
+                    'mime': item['mime'],
+                    'contextURL': item['image']['contextLink'],
+                    'thumbnailURL': item['image']['thumbnailLink']      
+                }
+            result['items'].append(i)
 
-            queryResult.items.add(queryItem)
-            queryItems.append(queryItem)
-
-        queryResult.save()
-
-        return queryResult, queryItems
+        return result, rjson
 
 
 engineManagers = {
