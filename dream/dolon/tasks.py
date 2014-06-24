@@ -44,15 +44,15 @@ def search(qstring, start, end, manager_name, params, **kwargs):
         Full parsed JSON response.
     """
     
-#    manager = getattr(M, manager_name)
-
-    #result, response = manager.imageSearch(params, qstring, start=start)
-    
-    import cPickle as pickle
-    with open('./dolon/testdata/searchresult.pickle', 'r') as f:
-        result = pickle.load(f)
-    with open('./dolon/testdata/searchresponse.pickle', 'r') as f:
-        response = pickle.load(f)
+    if not kwargs.get('testing', False):
+        manager = getattr(M, manager_name)()
+        result, response = manager.imageSearch(params, qstring, start=start)
+    else:   # When testing we don't want to make remote calls.
+        import cPickle as pickle
+        with open('./dolon/testdata/searchresult.pickle', 'r') as f:
+            result = pickle.load(f)
+        with open('./dolon/testdata/searchresponse.pickle', 'r') as f:
+            response = pickle.load(f)
         
     return result, response
     
@@ -69,9 +69,10 @@ def processSearch(searchresult, queryeventid, **kwargs):
     
     Returns
     -------
-    queryResult : :class:`.QueryResult`
+    queryResult : int
+        ID for a :class:`.QueryResult`
     queryItems : list
-        A list of :class:`.QueryItem` instances.
+        A list of IDs for :class:`.QueryItem` instances.
     """
 
     
@@ -84,22 +85,20 @@ def processSearch(searchresult, queryeventid, **kwargs):
 
     queryItems = []
     for item in result['items']:
-        # Should only be one QueryItem per URI.
-        queryItem = QueryItem.objects.get_or_create(
+        queryItem = QueryResultItem(
                         url = item['url'],
-                        defaults = {
-                            'title': item['title'],
-                            'size': item['size'],
-                            'height': item['height'],
-                            'width': item['width'],
-                            'mime': item['mime'],
-                            'contextURL': item['contextURL'],
-                            'thumbnailURL': item['thumbnailURL']
-                        }   )[0]
+                        title = item['title'],
+                        size = item['size'],
+                        height = item['height'],
+                        width = item['width'],
+                        mime = item['mime'],
+                        contextURL = item['contextURL'],
+                        thumbnailURL = item['thumbnailURL']
+                    )
         queryItem.save()
 
-        queryResult.items.add(queryItem)
-        queryItems.append(queryItem)
+        queryResult.resultitems.add(queryItem)
+        queryItems.append(queryItem.id)
 
     queryResult.save()
 
@@ -108,7 +107,7 @@ def processSearch(searchresult, queryeventid, **kwargs):
         queryevent.queryresults.add(queryResult)
         queryevent.save()
 
-    return queryResult, queryItems   
+    return queryResult.id, queryItems   
     
 @shared_task
 def spawnThumbnails(processresult, queryeventid, **kwargs):
@@ -119,14 +118,17 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
     Parameters
     ----------
     processresult : tuple
-        ( :class:`.QueryResult` , queritems(list) ) from :func:`.processSearch`
+        Output from :func:`.processSearch`
     """
     
-    queryresult, queryitems = processresult
+    print queryeventid
+    queryresultid, queryitemsid = processresult
+    queryresult = QueryResult.objects.get(id=queryresultid)
+    queryitems = [ QueryResultItem.objects.get(id=id) for id in queryitemsid ]
     
     logger.debug('spawnThumbnails: creating jobs')    
     job = group( ( getFile.s(item.thumbnailURL) 
-                    | storeThumbnail.s(item.id) 
+                    | storeThumbnail.s(item.item.thumbnail.id) 
                     ) for item in queryitems )
 
     logger.debug('spawnThumbnails: dispatching jobs')
@@ -184,28 +186,26 @@ def getFile(url):
     return url, filename, fpath, mime, size
     
 @shared_task
-def storeThumbnail(result, itemid):
+def storeThumbnail(result, thumbnailid):
     """
-    Create a new :class:`.Thumbnail` and attach it to an :class:`.Item`\.
+    Update a :class:`.Thumbnail` with image data.
     
     Parameters
     ----------
     result : tuple
         ( url, filename, fpath, mime, size ) from :func:`.getFile`
-    itemid : int
-        ID of a :class:`.Item` instance associated with the :class:`.Thumbnail`
+    thumbnailid : int
+        ID of a :class:`.Thumbnail`
     
     Returns
     -------
-    thumbnail.id : int
+    thumbnailid : int
         ID for the :class:`.Thumbnail`
     """
     
     url, filename, fpath, mime, size = result
-
-    thumbnail = Thumbnail(  url = url,
-                            mime = mime,
-                            size = size )
+    
+    thumbnail = Thumbnail.objects.get(id=thumbnailid)
     
     with open(fpath, 'rb') as f:
         file = File(f)
@@ -213,10 +213,6 @@ def storeThumbnail(result, itemid):
         thumbnail.save()
 
     os.remove(fpath)
-
-    item = QueryItem.objects.get(id=itemid)
-    item.thumbnail = thumbnail
-    item.save()
 
     return thumbnail.id
     
@@ -249,7 +245,7 @@ def storeImage(result, itemid):
         image.image.save(filename, file, True)
         image.save()
 
-    item = QueryItem.objects.get(id=itemid)
+    item = Item.objects.get(id=itemid)
     item.image = image
     item.save()
         
@@ -281,7 +277,7 @@ def getStoreContext(url, itemid):
                         content = response  )
     context.save()
     
-    item = QueryItem.objects.get(id=itemid)
+    item = Item.objects.get(id=itemid)
     item.context = context
     item.save()    
     

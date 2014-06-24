@@ -1,8 +1,14 @@
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 
 from models import *
 from managers import spawnSearch
+from django.core import urlresolvers
 
+def get_admin_url(obj):
+    content_type = ContentType.objects.get_for_model(obj.__class__)
+    url = urlresolvers.reverse('admin:%s_%s_change' % (content_type.app_label, content_type.model), args=(obj.id,))
+    return url
 
 class QueryEventInline(admin.TabularInline):
     model = QueryEvent
@@ -77,22 +83,49 @@ class QueryEventAdmin(admin.ModelAdmin):
 
         return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
 
-class QueryItemAdmin(admin.ModelAdmin):
-    list_display = ('thumbimage','title', 'height','width', 'status', 'queryevents')#,'result',)
-    readonly_fields = ('thumbimage', 'title', 'url', 'status', 'size', 'height', 'width', 'mime', 'contextURL', 'thumbnailURL', 'queryevents',)
-    exclude = ('image', 'context')
+class ItemAdmin(admin.ModelAdmin):
+    list_display = ('thumb_image','title', 'height','width', 'status', )#,'result',)
+    readonly_fields = ('item_image', 'title', 'url', 'status', 'size', 'height', 'width', 'mime', 'events',)
+    exclude = ('image', 'context', 'thumbnail')
     list_filter = ('status',)#'queryevents')
     list_select_related = True # ('result',)
     search_fields = ['title',]
     
+    def thumb_image(self, obj):
+        return self.item_image(obj, list=True)
+    thumb_image.allow_tags = True
+    
+    def item_image(self, obj, list=False):
+        if obj.thumbnail is not None:
+            pattern = '<a href="{0}"><img src="{1}"/></a>'
+            if list:
+                fullsize_url = get_admin_url(obj)
+            else:
+                if obj.image is not None:
+                    fullsize_url = get_admin_url(obj.image)
+                else:
+                    fullsize_url = '#'
+            return pattern.format(fullsize_url, obj.thumbnail.image.url)
+        return None
+    item_image.allow_tags = True
+    
+class ImageAdmin(admin.ModelAdmin):
+    exclude = ('size', 'mime', 'height', 'width', 'image')
+    readonly_fields = ('fullsize_image', 'url', )
+    
+    def fullsize_image(self, obj):
+        if obj.image is not None:
+            pattern = '<img src="{0}"/>'
+            return pattern.format(obj.image.url)
+        return None
+    fullsize_image.allow_tags = True
+    
 # Register your models here.
 admin.site.register(QueryEvent, QueryEventAdmin)
-admin.site.register(QueryResult)    # TODO: this should be removed eventually.
-admin.site.register(QueryItem, QueryItemAdmin)
 admin.site.register(QueryString, QueryStringAdmin)
-admin.site.register(Thumbnail)
 
-admin.site.register(Task)
+admin.site.register(Item, ItemAdmin)
+admin.site.register(Image, ImageAdmin)
 
 
 admin.site.register(Engine)

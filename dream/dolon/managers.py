@@ -1,5 +1,5 @@
 from django.core.files import File
-from models import QueryItem, QueryResult, Thumbnail, Image, Context
+from models import *
 import json
 import urllib2
 import os
@@ -74,9 +74,6 @@ def spawnSearch(queryevent, **kwargs):
     
     return result.id, [ r.id for r in result.results ]
     
-
-
-
 engineManagers = {
     'GoogleImageSearchManager': GoogleImageSearchManager,
 }
