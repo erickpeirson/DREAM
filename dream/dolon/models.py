@@ -54,9 +54,9 @@ class QueryString(models.Model):
     def _Nevents(self):
         return unicode(len(self.queryevents.all()) )
     
-    def _Nitems(self):
-        I = QueryItem.objects.filter(queryresult__event__querystring__id=self.id)
-        return unicode(len(I))
+#    def _Nitems(self):
+#        I = QueryItem.objects.filter(queryresult__event__querystring__id=self.id)
+#        return unicode(len(I))
     
     def _latestEvent(self):
         E = self.queryevents.latest('datetime')
@@ -64,7 +64,7 @@ class QueryString(models.Model):
 
     events = property(_Nevents)
     latest = property(_latestEvent)
-    items = property(_Nitems)
+#    items = property(_Nitems)
 
 class Engine(models.Model):
     """
