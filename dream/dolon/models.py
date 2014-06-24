@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 import ast
 
-from celery.result import AsyncResult
+from celery.result import AsyncResult, TaskSetResult
 
 
 engineManagers = (( 'GoogleImageSearchManager', 'Google'),)
@@ -97,8 +97,8 @@ class QueryEvent(models.Model):
     
     # Tasks and dispathing.
     dispatched = models.BooleanField(default=False)
-    search_task = models.ForeignKey('Task', null=True, blank=True, related_name='searchtaskevent')
-    thumbnail_tasks = models.ManyToManyField('Task', related_name='thumbtaskevent')
+    search_task = models.ForeignKey('GroupTask', null=True, blank=True, related_name='searchtaskevent')
+    thumbnail_tasks = models.ManyToManyField('GroupTask', related_name='thumbtaskevent')
 
 
 #    user = models.ForeignKey(User)
@@ -112,22 +112,21 @@ class QueryEvent(models.Model):
         return unicode(len(QueryItem.objects.filter(result__event__id=self.id)))
     items = property(_queryItems)
     
-    def _searchTaskStatus(self):
+    def searchstatus(self):
         if self.search_task is not None:
             return self.search_task.state()
-        return 'UNSTARTED'
-    searchstatus = property(_searchTaskStatus)
+        return 'PENDING'
 
-    def _thumbnailTaskStatus(self):
+    def thumbnailstatus(self):
         alltasks = self.thumbnail_tasks.all()
         Ntasks = len(alltasks)
         if Ntasks > 0:
-            for t in alltasks:
-                print t.state()
-            done = float(len([ t for t in alltasks if t.state == 'SUCCESS' ]))
-            return '{0}% COMPLETE'.format(done*100/Ntasks)
-        return 'UNSTARTED'
-    thumbnailstatus = property(_thumbnailTaskStatus)
+            done = float(len([ t for t in alltasks if t.state() == 'DONE' ]))
+            comp = int(round(done*100/Ntasks, 0))
+            if comp == 100:
+                return 'DONE'
+            return '{0}% COMPLETE'.format(comp)
+        return 'PENDING'
 
 class Task(models.Model):
     """
@@ -155,6 +154,23 @@ class Task(models.Model):
 #        if result.read():
         return result.result
 #        return None
+
+class GroupTask(models.Model):
+    task_id = models.CharField(max_length=100)
+    subtask_ids = ListField()
+    dispatched = models.DateTimeField(auto_now_add=True)
+    
+    def state(self):
+        result = TaskSetResult(self.task_id, [ AsyncResult(s) for s in self.subtask_ids ])
+        if result.successful():
+            return 'DONE'
+        elif result.failed():
+            return 'FAILED'
+        elif result.waiting():
+            return 'RUNNING'
+        else:
+            return 'PENDING'
+    
 
 class QueryResult(models.Model):
     """
