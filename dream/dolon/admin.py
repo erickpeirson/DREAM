@@ -109,6 +109,29 @@ class ItemAdmin(admin.ModelAdmin):
         return None
     item_image.allow_tags = True
     
+class ContextAdmin(admin.ModelAdmin):
+    list_display = ('status', 'url')
+    list_display_links = ('status', 'url')
+    readonly_fields = ('resource', 'title', 'content')
+    exclude = ('url',)
+    
+    def resource(self, obj):
+        """
+        Generates a link to the original context URL, opening in a new tab.
+        """
+        pattern = '<a href="{0}" target="_blank">{0}</a>'
+        return pattern.format(obj.url)
+    resource.allow_tags = True
+
+    def status(self, obj):
+        """
+        Returns True if data for this :class:`.Context` has been retrieved.
+        """
+        if obj.title is None and obj.content is None:
+            return False
+        return True
+    status.boolean = True
+    
 class ImageAdmin(admin.ModelAdmin):
     exclude = ('size', 'mime', 'height', 'width', 'image')
     readonly_fields = ('fullsize_image', 'url', )
