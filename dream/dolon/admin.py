@@ -133,8 +133,27 @@ class ContextAdmin(admin.ModelAdmin):
     status.boolean = True
     
 class ImageAdmin(admin.ModelAdmin):
-    exclude = ('size', 'mime', 'height', 'width', 'image')
-    readonly_fields = ('fullsize_image', 'url', )
+    list_display = ('status', 'url')
+    list_display_links = ('status', 'url')    
+    readonly_fields = ('fullsize_image', 'resource', 'size', 'mime', 'height', 'width')
+    exclude = ('url','image')
+
+    def resource(self, obj):
+        """
+        Generates a link to the original image URL, opening in a new tab.
+        """
+        pattern = '<a href="{0}" target="_blank">{0}</a>'
+        return pattern.format(obj.url)
+    resource.allow_tags = True
+
+    def status(self, obj):
+        """
+        Returns True if data for this :class:`.Image` has been retrieved.
+        """
+        if obj.size == 0:# and obj.content is None:
+            return False
+        return True
+    status.boolean = True
     
     def fullsize_image(self, obj):
         if obj.image is not None:
