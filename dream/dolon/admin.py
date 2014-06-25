@@ -12,18 +12,50 @@ def get_admin_url(obj):
 
 class QueryEventInline(admin.TabularInline):
     model = QueryEvent
-    readonly_fields = ('rangeStart', 'rangeEnd', 'datetime', 'engine')#, 'queryresults')
-
+    readonly_fields = ('dispatched', 'range', 'engine', 'datetime', 'results')#, 'queryresults')
+    exclude = ('rangeStart', 'rangeEnd', 'search_task', 'thumbnail_tasks', 'queryresults')
+    ordering = ('datetime',)
+    
     extra = 0
     def has_delete_permission(self, request, obj=None):
         """
         :class:`.QueryEvent` should not be deletable.
         """
         return False
+        
+    def range(self, obj):
+        """
+        Prettier representation of the start and end indices.
+        """
+        pattern = '{0}-{1}'
+        return pattern.format(obj.rangeStart, obj.rangeEnd)
+    range.allow_tags = True
+    
+    def results(self, obj):
+        """
+        Yields the number of :class:`.Item` associated with this 
+        :class:`.QueryEvent`\, with a link to the filtered admin list view for
+        :class:`.Item`\.
+        """
+
+        items = Item.objects.filter(events__id=obj.id)
+        if len(items) > 0:
+            pattern = '<a href="{0}?events__id__exact={1}">{2} items</a>'
+            baseurl = '/'.join(get_admin_url(items[0]).split('/')[0:-2])
+            
+            return pattern.format(baseurl, obj.id, len(items))
+        return None
+    results.allow_tags = True
+    
+### ModelAdmins ###
 
 class QueryStringAdmin(admin.ModelAdmin):
-    list_display = ('querystring', 'events', 'latest')#, 'items')
+    list_display = ('querystring', 'events', 'last_used')#, 'items')
     inlines = (QueryEventInline,)
+    
+    def last_used(self, obj):
+        print obj.latest()
+        return pretty_date(obj.latest())
     
     def get_readonly_fields(self, request, obj=None):
         """
