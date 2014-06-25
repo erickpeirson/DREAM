@@ -3,6 +3,9 @@ from django.test import TestCase
 apikey = "AIzaSyDhlbNOLTRRVebYs5PNx9snu6SZOsQFYnM"
 cx = "002775406652749371248:l-zbbsqhcte"
 
+#["key=AIzaSyDhlbNOLTRRVebYs5PNx9snu6SZOsQFYnM",
+#"cx=002775406652749371248:l-zbbsqhcte"]
+
 from tasks import *
 from managers import GoogleImageSearchManager, spawnSearch
 from models import QueryString, QueryEvent, QueryItem, Engine, Thumbnail, Image

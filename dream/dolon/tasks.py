@@ -106,6 +106,13 @@ def processSearch(searchresult, queryeventid, **kwargs):
         queryevent = QueryEvent.objects.get(id=queryeventid)
         queryevent.queryresults.add(queryResult)
         queryevent.save()
+        
+    # Attach event to items.
+    for item in queryItems:
+        qi = QueryResultItem.objects.get(id=item)
+        i = Item.objects.get(id=qi.item.id)
+        i.events.add(queryevent)
+        i.save()       
 
     return queryResult.id, queryItems   
     
@@ -121,7 +128,6 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
         Output from :func:`.processSearch`
     """
     
-    print queryeventid
     queryresultid, queryitemsid = processresult
     queryresult = QueryResult.objects.get(id=queryresultid)
     queryitems = [ QueryResultItem.objects.get(id=id) for id in queryitemsid ]

@@ -2,10 +2,12 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
 from django.db import models
+
 import ast
 
 from celery.result import AsyncResult, TaskSetResult
 
+from util import *
 
 engineManagers = (( 'GoogleImageSearchManager', 'Google'),)
 
@@ -54,17 +56,11 @@ class QueryString(models.Model):
     def _Nevents(self):
         return unicode(len(self.queryevents.all()) )
     
-#    def _Nitems(self):
-#        I = QueryItem.objects.filter(queryresult__event__querystring__id=self.id)
-#        return unicode(len(I))
-    
-    def _latestEvent(self):
+    def latest(self):
         E = self.queryevents.latest('datetime')
-        return unicode(E.datetime)
+        return E.datetime
 
     events = property(_Nevents)
-    latest = property(_latestEvent)
-#    items = property(_Nitems)
 
 class Engine(models.Model):
     """
@@ -102,11 +98,14 @@ class QueryEvent(models.Model):
 
 
 #    user = models.ForeignKey(User)
-    queryresults = models.ManyToManyField('QueryResult', related_name='event', blank=True, null=True)
+    queryresults = models.ManyToManyField('QueryResult', related_name='event_instance', blank=True, null=True)
     engine = models.ForeignKey(Engine)
 
     def __unicode__(self):
-        return unicode(self.querystring)
+        pattern = '"{0}", items {1}-{2}, dispatched {3}'
+        date = pretty_date(self.datetime)
+        repr = pattern.format(self.querystring, self.rangeStart, self.rangeEnd, date)
+        return unicode(repr)
 
     def items(self):
         return unicode(len(QueryItem.objects.filter(result__event__id=self.id)))
@@ -135,7 +134,8 @@ class QueryResult(models.Model):
     rangeEnd = models.IntegerField()
     result = models.TextField()     # Holds full JSON response.
 
-    resultitems = models.ManyToManyField('QueryResultItem')
+    resultitems = models.ManyToManyField('QueryResultItem', 
+                                         related_name='queryresult_instance')
 
 class QueryResultItem(models.Model):
     url = models.URLField(max_length=2000)
@@ -220,32 +220,6 @@ class Item(models.Model):
     events = models.ManyToManyField('QueryEvent', related_name='items', 
                                                           blank=True, null=True)
 
-class Task(models.Model):
-    """
-    Represents a Celery task.
-    """
-
-    task_id = models.CharField(max_length=100)
-    dispatched = models.DateTimeField(auto_now_add=True)
-    
-    def state(self):
-        """
-        Get the task state. Possible values: PENDING, STARTED, RETRY, FAILURE,
-        SUCCESS.
-        """
-
-        result = AsyncResult(self.task_id)
-        return result.state
-    
-    def result(self):
-        """
-        Get the result of this task. If not ready, returns None.
-        """
-        
-        result = AsyncResult(self.task_id)
-#        if result.read():
-        return result.result
-#        return None
 
 class GroupTask(models.Model):
     task_id = models.CharField(max_length=100)
@@ -310,4 +284,8 @@ class Context(models.Model):
     url = models.URLField(max_length=2000, unique=True)
     title = models.CharField(max_length=400, null=True, blank=True)
     content = models.TextField(null=True, blank=True)
+    
+#    datetime = models.DateTimeField(null=True, blank=True)
 
+    def __unicode__(self):
+        return unicode(self.url)
