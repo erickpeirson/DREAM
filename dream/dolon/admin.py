@@ -85,10 +85,10 @@ class QueryEventAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     list_display = ('thumb_image','title', 'height','width', 'status', )#,'result',)
-    readonly_fields = ('item_image', 'title', 'url', 'status', 'size', 'height', 'width', 'mime', 'events',)
-    exclude = ('image', 'context', 'thumbnail')
-    list_filter = ('status',)#'queryevents')
-    list_select_related = True # ('result',)
+    readonly_fields = ('item_image', 'title', 'resource', 'status', 'size', 'height', 'width', 'mime', 'query_events', 'contexts')#'list_events',)
+    exclude = ('image', 'context', 'thumbnail', 'events', 'url')
+    list_filter = ('status','events')
+    list_select_related = True
     search_fields = ['title',]
     
     def thumb_image(self, obj):
@@ -108,6 +108,19 @@ class ItemAdmin(admin.ModelAdmin):
             return pattern.format(fullsize_url, obj.thumbnail.image.url)
         return None
     item_image.allow_tags = True
+    
+    def query_events(self, obj):
+        """
+        Generates a list of :class:`QueryEvent` instances associated with this
+        :class:`.Item`\, with links to their respective admin change pages.
+        """
+
+        pattern = '<li><a href="{0}">{1}</a></li>'
+            
+        repr = '\n'.join([ pattern.format(get_admin_url(e), e) 
+                        for e in obj.events.all() ])
+        return repr
+    query_events.allow_tags = True
     
 class ContextAdmin(admin.ModelAdmin):
     list_display = ('status', 'url')
