@@ -1,14 +1,27 @@
 from django.contrib import admin
-from django.contrib.contenttypes.models import ContentType
 
 from models import *
+from util import *
 from managers import spawnSearch
-from django.core import urlresolvers
+    
+### Actions ###
+def dispatch(modeladmin, request, queryset):
+    """
+    Dispatches a :class:`.QueryEvent` for searching and thumbnail retrieval.
+    
+    Used as an action in the :class:`.QueryEventAdmin`\.
+    """
 
-def get_admin_url(obj):
-    content_type = ContentType.objects.get_for_model(obj.__class__)
-    url = urlresolvers.reverse('admin:%s_%s_change' % (content_type.app_label, content_type.model), args=(obj.id,))
-    return url
+    for obj in queryset:
+        task_id = spawnSearch(obj)
+        task = GroupTask(task_id=task_id)
+        task.save()
+        obj.search_task = task
+        obj.dispatched = True
+        obj.save()
+dispatch.short_description = 'Dispatch selected search events'    
+
+### Inlines ###
 
 class QueryEventInline(admin.TabularInline):
     model = QueryEvent
@@ -74,18 +87,6 @@ class QueryStringAdmin(admin.ModelAdmin):
         if obj:
             return super(QueryStringAdmin, self).get_inline_instances(request, obj)
         return []
-
-def dispatch(modeladmin, request, queryset):
-    for obj in queryset:
-        task_id = spawnSearch(obj)
-        task = GroupTask(task_id=task_id)
-        task.save()
-        print 'asdf', obj, task, task.state()
-        obj.search_task = task
-        obj.dispatched = True
-        obj.save()
-
-dispatch.short_description = 'Dispatch selected search events'
 
 class QueryEventAdmin(admin.ModelAdmin):
     list_display = ('id', 'querystring', 'datetime', 'range', 
@@ -169,11 +170,46 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ['title',]
     
     def thumb_image(self, obj):
+        """
+        Generates a thumbnail image element, for list display.
+        """
+        
         return self.item_image(obj, list=True)
     thumb_image.allow_tags = True
     
+    def resource(self, obj):
+        """
+        Generates a link to the original image URL, opening in a new tab.
+        """
+
+        pattern = '<a href="{0}" target="_blank">{0}</a>'
+        return pattern.format(obj.url)
+    resource.allow_tags = True
+    
+    def contexts(self, obj):
+        """
+        Generates a list of associated :class:`.Context` instances, with links
+        to their respective admin change pages.
+        """
+
+        pattern = '<li><a href="{0}">{1}</a></li>'
+        repr = '\n'.join([ pattern.format(get_admin_url(c),c.url) 
+                            for c in obj.context.all() ])
+        return repr
+    contexts.allow_tags = True
+    
     def item_image(self, obj, list=False):
-        if obj.thumbnail is not None:
+        """
+        Generates a thumbnail image element, with a link to the fullsize
+        :class:`.Image`\.
+        """
+
+        try:    # If something went wrong when downloading a thumbnail, 
+                #  this will raise a ValueError.
+            obj.thumbnail.image.url
+        except ValueError:
+            return None
+        if obj.thumbnail is not None and obj.thumbnail.image is not None:
             pattern = '<a href="{0}"><img src="{1}"/></a>'
             if list:
                 fullsize_url = get_admin_url(obj)
@@ -246,18 +282,27 @@ class ImageAdmin(admin.ModelAdmin):
     status.boolean = True
     
     def fullsize_image(self, obj):
+        """
+        Generates a fullsize image element.
+        
+        TODO: constrain display size.
+        """
+
         if obj.image is not None:
             pattern = '<img src="{0}"/>'
             return pattern.format(obj.image.url)
         return None
-    fullsize_image.allow_tags = True
+    fullsize_image.allow_tags = True      
     
-# Register your models here.
+### Registration ###
+
 admin.site.register(QueryEvent, QueryEventAdmin)
 admin.site.register(QueryString, QueryStringAdmin)
 
 admin.site.register(Item, ItemAdmin)
 admin.site.register(Image, ImageAdmin)
 
+#admin.site.register(QueryResult)
 
 admin.site.register(Engine)
+admin.site.register(Context, ContextAdmin)
