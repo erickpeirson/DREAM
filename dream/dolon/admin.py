@@ -88,13 +88,58 @@ def dispatch(modeladmin, request, queryset):
 dispatch.short_description = 'Dispatch selected search events'
 
 class QueryEventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'querystring', 'datetime', 'rangeStart', 'rangeEnd', 
-                    'items', 'dispatched', 'search_status', 'thumbnail_status')
+    list_display = ('id', 'querystring', 'datetime', 'range', 
+                    'dispatched', 'search_status', 'thumbnail_status')
     list_display_links = ('querystring',)
     actions = [dispatch]
-    exclude = ['search_task', 'thumbnail_tasks']
-    readonly_fields = ('items',)
+    exclude = ['search_task', 'thumbnail_tasks', 'queryresults']
     
+    def change_view(self, request, obj, **kwargs):
+        """
+        Exclude rangeStart and rangeEnd in the change view.
+        """
+        
+        self.exclude += ['rangeStart', 'rangeEnd']
+        return super(QueryEventAdmin, self).change_view(request, obj, **kwargs)
+    
+    def result_sets(self, obj):
+        """
+        Generates a list of :class:`.QueryResult` instances associated with this
+        :class:`.QueryEvent`\, with links to their respective admin change
+        pages.
+        """
+
+        pattern = '<a href="{0}">{1}, s:{2}, e:{3}</a>'
+        R = [ pattern.format(get_admin_url(r), obj.querystring.querystring, 
+                 r.rangeStart, r.rangeEnd) for r in obj.queryresults.all() ]
+
+        return '\n'.join(R)
+    result_sets.allow_tags = True
+    
+    def results(self, obj):
+        """
+        Yields the number of :class:`.Item` associated with this 
+        :class:`.QueryEvent`\, with a link to the filtered admin list view for
+        :class:`.Item`\.
+        """
+            
+        items = Item.objects.filter(events__id=obj.id)
+        if len(items) > 0:
+            pattern = '<a href="{0}?events__id__exact={1}">{2} items</a>'
+            baseurl = '/'.join(get_admin_url(items[0]).split('/')[0:-2])
+            
+            return pattern.format(baseurl, obj.id, len(items))
+        return None
+    results.allow_tags = True
+    
+    def range(self, obj):
+        """
+        Prettier representation of the start and end indices.
+        """
+    
+        pattern = '{0}-{1}'
+        return pattern.format(obj.rangeStart, obj.rangeEnd)
+    range.allow_tags = True
     
     def get_readonly_fields(self, request, obj=None):
         """
@@ -102,7 +147,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
 
         if obj:
-            return ('querystring', 'rangeStart', 'rangeEnd', 'engine', 'dispatched', 'queryresults', 'search_status', 'thumbnail_status') + self.readonly_fields
+            return ('querystring', 'datetime', 'engine', 'range', 'dispatched', 'results', 'search_status', 'thumbnail_status') + self.readonly_fields
         return self.readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
