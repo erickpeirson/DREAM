@@ -93,15 +93,19 @@ class QueryEventAdmin(admin.ModelAdmin):
                     'dispatched', 'search_status', 'thumbnail_status')
     list_display_links = ('querystring',)
     actions = [dispatch]
-    exclude = ['search_task', 'thumbnail_tasks', 'queryresults']
+    exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults' ]
     
-    def change_view(self, request, obj, **kwargs):
-        """
-        Exclude rangeStart and rangeEnd in the change view.
-        """
-        
-        self.exclude += ['rangeStart', 'rangeEnd']
-        return super(QueryEventAdmin, self).change_view(request, obj, **kwargs)
+#    def change_view(self, request, obj, **kwargs):
+#        """
+#        Exclude rangeStart and rangeEnd in the change view.
+#        """
+#        if obj:
+#        
+#            self.exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults', 
+#                             'rangeStart', 'rangeEnd' ]
+#        else:
+#            self.exclude = 
+#        return super(QueryEventAdmin, self).change_view(request, obj, **kwargs)
     
     def result_sets(self, obj):
         """
