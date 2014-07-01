@@ -112,7 +112,8 @@ class QueryEvent(models.Model):
     def __unicode__(self):
         pattern = '"{0}", items {1}-{2}, dispatched {3}'
         date = pretty_date(self.datetime)
-        repr = pattern.format(self.querystring, self.rangeStart, self.rangeEnd, date)
+        repr = pattern.format(  self.querystring, self.rangeStart, 
+                                self.rangeEnd, date )
         return unicode(repr)
 
     def items(self):
@@ -142,8 +143,9 @@ class QueryResult(models.Model):
     rangeEnd = models.IntegerField()
     result = models.TextField()     # Holds full JSON response.
 
-    resultitems = models.ManyToManyField('QueryResultItem', 
-                                         related_name='queryresult_instance')
+    resultitems = models.ManyToManyField(
+                    'QueryResultItem', 
+                     related_name='queryresult_instance'    )
 
 class QueryResultItem(models.Model):
     url = models.URLField(max_length=2000)
@@ -159,7 +161,9 @@ class QueryResultItem(models.Model):
     height = models.IntegerField(default=0)
     width = models.IntegerField(default=0)
     
-    item = models.ForeignKey('Item', related_name='query_result_item', null=True, blank=True)
+    item = models.ForeignKey(
+                    'Item', null=True, blank=True, 
+                    related_name='query_result_item'    )
     
     def save(self, *args, **kwargs):
         """
@@ -227,6 +231,8 @@ class Item(models.Model):
                                                           
     events = models.ManyToManyField('QueryEvent', related_name='items', 
                                                           blank=True, null=True)
+    
+    creationDate = models.DateTimeField(blank=True, null=True)
 
 
 class GroupTask(models.Model):
@@ -293,6 +299,8 @@ class Context(models.Model):
     url = models.URLField(max_length=2000, unique=True)
     title = models.CharField(max_length=400, null=True, blank=True)
     content = models.TextField(null=True, blank=True)
+    
+    publicationDate = models.DateTimeField(blank=True, null=True)
     
 #    datetime = models.DateTimeField(null=True, blank=True)
 
