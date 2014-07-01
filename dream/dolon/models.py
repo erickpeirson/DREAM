@@ -93,12 +93,20 @@ class QueryEvent(models.Model):
     
     # Tasks and dispathing.
     dispatched = models.BooleanField(default=False)
-    search_task = models.ForeignKey('GroupTask', null=True, blank=True, related_name='searchtaskevent')
-    thumbnail_tasks = models.ManyToManyField('GroupTask', related_name='thumbtaskevent')
+    
+    search_task = models.ForeignKey(    
+                        'GroupTask', null=True, blank=True, 
+                        related_name='searchtaskevent'  )
+    thumbnail_tasks = models.ManyToManyField(   
+                        'GroupTask', 
+                        related_name='thumbtaskevent'  )
 
 
 #    user = models.ForeignKey(User)
-    queryresults = models.ManyToManyField('QueryResult', related_name='event_instance', blank=True, null=True)
+    queryresults = models.ManyToManyField(
+                        'QueryResult', blank=True, null=True,
+                        related_name='event_instance'   )
+                        
     engine = models.ForeignKey(Engine)
 
     def __unicode__(self):
@@ -222,12 +230,13 @@ class Item(models.Model):
 
 
 class GroupTask(models.Model):
-    task_id = models.CharField(max_length=100)
+    task_id = models.CharField(max_length=1000)
     subtask_ids = ListField()
     dispatched = models.DateTimeField(auto_now_add=True)
     
     def state(self):
-        result = TaskSetResult(self.task_id, [ AsyncResult(s) for s in self.subtask_ids ])
+        result = TaskSetResult(
+                    self.task_id, [ AsyncResult(s) for s in self.subtask_ids ] )
         if result.successful():
             return 'DONE'
         elif result.failed():

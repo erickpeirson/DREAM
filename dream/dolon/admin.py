@@ -13,9 +13,11 @@ def dispatch(modeladmin, request, queryset):
     """
 
     for obj in queryset:
-        task_id = spawnSearch(obj)
-        task = GroupTask(task_id=task_id)
+        task_id, subtask_ids = spawnSearch(obj)
+        task = GroupTask(   task_id=task_id,
+                            subtask_ids=subtask_ids )
         task.save()
+        print task.task_id, task.subtask_ids
         obj.search_task = task
         obj.dispatched = True
         obj.save()
@@ -152,7 +154,10 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
 
         if obj:
-            return ('querystring', 'datetime', 'engine', 'range', 'dispatched', 'results', 'search_status', 'thumbnail_status') + self.readonly_fields
+            read_only = (   'querystring', 'datetime', 'engine', 'range', 
+                            'dispatched', 'results', 'search_status', 
+                            'thumbnail_status'  ) + self.readonly_fields
+            return read_only
         return self.readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
@@ -166,8 +171,9 @@ class QueryEventAdmin(admin.ModelAdmin):
         return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
 
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('thumb_image','title', 'height','width', 'status', )#,'result',)
-    readonly_fields = ('item_image', 'title', 'resource', 'status', 'size', 'height', 'width', 'mime', 'query_events', 'contexts')#'list_events',)
+    list_display = ('thumb_image','title', 'height','width', 'status', )
+    readonly_fields = ( 'item_image', 'title', 'resource', 'status', 'size', 
+                        'height', 'width', 'mime', 'query_events', 'contexts')
     exclude = ('image', 'context', 'thumbnail', 'events', 'url')
     list_filter = ('status','events')
     list_select_related = True
