@@ -17,11 +17,40 @@ def dispatch(modeladmin, request, queryset):
         task = GroupTask(   task_id=task_id,
                             subtask_ids=subtask_ids )
         task.save()
-        print task.task_id, task.subtask_ids
         obj.search_task = task
         obj.dispatched = True
         obj.save()
 dispatch.short_description = 'Dispatch selected search events'    
+
+def approve(modeladmin, request, queryset):
+    """
+    Approves all selected :class:`.Items`\.
+    """
+    
+    for obj in queryset:
+        obj.status = 'AP'
+        obj.save()
+approve.short_description = 'Approve selected items'
+        
+def reject(modeladmin, request, queryset):
+    """
+    Rejects all selected :class:`.Items`\.
+    """
+    
+    for obj in queryset:
+        obj.status = 'RJ'
+        obj.save()        
+reject.short_description = 'Reject selected items'        
+
+def pend(modeladmin, request, queryset):
+    """
+    Rejects all selected :class:`.Items`\.
+    """
+    
+    for obj in queryset:
+        obj.status = 'PG'
+        obj.save()        
+pend.short_description = 'Set selected items to Pending'  
 
 ### Inlines ###
 
@@ -182,6 +211,8 @@ class ItemAdmin(admin.ModelAdmin):
     list_filter = ('status','events','tags')
     list_select_related = True
     search_fields = ['title',]
+    
+    actions = [approve, reject, pend]
     
     def thumb_image(self, obj):
         """
