@@ -173,7 +173,8 @@ class QueryEventAdmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
     list_display = ('thumb_image','title', 'height','width', 'status', )
     readonly_fields = ( 'item_image', 'title', 'resource', 'status', 'size', 
-                        'height', 'width', 'mime', 'query_events', 'contexts')
+                        'height', 'width', 'mime', 'query_events', 'contexts',
+                        'creationDate')
     exclude = ('image', 'context', 'thumbnail', 'events', 'url')
     list_filter = ('status','events')
     list_select_related = True
@@ -248,7 +249,7 @@ class ItemAdmin(admin.ModelAdmin):
 class ContextAdmin(admin.ModelAdmin):
     list_display = ('status', 'url')
     list_display_links = ('status', 'url')
-    readonly_fields = ('resource', 'title', 'content')
+    readonly_fields = ('resource', 'title', 'content', 'publicationDate')
     exclude = ('url',)
     
     def resource(self, obj):
