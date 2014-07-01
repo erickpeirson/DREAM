@@ -317,3 +317,8 @@ admin.site.register(Image, ImageAdmin)
 
 admin.site.register(Engine)
 admin.site.register(Context, ContextAdmin)
+
+admin.site.register(Tag)
+
+admin.site.register(Thumbnail)
+admin.site.register(GroupTask)
