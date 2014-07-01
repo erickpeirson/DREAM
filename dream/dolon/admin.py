@@ -1,5 +1,5 @@
 from django.contrib import admin
-
+import autocomplete_light
 from models import *
 from util import *
 from managers import spawnSearch
@@ -61,6 +61,8 @@ class QueryEventInline(admin.TabularInline):
             return pattern.format(baseurl, obj.id, len(items))
         return None
     results.allow_tags = True
+    
+
     
 ### ModelAdmins ###
 
@@ -171,12 +173,13 @@ class QueryEventAdmin(admin.ModelAdmin):
         return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
 
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('thumb_image','title', 'height','width', 'status', )
+    form = autocomplete_light.modelform_factory(Item)
+    list_display = ('thumb_image','title', 'height','width', 'status',)
     readonly_fields = ( 'item_image', 'title', 'resource', 'status', 'size', 
                         'height', 'width', 'mime', 'query_events', 'contexts',
                         'creationDate')
     exclude = ('image', 'context', 'thumbnail', 'events', 'url')
-    list_filter = ('status','events')
+    list_filter = ('status','events','tags')
     list_select_related = True
     search_fields = ['title',]
     
@@ -247,6 +250,7 @@ class ItemAdmin(admin.ModelAdmin):
     query_events.allow_tags = True
     
 class ContextAdmin(admin.ModelAdmin):
+    form = autocomplete_light.modelform_factory(Context)
     list_display = ('status', 'url')
     list_display_links = ('status', 'url')
     readonly_fields = ('resource', 'title', 'content', 'publicationDate')
@@ -268,7 +272,37 @@ class ContextAdmin(admin.ModelAdmin):
             return False
         return True
     status.boolean = True
+
+class TagAdmin(admin.ModelAdmin):
+#    readonly_fields = ('text', 'items', 'contexts')
+    list_display = ('text', 'items', 'contexts')
+    search_fields = ['text',]
+
     
+    def items(self, obj):
+        pattern = '<li><a href="{0}">{1}</a></li>'
+        html = '\n'.join( [ pattern.format(get_admin_url(i),unidecode(i.title)) for i in obj.items() ] )
+        return html
+    items.allow_tags = True
+    
+    def contexts(self, obj):
+        pattern = '<li><a href="{0}">{1}</a></li>'
+        for i in obj.contexts():
+            print i
+        html = '\n'.join( [ pattern.format(get_admin_url(i),i) for i in obj.contexts() ] )
+        return html
+    contexts.allow_tags = True
+    
+        
+    def get_readonly_fields(self, request, obj=None):
+        """
+        """
+
+        if obj:
+            read_only = ('text', 'items', 'contexts') + self.readonly_fields
+            return read_only
+        return self.readonly_fields        
+
 class ImageAdmin(admin.ModelAdmin):
     list_display = ('status', 'url')
     list_display_links = ('status', 'url')    
@@ -318,7 +352,7 @@ admin.site.register(Image, ImageAdmin)
 admin.site.register(Engine)
 admin.site.register(Context, ContextAdmin)
 
-admin.site.register(Tag)
+admin.site.register(Tag, TagAdmin)
 
 admin.site.register(Thumbnail)
 admin.site.register(GroupTask)

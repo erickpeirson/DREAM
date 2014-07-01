@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
 from django.db import models
+from unidecode import unidecode
 
 import ast
 
@@ -35,7 +36,7 @@ class ListField(models.TextField):
         if value is None:
             return value
 
-        return unicode(value)
+        return unicode(unidecode(value))
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
@@ -51,10 +52,10 @@ class QueryString(models.Model):
                                                     help_text=qs_helptext)
 
     def __unicode__(self):
-        return unicode(self.querystring)
+        return unicode(unidecode(self.querystring))
 
     def _Nevents(self):
-        return unicode(len(self.queryevents.all()) )
+        return unicode(unidecode(len(self.queryevents.all()) ))
     
     def latest(self):
         E = self.queryevents.latest('datetime')
@@ -74,7 +75,7 @@ class Engine(models.Model):
         verbose_name = 'Custom search engine'
 
     def __unicode__(self):
-        return unicode(self.manager)
+        return unicode(unidecode(self.manager))
 
 
 class QueryEvent(models.Model):
@@ -114,7 +115,7 @@ class QueryEvent(models.Model):
         date = pretty_date(self.datetime)
         repr = pattern.format(  self.querystring, self.rangeStart, 
                                 self.rangeEnd, date )
-        return unicode(repr)
+        return unicode(unidecode(repr))
 
     def items(self):
         return unicode(len(QueryItem.objects.filter(result__event__id=self.id)))
@@ -291,7 +292,7 @@ class Image(models.Model):
     width = models.IntegerField(default=0)
     
     def __unicode__(self):
-        return unicode(self.url)
+        return unicode(unidecode(self.url))
 
 class Tag(models.Model):
     """
@@ -301,7 +302,15 @@ class Tag(models.Model):
     text = models.CharField(max_length=200, unique=True)
     
     def __unicode__(self):
-        return unicode(self.text)
+        return unicode(unidecode(self.text))
+        
+    def items(self):
+        return self.tagged_items.all()
+    
+    def contexts(self):
+        return self.tagged_contexts.all()
+    
+
     
 
 class Context(models.Model):
@@ -319,4 +328,6 @@ class Context(models.Model):
                                     related_name='tagged_contexts' )
 
     def __unicode__(self):
-        return unicode(self.url)
+        if self.title is not None:
+            return unicode(unidecode(self.title))
+        return unicode(unidecode(self.url))
