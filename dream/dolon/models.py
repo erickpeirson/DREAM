@@ -233,6 +233,9 @@ class Item(models.Model):
                                                           blank=True, null=True)
     
     creationDate = models.DateTimeField(blank=True, null=True)
+    
+    tags = models.ManyToManyField(  'Tag', blank=True, null=True,
+                                    related_name='tagged_items' )
 
 
 class GroupTask(models.Model):
@@ -290,6 +293,16 @@ class Image(models.Model):
     def __unicode__(self):
         return unicode(self.url)
 
+class Tag(models.Model):
+    """
+    A user-added descriptor for an :class:`.Item`\.
+    """
+    
+    text = models.CharField(max_length=200, unique=True)
+    
+    def __unicode__(self):
+        return unicode(self.text)
+    
 
 class Context(models.Model):
     """
@@ -302,7 +315,8 @@ class Context(models.Model):
     
     publicationDate = models.DateTimeField(blank=True, null=True)
     
-#    datetime = models.DateTimeField(null=True, blank=True)
+    tags = models.ManyToManyField(  'Tag', blank=True, null=True,
+                                    related_name='tagged_contexts' )
 
     def __unicode__(self):
         return unicode(self.url)
