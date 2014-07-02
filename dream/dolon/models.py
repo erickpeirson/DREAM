@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-
+#from audit_log.models.fields import CreatingUserField, LastUserField
 from django.db import models
 from unidecode import unidecode
 
@@ -47,7 +47,7 @@ class QueryString(models.Model):
 
     qs_helptext = 'Enter some search terms to use in your queries.'
     querystring = models.CharField(max_length=1000, verbose_name='Search terms',
-                                                    help_text=qs_helptext)
+                                    help_text=qs_helptext, unique=True)
 
     def __unicode__(self):
         return unicode(unidecode(self.querystring))
@@ -100,8 +100,8 @@ class QueryEvent(models.Model):
                         'GroupTask', 
                         related_name='thumbtaskevent'  )
 
+    creator = models.ForeignKey(User, related_name='created_events', blank=True)
 
-#    user = models.ForeignKey(User)
     queryresults = models.ManyToManyField(
                         'QueryResult', blank=True, null=True,
                         related_name='event_instance'   )

@@ -1,9 +1,21 @@
+from django import forms
 from django.contrib import admin
 import autocomplete_light
 from models import *
 from util import *
 from managers import spawnSearch
-    
+
+### Forms ###
+
+class QueryEventForm(forms.ModelForm):
+    class Meta:
+        model = QueryEvent
+        
+    def clean_creator(self):
+        if not self.cleaned_data['creator']:
+            return User()
+        return self.cleaned_data['creator']
+
 ### Actions ###
 def dispatch(modeladmin, request, queryset):
     """
@@ -122,23 +134,12 @@ class QueryStringAdmin(admin.ModelAdmin):
         return []
 
 class QueryEventAdmin(admin.ModelAdmin):
+    form = QueryEventForm
+    
     list_display = ('id', 'querystring', 'datetime', 'range', 
                     'dispatched', 'search_status', 'thumbnail_status')
     list_display_links = ('querystring',)
     actions = [dispatch]
-    exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults' ]
-    
-#    def change_view(self, request, obj, **kwargs):
-#        """
-#        Exclude rangeStart and rangeEnd in the change view.
-#        """
-#        if obj:
-#        
-#            self.exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults', 
-#                             'rangeStart', 'rangeEnd' ]
-#        else:
-#            self.exclude = 
-#        return super(QueryEventAdmin, self).change_view(request, obj, **kwargs)
     
     def result_sets(self, obj):
         """
@@ -187,7 +188,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         if obj:
             read_only = (   'querystring', 'datetime', 'engine', 'range', 
                             'dispatched', 'results', 'search_status', 
-                            'thumbnail_status'  ) + self.readonly_fields
+                            'thumbnail_status', 'creator'  ) + self.readonly_fields
             return read_only
         return self.readonly_fields
 
@@ -196,10 +197,18 @@ class QueryEventAdmin(admin.ModelAdmin):
         Should not display :class:`.QueryResult` when adding.
         """
         
+        exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults' ]
+        print obj, self.exclude
         if obj is None:
-            self.exclude += ['queryresults', 'dispatched']
-
+            self.exclude = exclude + ['dispatched', 'creator']
+        else:
+            self.exclude = exclude + ['rangeStart', 'rangeEnd']
         return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.creator.id:
+            obj.creator = request.user
+        obj.save()
 
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
