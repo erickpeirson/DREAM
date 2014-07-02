@@ -368,7 +368,10 @@ class ImageAdmin(admin.ModelAdmin):
             pattern = '<img src="{0}"/>'
             return pattern.format(obj.image.url)
         return None
-    fullsize_image.allow_tags = True      
+    fullsize_image.allow_tags = True   
+    
+class GroupTaskAdmin(admin.ModelAdmin):
+    list_display = ('task_id', 'state')
     
 ### Registration ###
 
@@ -386,4 +389,4 @@ admin.site.register(Context, ContextAdmin)
 admin.site.register(Tag, TagAdmin)
 
 admin.site.register(Thumbnail)
-admin.site.register(GroupTask)
+admin.site.register(GroupTask, GroupTaskAdmin)

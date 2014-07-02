@@ -19,7 +19,7 @@ from dolon.models import *
 
 from celery import shared_task, group
 
-@shared_task
+@shared_task(rate_limit="25/s", ignore_result=False)
 def search(qstring, start, end, manager_name, params, **kwargs):
     """
     Perform a search for ``string`` using a provided ``manager`` instance.
@@ -47,6 +47,7 @@ def search(qstring, start, end, manager_name, params, **kwargs):
     if not kwargs.get('testing', False):
         manager = getattr(M, manager_name)()
         result, response = manager.imageSearch(params, qstring, start=start)
+        
     else:   # When testing we don't want to make remote calls.
         import cPickle as pickle
         with open('./dolon/testdata/searchresult.pickle', 'r') as f:
@@ -156,7 +157,7 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
 
     return task    
 
-@shared_task
+@shared_task(rate_limit='2/s')
 def getFile(url):
     """
     Retrieve a resource from `URL`.

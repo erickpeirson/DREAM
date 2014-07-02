@@ -29,14 +29,12 @@ class ListField(models.TextField):
 
         if isinstance(value, list):
             return value
-
         return ast.literal_eval(value)
 
     def get_prep_value(self, value):
         if value is None:
             return value
-
-        return unicode(unidecode(value))
+        return unicode(value)
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
@@ -55,7 +53,7 @@ class QueryString(models.Model):
         return unicode(unidecode(self.querystring))
 
     def _Nevents(self):
-        return unicode(unidecode(len(self.queryevents.all()) ))
+        return len(self.queryevents.all()) 
     
     def latest(self):
         E = self.queryevents.latest('datetime')
@@ -245,8 +243,10 @@ class GroupTask(models.Model):
     dispatched = models.DateTimeField(auto_now_add=True)
     
     def state(self):
+        subtasks = [ AsyncResult(s) for s in self.subtask_ids ]
+        print self.task_id, [ (s,s.state) for s in subtasks]
         result = TaskSetResult(
-                    self.task_id, [ AsyncResult(s) for s in self.subtask_ids ] )
+                    self.task_id, subtasks )
         if result.successful():
             return 'DONE'
         elif result.failed():
@@ -309,8 +309,6 @@ class Tag(models.Model):
     
     def contexts(self):
         return self.tagged_contexts.all()
-    
-
     
 
 class Context(models.Model):
