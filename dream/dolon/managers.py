@@ -61,10 +61,11 @@ def spawnSearch(queryevent, **kwargs):
     # QueryEvent.id gets passed around so that the various tasks can attach
     #  the resulting objects to it.
     logger.debug('spawnSearch: creating jobs')
-    job = group(  ( search.s(qstring, start, start+9, queryevent.engine.manager, params, **kwargs) 
+
+    job = group(  ( search.s(qstring, s, min(s+9, end), queryevent.engine.manager, params, **kwargs) 
                     | processSearch.s(queryevent.id, **kwargs) 
                     | spawnThumbnails.s(queryevent.id, **kwargs)
-                    ) for start in xrange(start, end, 10) )
+                    ) for s in xrange(start, end+1, 10) )
                     
 
     logger.debug('spawnSearch: dispatching jobs')
