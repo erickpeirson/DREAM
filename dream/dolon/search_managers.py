@@ -25,7 +25,7 @@ class GoogleImageSearchManager(BaseSearchManager):
     endpoint = "https://www.googleapis.com/customsearch/v1?"
     name = 'Google'
 
-    def imageSearch(self, params, query, start=1):
+    def imageSearch(self, params, query, start=1, end=10):
         """
         Performs an image search for ``query`` via the Google Custom Search API.
 
@@ -48,6 +48,7 @@ class GoogleImageSearchManager(BaseSearchManager):
         
         params += [ "q={0}".format(urllib2.quote(query)),
                     "start={0}".format(start),
+                    "num={0}".format((end - start) + 1),
                     "searchType=image"  ]
 
         request = self.endpoint + "&".join(params)

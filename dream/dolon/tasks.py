@@ -46,7 +46,8 @@ def search(qstring, start, end, manager_name, params, **kwargs):
     
     if not kwargs.get('testing', False):
         manager = getattr(M, manager_name)()
-        result, response = manager.imageSearch(params, qstring, start=start)
+        result, response = manager.imageSearch( params, qstring, 
+                                                start=start, end=end    )
         
     else:   # When testing we don't want to make remote calls.
         import cPickle as pickle
