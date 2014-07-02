@@ -186,9 +186,10 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
 
         if obj:
-            read_only = (   'querystring', 'datetime', 'engine', 'range', 
-                            'dispatched', 'results', 'search_status', 
-                            'thumbnail_status', 'creator'  ) + self.readonly_fields
+            read_only = (   
+                'querystring', 'datetime', 'engine', 'range', 'dispatched', 
+                'results', 'search_status', 'thumbnail_status', 'creator'
+                ) + self.readonly_fields
             return read_only
         return self.readonly_fields
 
