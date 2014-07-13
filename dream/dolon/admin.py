@@ -323,7 +323,24 @@ class ItemAdmin(admin.ModelAdmin):
                 obj.merged_with.tags.add(Tag.objects.get(pk=int(t)))
             
             obj.merged_with.save()
+            
+    def queryset(self, request):
+        """
+        Filter the queryset to exclude hidden items.
+        """
 
+        qs = super(ItemAdmin, self).queryset(request)
+        if request.path.split('/')[-2] == 'item':   # Only filter changelist.
+            return qs.exclude(hide=True)
+        return qs
+        
+    def get_changelist_form(self, request, **kwargs):
+        print 'asdf'
+        fs = super(ItemAdmin, self).get_changelist_form(request, **kwargs)
+        print fs
+        return fs
+        
+    ## Custom fields...
     def parent(self, obj):
         """
         Display the item into which this item has been merged.
@@ -350,16 +367,6 @@ class ItemAdmin(admin.ModelAdmin):
         html += '</ul>'
         return html
     children.allow_tags = True
-    
-    def queryset(self, request):
-        """
-        Filter the queryset to exclude hidden items.
-        """
-
-        qs = super(ItemAdmin, self).queryset(request)
-        if request.path.split('/')[-2] == 'item':   # Only filter changelist.
-            return qs.exclude(hide=True)
-        return qs
     
     def thumb_image(self, obj):
         """
