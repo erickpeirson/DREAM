@@ -227,9 +227,9 @@ def storeThumbnail(result, thumbnailid):
     return thumbnail.id
     
 @shared_task
-def storeImage(result, itemid):
+def storeImage(result, imageid):
     """
-    Create a new :class:`.Image` and attach it to an :class:`.Item`\.
+    Updates an :class:`.Image`\.
     
     Parameters
     ----------
@@ -246,23 +246,19 @@ def storeImage(result, itemid):
     
     url, filename, fpath, mime, size = result
     
-    image = Image(  url = url,
-                    mime = mime,
-                    size = size )
+    image = Image.objects.get(pk=imageid)
+    image.size = size
+    image.mime = mime
 
     with open(fpath, 'rb') as f:
         file = File(f)
         image.image.save(filename, file, True)
         image.save()
-
-    item = Item.objects.get(id=itemid)
-    item.image = image
-    item.save()
         
     return image.id
     
-@shared_task
-def getStoreContext(url, itemid):
+@shared_task(rate_limit='2/s')
+def getStoreContext(url, contextid):
     """
     Retrieve the HTML contents of a resource and attach it to an :class:`.Item`
     
@@ -279,17 +275,12 @@ def getStoreContext(url, itemid):
 
     response = urllib2.urlopen(url).read()
     soup = BeautifulSoup(response)
-#    text = p.html
     title = soup.title.getText()
 
-    context = Context(  url = url,
-                        title = unidecode(title),
-                        content = unidecode(response)  )
+    context = Context.objects.get(pk=contextid)
+    context.content = unidecode(response)
+    context.title = unidecode(title)
     context.save()
-    
-    item = Item.objects.get(id=itemid)
-    item.context = context
-    item.save()    
     
     return context.id
 
