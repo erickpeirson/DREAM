@@ -290,6 +290,25 @@ class ItemAdmin(admin.ModelAdmin):
     
     actions = [approve, reject, pend, merge]
     
+    def save_model(self, request, obj, form, change):
+        """
+        On save, should also updated the target of ``merged_with``.
+        
+        Updates:
+        * Contexts
+        * Tags
+        """
+        obj.save()
+        if obj.merged_with is not None:
+            'ok'
+            for c in request.POST.getlist('context'):
+                obj.merged_with.context.add(Context.objects.get(pk=int(c)))
+        
+            for t in request.POST.getlist('tags'):
+                obj.merged_with.tags.add(Tag.objects.get(pk=int(t)))
+            
+            obj.merged_with.save()
+
     def parent(self, obj):
         """
         Display the item into which this item has been merged.
