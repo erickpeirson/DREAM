@@ -6,7 +6,7 @@ import os
 from unidecode import unidecode
 
 from celery import group, chain
-from tasks import search, processSearch, spawnThumbnails
+from tasks import *
 from search_managers import *
 
 import warnings
@@ -17,6 +17,28 @@ logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
 
 from BeautifulSoup import BeautifulSoup
+
+def spawnRetrieveImages(queryset):
+    """
+    Generates a set of tasks to retrieve images.
+    """
+    
+    job = group( ( getFile.s(i.url) | storeImage.s(i.id) ) for i in queryset )
+
+    result = job.apply_async()
+
+    return result.id, [ r.id for r in result.results ]    
+    
+def spawnRetrieveContexts(queryset):
+    """
+    Generates a group of tasks to retrieve contexts.
+    """
+    
+    job = group( ( getStoreContext.s(i.url, i.id) ) for i in queryset )
+
+    result = job.apply_async()
+
+    return result.id, [ r.id for r in result.results ]       
 
 def spawnSearch(queryevent, **kwargs):
     """

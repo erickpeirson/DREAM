@@ -3,7 +3,7 @@ from django.contrib import admin
 import autocomplete_light
 from models import *
 from util import *
-from managers import spawnSearch
+from managers import *
 import uuid
 
 ### Forms ###
@@ -63,7 +63,24 @@ def pend(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'PG'
         obj.save()        
-pend.short_description = 'Set selected items to Pending'  
+pend.short_description = 'Set selected items to Pending' 
+
+def retrieve_image(modeladmin, request, queryset):
+    """
+    Retrieves fullsize images for all selected :class:`.Image`\s.
+    """
+    
+    result = spawnRetrieveImages(queryset)
+retrieve_image.short_description = 'Retrieve content for selected images'
+    
+def retrieve_context(modeladmin, request, queryset):
+    """
+    Retrieves contexts for all selected :class:`.Context`\s.
+    """
+    
+    result = spawnRetrieveContexts(queryset)
+retrieve_context.short_description = 'Retrieve content for selected contexts'    
+    
 
 def merge(modeladmin, request, queryset):
     """
@@ -441,6 +458,16 @@ class ContextAdmin(admin.ModelAdmin):
     list_display_links = ('status', 'url')
     readonly_fields = ('resource', 'title', 'content', 'publicationDate')
     exclude = ('url',)
+    actions = (retrieve_context,)
+    
+    def queryset(self, request):
+        """
+        Only return Contexts for approved items in changelist.
+        """
+        
+        if request.path.split('/')[-2] == 'context':   # Only filter changelist.
+            return Context.objects.filter(items__status='AP')
+        return super(ContextAdmin, self).queryset(request)
     
     def resource(self, obj):
         """
@@ -494,6 +521,16 @@ class ImageAdmin(admin.ModelAdmin):
     list_display_links = ('status', 'url')    
     readonly_fields = ('fullsize_image', 'resource', 'size', 'mime', 'height', 'width')
     exclude = ('url','image')
+    actions = (retrieve_image,)
+
+    def queryset(self, request):
+        """
+        Only return Images for approved items in changelist.
+        """
+        
+        if request.path.split('/')[-2] == 'image':   # Only filter changelist.
+            return Image.objects.filter(queryItems__status='AP')
+        return super(ImageAdmin, self).queryset(request)
 
     def resource(self, obj):
         """
