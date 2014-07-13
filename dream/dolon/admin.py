@@ -275,11 +275,12 @@ class QueryEventAdmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
     list_display = ('thumb_image','title', 'height','width', 'status',)
-    readonly_fields = ( 'item_image', 'title', 'resource', 'status', 'size', 
+    readonly_fields = ( 'item_image', 'resource', 'status', 'size', 
                         'height', 'width', 'mime', 'query_events', 'contexts',
                         'creationDate')
     exclude = ('image', 'context', 'thumbnail', 'events', 'url')
     list_filter = ('status','events','tags')
+    list_editable = ['title',]
     list_select_related = True
     search_fields = ['title',]
     
