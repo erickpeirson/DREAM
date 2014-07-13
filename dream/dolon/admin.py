@@ -277,8 +277,8 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ('thumb_image','title', 'height','width', 'status',)
     readonly_fields = ( 'item_image', 'resource', 'status', 'size', 
                         'height', 'width', 'mime', 'query_events', 'contexts',
-                        'creationDate')
-    exclude = ('image', 'context', 'thumbnail', 'events', 'url')
+                        'creationDate',  'children', 'parent', 'hide')
+    exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url')
     list_filter = ('status','events','tags')
     list_editable = ['title',]
     list_select_related = True
@@ -286,9 +286,38 @@ class ItemAdmin(admin.ModelAdmin):
     
     actions = [approve, reject, pend, merge]
     
+    def parent(self, obj):
+        """
+        Display the item into which this item has been merged.
+        """
+        
+        pattern = '<a href="{0}">{1}</a>'
+        if obj.merged_with is not None:
+            href = get_admin_url(obj.merged_with)
+            title = obj.merged_with.title
+            return pattern.format(href, title)
+        return None
+    parent.allow_tags = True
+    
+    def children(self, obj):
+        """
+        Display merged items from whence this item originated.
+        """
+        
+        pattern = '<li><a href="{0}">{1}</a></li>'
+        
+        html = '<ul>'
+        for c in obj.merged_from.all():
+            html += pattern.format(get_admin_url(c), c.title)
+        html += '</ul>'
+        return html
+    children.allow_tags = True
+    
     def queryset(self, request):
         qs = super(ItemAdmin, self).queryset(request)
-        return qs.exclude(hide=True)
+        if request.path.split('/')[-2] == 'item':   # Only filter changelist.
+            return qs.exclude(hide=True)
+        return qs
     
     def thumb_image(self, obj):
         """
@@ -314,9 +343,9 @@ class ItemAdmin(admin.ModelAdmin):
         """
 
         pattern = '<li><a href="{0}">{1}</a></li>'
-        repr = '\n'.join([ pattern.format(get_admin_url(c),c.url) 
+        repr = ''.join([ pattern.format(get_admin_url(c),c.url) 
                             for c in obj.context.all() ])
-        return repr
+        return '<ul>{0}</ul>'.format(repr)
     contexts.allow_tags = True
     
     def item_image(self, obj, list=False):
@@ -352,9 +381,9 @@ class ItemAdmin(admin.ModelAdmin):
 
         pattern = '<li><a href="{0}">{1}</a></li>'
             
-        repr = '\n'.join([ pattern.format(get_admin_url(e), e) 
+        repr = ''.join([ pattern.format(get_admin_url(e), e) 
                         for e in obj.events.all() ])
-        return repr
+        return '<ul>{0}</ul>'.format(repr)
     query_events.allow_tags = True
     
 class ContextAdmin(admin.ModelAdmin):
@@ -389,16 +418,16 @@ class TagAdmin(admin.ModelAdmin):
     
     def items(self, obj):
         pattern = '<li><a href="{0}">{1}</a></li>'
-        html = '\n'.join( [ pattern.format(get_admin_url(i),unidecode(i.title)) for i in obj.items() ] )
-        return html
+        html = ''.join( [ pattern.format(get_admin_url(i),unidecode(i.title)) for i in obj.items() ] )
+        return '<ul>{0}</ul>'.format(html)
     items.allow_tags = True
     
     def contexts(self, obj):
         pattern = '<li><a href="{0}">{1}</a></li>'
         for i in obj.contexts():
             print i
-        html = '\n'.join( [ pattern.format(get_admin_url(i),i) for i in obj.contexts() ] )
-        return html
+        html = ''.join( [ pattern.format(get_admin_url(i),i) for i in obj.contexts() ] )
+        return '<ul>{0}</ul>'.format(html)
     contexts.allow_tags = True
     
         
