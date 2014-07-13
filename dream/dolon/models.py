@@ -244,9 +244,7 @@ class GroupTask(models.Model):
     
     def state(self):
         subtasks = [ AsyncResult(s) for s in self.subtask_ids ]
-        print self.task_id, [ (s,s.state) for s in subtasks]
-        result = TaskSetResult(
-                    self.task_id, subtasks )
+        result = TaskSetResult(self.task_id, subtasks)
         if result.successful():
             return 'DONE'
         elif result.failed():

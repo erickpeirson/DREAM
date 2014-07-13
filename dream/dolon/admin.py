@@ -207,7 +207,8 @@ class QueryEventAdmin(admin.ModelAdmin):
         return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
     
     def save_model(self, request, obj, form, change):
-        if not obj.creator.id:
+        
+        if not hasattr(obj, 'creator'):
             obj.creator = request.user
         obj.save()
 
