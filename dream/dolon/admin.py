@@ -116,6 +116,10 @@ def merge(modeladmin, request, queryset):
         for c in obj.context.all():
             newItem.context.add(c)
             
+        # Pool all of the tags.
+        for t in obj.tags.all():
+            newItem.tags.add(t)
+        
         # Set merged_with on old items.
         obj.merged_with = newItem
         obj.hide = True
@@ -314,6 +318,10 @@ class ItemAdmin(admin.ModelAdmin):
     children.allow_tags = True
     
     def queryset(self, request):
+        """
+        Filter the queryset to exclude hidden items.
+        """
+
         qs = super(ItemAdmin, self).queryset(request)
         if request.path.split('/')[-2] == 'item':   # Only filter changelist.
             return qs.exclude(hide=True)
