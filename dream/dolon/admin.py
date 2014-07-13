@@ -119,6 +119,10 @@ def merge(modeladmin, request, queryset):
         # Pool all of the tags.
         for t in obj.tags.all():
             newItem.tags.add(t)
+            
+        # Link to QueryEvents
+        for e in obj.events.all():
+            newItem.events.add(e)
         
         # Set merged_with on old items.
         obj.merged_with = newItem
@@ -226,7 +230,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         :class:`.Item`\.
         """
             
-        items = Item.objects.filter(events__id=obj.id)
+        items = Item.objects.filter(events__id=obj.id).exclude(hide=True)
         if len(items) > 0:
             pattern = '<a href="{0}?events__id__exact={1}">{2} items</a>'
             baseurl = '/'.join(get_admin_url(items[0]).split('/')[0:-2])
