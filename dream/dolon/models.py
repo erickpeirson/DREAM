@@ -82,8 +82,8 @@ class QueryEvent(models.Model):
     """
     
     class Meta:
-        verbose_name = 'search'
-        verbose_name_plural = 'searches'
+        verbose_name = 'query'
+        verbose_name_plural = 'queries'
     
     querystring = models.ForeignKey('QueryString', related_name='queryevents')
     rangeStart = models.IntegerField()
@@ -246,6 +246,9 @@ class Item(models.Model):
     """
     
     hide = models.BooleanField(default=False, verbose_name='hidden')
+
+    def __unicode__(self):
+        return unicode(self.title)
 
 class GroupTask(models.Model):
     task_id = models.CharField(max_length=1000)
