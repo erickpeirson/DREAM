@@ -240,7 +240,8 @@ class Item(models.Model):
                                     related_name='tagged_items' )
                                     
     merged_with = models.ForeignKey(    'Item', blank=True, null=True,
-                                        related_name='merged_from'  )
+                                        related_name='merged_from', 
+                                        on_delete=models.SET_NULL )
     """
     If this has a value, should not appear in any results (see property 
     ``hide``). Allows us to umerge items if necessary.

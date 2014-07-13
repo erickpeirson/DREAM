@@ -294,6 +294,17 @@ class ItemAdmin(admin.ModelAdmin):
     
     actions = [approve, reject, pend, merge]
     
+    def delete_model(self, request, obj):
+        """
+        If an item has children, they should no longer be hidden.
+        """
+        
+        if obj.merged_from is not None:
+            for i in obj.merged_from.all():
+                i.hide = False
+                i.save()
+        obj.delete()
+    
     def save_model(self, request, obj, form, change):
         """
         On save, should also updated the target of ``merged_with``.
