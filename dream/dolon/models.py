@@ -245,7 +245,7 @@ class Item(models.Model):
     ``hide``). Allows us to umerge items if necessary.
     """
     
-    hide = models.BooleanField(default=False)
+    hide = models.BooleanField(default=False, verbose_name='hidden')
 
 class GroupTask(models.Model):
     task_id = models.CharField(max_length=1000)
