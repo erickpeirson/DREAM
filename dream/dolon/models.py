@@ -116,7 +116,8 @@ class QueryEvent(models.Model):
         return unicode(unidecode(repr))
 
     def items(self):
-        return unicode(len(QueryItem.objects.filter(result__event__id=self.id)))
+        qs = Item.objects.filter(events__id=obj.id).exclude(hide=True)
+        return unicode(len(qs))
     
     def search_status(self):
         if self.search_task is not None:
