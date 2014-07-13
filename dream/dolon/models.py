@@ -192,7 +192,7 @@ class QueryResultItem(models.Model):
         
         # Go ahead and save.
         super(QueryResultItem, self).save(*args, **kwargs)
-        
+
 class Item(models.Model):
     """
     Generated from an individual item in a :class:`.QueryResult`\.
@@ -212,14 +212,15 @@ class Item(models.Model):
     )
 
     url = models.URLField(max_length=2000, unique=True)
+    
     status = models.CharField(max_length=2, choices=statuses, default=PENDING)
 
     title = models.CharField(max_length=400, blank=True, null=True)
 
-    size = models.IntegerField(default=0)
+    size = models.IntegerField(default=0, null=True, blank=True)
     mime = models.CharField(max_length=50, null=True, blank=True)
-    height = models.IntegerField(default=0)
-    width = models.IntegerField(default=0)
+    height = models.IntegerField(default=0, null=True, blank=True)
+    width = models.IntegerField(default=0, null=True, blank=True)
 
     thumbnail = models.ForeignKey('Thumbnail', related_name='queryItems',
                                                           blank=True, null=True)
@@ -232,10 +233,19 @@ class Item(models.Model):
                                                           blank=True, null=True)
     
     creationDate = models.DateTimeField(blank=True, null=True)
+    """Unclear what this value should be."""
     
     tags = models.ManyToManyField(  'Tag', blank=True, null=True,
                                     related_name='tagged_items' )
-
+                                    
+    merged_with = models.ForeignKey(    'Item', blank=True, null=True,
+                                        related_name='merged_from'  )
+    """
+    If this has a value, should not appear in any results (see property 
+    ``hide``). Allows us to umerge items if necessary.
+    """
+    
+    hide = models.BooleanField(default=False)
 
 class GroupTask(models.Model):
     task_id = models.CharField(max_length=1000)
@@ -264,7 +274,6 @@ class Thumbnail(models.Model):
                                                       width_field='width',
                                                       null=True, blank=True)
     
-    size = models.IntegerField(default=0)
     mime = models.CharField(max_length=50, null=True, blank=True)
     
     # Should be auto-populated.

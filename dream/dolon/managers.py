@@ -62,7 +62,8 @@ def spawnSearch(queryevent, **kwargs):
     #  the resulting objects to it.
     logger.debug('spawnSearch: creating jobs')
 
-    job = group(  ( search.s(qstring, s, min(s+9, end), queryevent.engine.manager, params, **kwargs) 
+    job = group(  ( search.s(qstring, s, min(s+9, end), 
+                        queryevent.engine.manager, params, **kwargs) 
                     | processSearch.s(queryevent.id, **kwargs) 
                     | spawnThumbnails.s(queryevent.id, **kwargs)
                     ) for s in xrange(start, end+1, 10) )
