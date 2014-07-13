@@ -286,6 +286,10 @@ class ItemAdmin(admin.ModelAdmin):
     
     actions = [approve, reject, pend, merge]
     
+    def queryset(self, request):
+        qs = super(ItemAdmin, self).queryset(request)
+        return qs.exclude(hide=True)
+    
     def thumb_image(self, obj):
         """
         Generates a thumbnail image element, for list display.
