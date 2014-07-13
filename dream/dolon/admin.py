@@ -40,9 +40,18 @@ def approve(modeladmin, request, queryset):
     Approves all selected :class:`.Items`\.
     """
     
+    images = []
+    contexts = []
     for obj in queryset:
         obj.status = 'AP'
         obj.save()
+        
+        images.append(obj.image)
+        contexts += [ c for c in obj.context.all() ]
+    
+    spawnRetrieveImages(images)
+    spawnRetrieveContexts(contexts)
+
 approve.short_description = 'Approve selected items'
         
 def reject(modeladmin, request, queryset):
@@ -581,4 +590,3 @@ admin.site.register(Context, ContextAdmin)
 admin.site.register(Tag, TagAdmin)
 
 admin.site.register(Thumbnail)
-admin.site.register(GroupTask, GroupTaskAdmin)
