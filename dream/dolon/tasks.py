@@ -13,6 +13,8 @@ from django.core.files import File
 import tempfile
 import urllib2
 import os
+from unidecode import unidecode
+
 
 import dolon.search_managers as M
 from dolon.models import *
@@ -89,7 +91,7 @@ def processSearch(searchresult, queryeventid, **kwargs):
     for item in result['items']:
         queryItem = QueryResultItem(
                         url = item['url'],
-                        title = item['title'],
+                        title = unidecode(item['title']),
                         size = item['size'],
                         height = item['height'],
                         width = item['width'],
@@ -281,8 +283,8 @@ def getStoreContext(url, itemid):
     title = soup.title.getText()
 
     context = Context(  url = url,
-                        title = title,
-                        content = response  )
+                        title = unidecode(title),
+                        content = unidecode(response)  )
     context.save()
     
     item = Item.objects.get(id=itemid)

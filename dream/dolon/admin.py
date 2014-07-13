@@ -4,6 +4,7 @@ import autocomplete_light
 from models import *
 from util import *
 from managers import spawnSearch
+import uuid
 
 ### Forms ###
 
@@ -63,6 +64,65 @@ def pend(modeladmin, request, queryset):
         obj.status = 'PG'
         obj.save()        
 pend.short_description = 'Set selected items to Pending'  
+
+def merge(modeladmin, request, queryset):
+    """
+    Merges two or more :class:`.Item` objects.
+    
+    A new :class:`.Item` is created, inheriting all contexts. Old :class:`.Item`
+    objects set ``merged_with``.
+    """
+    
+    largest = 0
+    image = None
+    
+    largestThumb = 0
+    thumbnail = None
+    
+    # Fake URL and title.
+    identifier = str(uuid.uuid1())
+    title = 'Merged item {0}'.format(identifier)
+    url = 'http://roy.fulton.asu.edu/dolon/mergeditem/{0}'.format(identifier)
+    
+    newItem = Item( url = url,
+                    title = title   )
+    newItem.save()
+    
+    contexts = set([])
+    for obj in queryset:
+        # If any one Item is approved, they all are.
+        if obj.status == 'AP':  
+            newItem.status = 'AP'
+            newItem.save()
+        
+        # Inherit any thumbnail.
+        if newItem.thumbnail is None and obj.thumbnail is not None:
+            newItem.thumbnail = obj.thumbnail
+            newItem.save()
+        
+        # The new Item inherits the largest image, if there are any.
+        if hasattr(obj, 'image'):
+            if obj.size > largest:
+                newItem.image = obj.image
+                newItem.size = obj.size
+                newItem.height = obj.height
+                newItem.width = obj.width
+                newItem.mime = obj.mime
+                
+                largest = obj.image.size
+                newItem.save()
+                
+        # Pool all of the contexts.
+        for c in obj.context.all():
+            newItem.context.add(c)
+            
+        # Set merged_with on old items.
+        obj.merged_with = newItem
+        obj.hide = True
+        obj.save()
+    
+    newItem.save()
+merge.short_description = 'Merge selected items'
 
 ### Inlines ###
 
@@ -223,7 +283,7 @@ class ItemAdmin(admin.ModelAdmin):
     list_select_related = True
     search_fields = ['title',]
     
-    actions = [approve, reject, pend]
+    actions = [approve, reject, pend, merge]
     
     def thumb_image(self, obj):
         """
@@ -263,8 +323,9 @@ class ItemAdmin(admin.ModelAdmin):
         try:    # If something went wrong when downloading a thumbnail, 
                 #  this will raise a ValueError.
             obj.thumbnail.image.url
-        except ValueError:
+        except:# ValueError, AttributeError:
             return None
+
         if obj.thumbnail is not None and obj.thumbnail.image is not None:
             pattern = '<a href="{0}"><img src="{1}"/></a>'
             if list:
