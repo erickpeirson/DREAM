@@ -6,6 +6,19 @@ from util import *
 from managers import *
 import uuid
 
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+
+### Receivers ###
+
+@receiver(pre_delete, sender=Item)
+def itemDeleteReceiver(sender, **kwargs):
+    obj = kwargs.get('instance')
+    if obj.merged_from is not None:
+        for i in obj.merged_from.all():
+            i.hide = False
+            i.save()
+
 ### Forms ###
 
 class QueryEventForm(forms.ModelForm):
@@ -329,18 +342,7 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ['title',]
     
     actions = [approve, reject, pend, merge]
-    
-    def delete_model(self, request, obj):
-        """
-        If an item has children, they should no longer be hidden.
-        """
         
-        if obj.merged_from is not None:
-            for i in obj.merged_from.all():
-                i.hide = False
-                i.save()
-        obj.delete()
-    
     def save_model(self, request, obj, form, change):
         """
         On save, should also updated the target of ``merged_with``.
