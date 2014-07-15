@@ -21,7 +21,7 @@ from dolon.models import *
 
 from celery import shared_task, group
 
-@shared_task(rate_limit="25/s", ignore_result=False)
+@shared_task(rate_limit="2/s", ignore_result=False, max_retries=4)
 def search(qstring, start, end, manager_name, params, **kwargs):
     """
     Perform a search for ``string`` using a provided ``manager`` instance.
@@ -48,8 +48,11 @@ def search(qstring, start, end, manager_name, params, **kwargs):
     
     if not kwargs.get('testing', False):
         manager = getattr(M, manager_name)()
-        result, response = manager.imageSearch( params, qstring, 
-                                                start=start, end=end    )
+        try:
+            result, response = manager.imageSearch( params, qstring,
+                                                    start=start, end=end )
+        except Exception as exc:
+            raise self.retry(exc=exc)
         
     else:   # When testing we don't want to make remote calls.
         import cPickle as pickle
@@ -160,7 +163,7 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
 
     return task    
 
-@shared_task(rate_limit='2/s')
+@shared_task(rate_limit='2/s', max_retries=5)
 def getFile(url):
     """
     Retrieve a resource from `URL`.
@@ -184,7 +187,10 @@ def getFile(url):
     """
 
     filename = url.split('/')[-1]
-    response = urllib2.urlopen(url)
+    try:
+        response = urllib2.urlopen(url)
+    except Exception as exc:
+        raise self.retry(exc=exc)
     
     mime = dict(response.info())['content-type']
     size = int(dict(response.info())['content-length'])
@@ -257,7 +263,7 @@ def storeImage(result, imageid):
         
     return image.id
     
-@shared_task(rate_limit='2/s')
+@shared_task(rate_limit='2/s', max_retries=5)
 def getStoreContext(url, contextid):
     """
     Retrieve the HTML contents of a resource and attach it to an :class:`.Item`
@@ -273,7 +279,11 @@ def getStoreContext(url, contextid):
         ID for the :class:`.Context`
     """
 
-    response = urllib2.urlopen(url).read()
+    try:
+        response = urllib2.urlopen(url).read()
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
     soup = BeautifulSoup(response)
     title = soup.title.getText()
 
