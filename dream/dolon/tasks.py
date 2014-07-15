@@ -52,7 +52,7 @@ def search(qstring, start, end, manager_name, params, **kwargs):
             result, response = manager.imageSearch( params, qstring,
                                                     start=start, end=end )
         except Exception as exc:
-            raise self.retry(exc=exc)
+            search.retry(exc=exc)
         
     else:   # When testing we don't want to make remote calls.
         import cPickle as pickle
@@ -190,7 +190,7 @@ def getFile(url):
     try:
         response = urllib2.urlopen(url)
     except Exception as exc:
-        raise self.retry(exc=exc)
+        getFile.retry(exc=exc)
     
     mime = dict(response.info())['content-type']
     size = int(dict(response.info())['content-length'])
@@ -282,7 +282,7 @@ def getStoreContext(url, contextid):
     try:
         response = urllib2.urlopen(url).read()
     except Exception as exc:
-        raise self.retry(exc=exc)
+        getStoreContext.retry(exc=exc)
 
     soup = BeautifulSoup(response)
     title = soup.title.getText()
