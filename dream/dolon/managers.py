@@ -3,6 +3,7 @@ from models import *
 import json
 import urllib2
 import os
+
 from unidecode import unidecode
 
 from celery import group, chain
