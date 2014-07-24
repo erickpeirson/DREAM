@@ -5,34 +5,50 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
 
-
 from BeautifulSoup import BeautifulSoup
-
 
 from django.core.files import File
 import tempfile
 import urllib2
+import json
 import os
 import math
-
 from unidecode import unidecode
+import warnings
+from BeautifulSoup import BeautifulSoup
 
 import dolon.search_managers as M
 from dolon.models import *
-from dolon import admin
 
-from celery import shared_task, group
+from celery import shared_task, group, task, chain
 
+engineManagers = {
+    'GoogleImageSearchManager': M.GoogleImageSearchManager,
+}
+
+@shared_task
 def trigger_dispatchers(*args, **kwargs):
     """
     Try to dispatch all pending :class:`.QueryEvent`\s.
+    
+    
+    Returns
+    -------
+    dispatched : list
+        IDs of dispatched QueryEvents.
     """
 
     # Get all pending QueryEvents.
-    queryevents = QueryEvent.objects.filter(status='PENDING')
+    queryevents = QueryEvent.objects.filter(dispatched=False)
 
+    logger.info('tasks.trigger_dispatchers: Found {0} pending QueryEvents.'
+                                                      .format(len(queryevents)))
+    dispatched = []
     for qe in queryevents:
         try_dispatch(qe)
+        dispatched.append(qe.id)
+        
+    return dispatched
         
 def try_dispatch(queryevent):
     """
@@ -50,9 +66,14 @@ def try_dispatch(queryevent):
     None
     """
 
+    logger.debug('Trying to dispatch queryevent {0}'.format(queryevent.id))
+    
     engine = queryevent.engine
     remaining_today = engine.daylimit - engine.dayusage
     remaining_month = engine.monthlimit - engine.monthusage
+    
+    logger.debug('Remaining today: {0}, remaining this month: {1}'
+                                      .format(remaining_today, remaining_month))
 
     if engine.pagelimit is not None:
         pagelimit = engine.pagelimit
@@ -64,6 +85,7 @@ def try_dispatch(queryevent):
     end = min(queryevent.rangeEnd, pagelimit*pagesize)
 
     if start >= end:    # Search range out of bounds.
+        logger.debug('Search range out of bounds, aborting.')
         return
 
     # Maximum number of requests.
@@ -71,10 +93,13 @@ def try_dispatch(queryevent):
 
     # Only dispatch if within daily and monthly limits.
     if Nrequests < remaining_today and Nrequests < remaining_month:
-        admin.dispatch(None, None, [queryevent])
+        logger.debug('Attempting dispatch.')
+        dispatchQueryEvent(queryevent.id)   
         engine.dayusage += Nrequests
         engine.monthusage += Nrequests
         engine.save()
+    else:
+        logger.debug('Search quota for {0} depleted. Aborting.'.format(engine))
 
     return None
 
@@ -297,6 +322,7 @@ def storeThumbnail(result, thumbnailid):
     url, filename, fpath, mime, size = result
     
     thumbnail = Thumbnail.objects.get(id=thumbnailid)
+    thumbnail.mime = mime
     
     with open(fpath, 'rb') as f:
         file = File(f)
@@ -341,7 +367,8 @@ def storeImage(result, imageid):
 @shared_task(rate_limit='2/s', max_retries=5)
 def getStoreContext(url, contextid):
     """
-    Retrieve the HTML contents of a resource and attach it to an :class:`.Item`
+    Retrieve the HTML contents of a resource and update :class:`.Context` 
+    corresponding to ``contextid``.
     
     Parameters
     ----------
@@ -355,19 +382,115 @@ def getStoreContext(url, contextid):
     """
 
     try:
-        response = urllib2.urlopen(url).read()
+        response = urllib2.urlopen(url)
+        response_content = response.read()
     except Exception as exc:
         getStoreContext.retry(exc=exc)
 
-    soup = BeautifulSoup(response)
+    soup = BeautifulSoup(response_content)
     title = soup.title.getText()
 
     context = Context.objects.get(pk=contextid)
-    context.content = unidecode(response)
-    context.title = unidecode(title)
+    context.content = soup.html()
+    context.title = str(title)
     context.save()
     
     return context.id
 
 
 
+#### Was dolon.managers #####
+
+
+def dispatchQueryEvent(queryevent_id):
+    queryevent = QueryEvent.objects.get(pk=queryevent_id)
+    
+    task_id, subtask_ids = spawnSearch(queryevent)
+    task = GroupTask(   task_id=task_id,
+                        subtask_ids=subtask_ids )
+    task.save()
+    queryevent.search_task = task
+    queryevent.dispatched = True
+    queryevent.save()        
+
+    return queryevent.id
+
+def spawnRetrieveImages(queryset):
+    """
+    Generates a set of tasks to retrieve images.
+    """
+    
+    job = group( ( getFile.s(i.url) | storeImage.s(i.id) ) for i in queryset )
+
+    result = job.apply_async()
+
+    return result.id, [ r.id for r in result.results ]    
+    
+def spawnRetrieveContexts(queryset):
+    """
+    Generates a group of tasks to retrieve contexts.
+    """
+    
+    job = group( ( getStoreContext.s(i.url, i.id) ) for i in queryset )
+
+    result = job.apply_async()
+
+    return result.id, [ r.id for r in result.results ]       
+
+def spawnSearch(queryevent, **kwargs):
+    """
+    Executes a series of searches based on the parameters of a 
+    :class:`.QueryEvent` and updates it accordingly.
+    
+    Parameters
+    ----------
+    queryevent : :class:`.QueryEvent`
+        
+    Returns
+    -------
+    result.id : str
+        UUID for the Celery search task group.
+    """
+
+    if queryevent.dispatched:
+        warnings.warn('Attempting to spawnSearch() for QueryEvent that has ' + \
+                      ' already been dispatched.', RuntimeWarning)
+        return queryevent
+
+    qstring = queryevent.querystring.querystring
+    start = queryevent.rangeStart
+    end = queryevent.rangeEnd
+    engine = engineManagers[queryevent.engine.manager]()
+
+    logger.debug('spawnSearch() for QueryEvent {0},'.format(queryevent.id)    +\
+        ' with term "{0}", start: {1}, end: {2},'.format(qstring, start, end) +\
+        ' using Engine: {0}'.format(engine.name))
+
+    params = [ p for p in queryevent.engine.parameters ]
+    
+    # Dispatch a group of search chains to Celery, divided into 10-item pages.
+    #
+    #   * search() performs the image search for a 10-item page,
+    #   |
+    #   * processSearch() parses the search results and creates QueryResult 
+    #   | and QueryItem instances.
+    #   * spawnThumbnails() launches tasks to retrieve and store Thumbnail
+    #     instances. 
+    #   
+    # QueryEvent.id gets passed around so that the various tasks can attach
+    #  the resulting objects to it.
+    logger.debug('spawnSearch: creating jobs')
+
+    job = group(  ( search.s(qstring, s, min(s+9, end), 
+                        queryevent.engine.manager, params, **kwargs) 
+                    | processSearch.s(queryevent.id, **kwargs) 
+                    | spawnThumbnails.s(queryevent.id, **kwargs)
+                    ) for s in xrange(start, end+1, 10) )
+                    
+
+    logger.debug('spawnSearch: dispatching jobs')
+    result = job.apply_async()
+    
+    logger.debug('spawnSearch: jobs dispatched')
+    
+    return result.id, [ r.id for r in result.results ]

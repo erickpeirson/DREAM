@@ -1,7 +1,6 @@
 from django.test import TestCase
 
 from tasks import *
-from managers import GoogleImageSearchManager, spawnSearch
 from models import QueryString, QueryEvent, Engine, Thumbnail, Image, Item
 from django.contrib.auth.models import User
 from django.core.files import File

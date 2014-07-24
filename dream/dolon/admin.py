@@ -3,7 +3,7 @@ from django.contrib import admin
 import autocomplete_light
 from models import *
 from util import *
-from managers import *
+from tasks import *
 import uuid
 
 from django.db.models.signals import pre_delete
@@ -39,13 +39,8 @@ def dispatch(modeladmin, request, queryset):
     """
 
     for obj in queryset:
-        task_id, subtask_ids = spawnSearch(obj)
-        task = GroupTask(   task_id=task_id,
-                            subtask_ids=subtask_ids )
-        task.save()
-        obj.search_task = task
-        obj.dispatched = True
-        obj.save()
+        dispatchQueryEvent(obj.id)
+
 dispatch.short_description = 'Dispatch selected search events'    
 
 def approve(modeladmin, request, queryset):
