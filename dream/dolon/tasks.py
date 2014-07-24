@@ -13,13 +13,88 @@ from django.core.files import File
 import tempfile
 import urllib2
 import os
-from unidecode import unidecode
+import math
 
+from unidecode import unidecode
 
 import dolon.search_managers as M
 from dolon.models import *
+from dolon import admin
 
 from celery import shared_task, group
+
+def trigger_dispatchers(*args, **kwargs):
+    """
+    Try to dispatch all pending :class:`.QueryEvent`\s.
+    """
+
+    # Get all pending QueryEvents.
+    queryevents = QueryEvent.objects.filter(status='PENDING')
+
+    for qe in queryevents:
+        try_dispatch(qe)
+        
+def try_dispatch(queryevent):
+    """
+    Try to dispatch a :class:`.QueryEvent`\. 
+    
+    Only dispatched if within daily and monthly usage limits for its respective
+    :class:`.Engine`\.
+    
+    Parameters
+    ----------
+    queryevent : :class:`.QueryEvent`
+    
+    Returns
+    -------
+    None
+    """
+
+    engine = queryevent.engine
+    remaining_today = engine.daylimit - engine.dayusage
+    remaining_month = engine.monthlimit - engine.monthusage
+
+    if engine.pagelimit is not None:
+        pagelimit = engine.pagelimit
+    else:
+        pagelimit = 400000000000    # Is this high enough?
+
+    pagesize = engine.pagesize
+    start = queryevent.rangeStart
+    end = min(queryevent.rangeEnd, pagelimit*pagesize)
+
+    if start >= end:    # Search range out of bounds.
+        return
+
+    # Maximum number of requests.
+    Nrequests = math.ceil(float(end-start)/pagesize)
+
+    # Only dispatch if within daily and monthly limits.
+    if Nrequests < remaining_today and Nrequests < remaining_month:
+        admin.dispatch(None, None, [queryevent])
+        engine.dayusage += Nrequests
+        engine.monthusage += Nrequests
+        engine.save()
+
+    return None
+
+def reset_dayusage(*args, **kwargs):
+    """
+    Set dayusage to 0 for all :class:`.Engine`\s.
+    """
+    
+    for engine in Engine.objects.all():
+        engine.dayusage = 0
+        engine.save()
+
+def reset_monthusage(*args, **kwargs):
+    """
+    Set monthusage to 0 for all :class:`.Engine`\s.
+    """
+
+    for engine in Engine.objects.all():
+        engine.monthusage = 0
+        engine.save()
 
 @shared_task(rate_limit="2/s", ignore_result=False, max_retries=4)
 def search(qstring, start, end, manager_name, params, **kwargs):

@@ -65,8 +65,19 @@ class Engine(models.Model):
     """
     A search engine.
     """
-    parameters = ListField()
+    
+    parameters = ListField()    # GET params.
     manager = models.CharField(max_length=100, choices=engineManagers)
+    
+    # Limits.
+    ratelimit = models.IntegerField()   # Number of requests per second.
+    daylimit = models.IntegerField()    # Number of requests per day.
+    dayusage = models.IntegerField(default=0)
+    monthlimit = models.IntegerField()  # Number of requests per month.
+    monthusage = models.IntegerField(default=0)
+    
+    pagesize = models.IntegerField(default=10)  # Max no. items per page.
+    pagelimit = models.IntegerField(blank=True, null=True)  # Max no. pages.
     
     class Meta:
         verbose_name_plural = 'Custom search engines'
@@ -74,7 +85,6 @@ class Engine(models.Model):
 
     def __unicode__(self):
         return unicode(unidecode(self.manager))
-
 
 class QueryEvent(models.Model):
     """
@@ -106,7 +116,7 @@ class QueryEvent(models.Model):
                         'QueryResult', blank=True, null=True,
                         related_name='event_instance'   )
                         
-    engine = models.ForeignKey(Engine)
+    engine = models.ForeignKey(Engine, related_name='engine_events')
 
     def __unicode__(self):
         pattern = '"{0}", items {1}-{2}, dispatched {3}'
