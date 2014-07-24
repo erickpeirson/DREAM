@@ -108,6 +108,3 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_ROOT = '/Users/erickpeirson/DREAM/dream/media/'
 MEDIA_URL = '/media/'
-
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-CELERY_CHORD_PROPAGATES = True

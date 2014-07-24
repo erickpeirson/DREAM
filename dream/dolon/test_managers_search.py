@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 
 from django.test import TestCase
-from managers import GoogleImageSearchManager, spawnSearch
+from tasks import GoogleImageSearchManager, spawnSearch
 from models import QueryResult, Engine, QueryEvent, QueryString
 import json
 
@@ -9,7 +9,6 @@ apikey = "AIzaSyDhlbNOLTRRVebYs5PNx9snu6SZOsQFYnM"
 cx = "002775406652749371248:l-zbbsqhcte"
 
 cg_path = './dolon/callgraphs/'
-
 
 class TestGoogleImageSearchManager(TestCase):
     def setUp(self):

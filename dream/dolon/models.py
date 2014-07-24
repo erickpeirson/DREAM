@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-#from audit_log.models.fields import CreatingUserField, LastUserField
 from django.db import models
 from unidecode import unidecode
 
@@ -70,10 +69,10 @@ class Engine(models.Model):
     manager = models.CharField(max_length=100, choices=engineManagers)
     
     # Limits.
-    ratelimit = models.IntegerField()   # Number of requests per second.
-    daylimit = models.IntegerField()    # Number of requests per day.
+    ratelimit = models.IntegerField(blank=True, null=True)   # Number of requests per second.
+    daylimit = models.IntegerField(blank=True, null=True)    # Number of requests per day.
     dayusage = models.IntegerField(default=0)
-    monthlimit = models.IntegerField()  # Number of requests per month.
+    monthlimit = models.IntegerField(blank=True, null=True)  # Number of requests per month.
     monthusage = models.IntegerField(default=0)
     
     pagesize = models.IntegerField(default=10)  # Max no. items per page.

@@ -32,7 +32,7 @@ class GoogleImageSearchManager(BaseSearchManager):
         Parameters
         ----------
         params : list
-            Should contain at least ``apikey`` and ``cx`` parameters.
+            Should contain at least ``key`` and ``cx`` parameters.
         query : str
             Search query.
         start : int
