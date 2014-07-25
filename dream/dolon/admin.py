@@ -36,6 +36,24 @@ class QueryEventForm(forms.ModelForm):
         return self.cleaned_data['creator']
 
 ### Actions ###
+
+def reset(modeladmin, request, queryset):
+    """
+    Resets ``state`` of a :class:`.QueryEvent` and removes linked GroupTask.
+    
+    If :class:`.QueryEvent` instance is not dispatched, or has not failed or
+    erred, nothing happens.
+    """
+    
+    for obj in queryset:
+        if obj.state in ['ERROR','FAILED'] and obj.dispatched:
+            obj.state = 'PENDING'
+            obj.dispatched = False
+            obj.search_task = None
+            obj.save()
+reset.short_description = 'Reset selected (failed) query'
+        
+
 def dispatch(modeladmin, request, queryset):
     """
     Dispatches a :class:`.QueryEvent` for searching and thumbnail retrieval.
@@ -46,7 +64,7 @@ def dispatch(modeladmin, request, queryset):
     for obj in queryset:
         dispatchQueryEvent(obj.id)
 
-dispatch.short_description = 'Dispatch selected search events'    
+dispatch.short_description = 'Dispatch selected query'    
 
 def approve(modeladmin, request, queryset):
     """
@@ -185,7 +203,7 @@ merge.short_description = 'Merge selected items'
 
 class QueryEventInline(admin.TabularInline):
     model = QueryEvent
-    readonly_fields = ('dispatched', 'range', 'engine', 'datetime', 'results')#, 'queryresults')
+    readonly_fields = ('dispatched', 'range', 'engine', 'datetime', 'results')
     exclude = ('rangeStart', 'rangeEnd', 'search_task', 'thumbnail_tasks', 'queryresults')
     ordering = ('datetime',)
     
@@ -253,9 +271,9 @@ class QueryEventAdmin(admin.ModelAdmin):
     form = QueryEventForm
     
     list_display = ('id', 'querystring', 'datetime', 'range', 
-                    'dispatched', 'search_status', )
+                    'dispatched', 'search_status', 'results')
     list_display_links = ('querystring',)
-    actions = [dispatch]
+    actions = [dispatch, reset]
     
     def result_sets(self, obj):
         """
