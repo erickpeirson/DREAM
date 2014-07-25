@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.conf import settings
+from audiofield.fields import AudioField
+import os.path
 
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
@@ -8,6 +11,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel('INFO')
 
 import ast
+import cPickle as pickle
 
 from celery.result import AsyncResult, TaskSetResult
 
@@ -197,40 +201,59 @@ class QueryResult(models.Model):
 class QueryResultItem(models.Model):
     url = models.URLField(max_length=2000)
     contextURL = models.URLField(max_length=2000)
-    thumbnailURL = models.URLField(max_length=2000)
     
     title = models.CharField(max_length=400, blank=True, null=True)
 
-    size = models.IntegerField(default=0)
-    mime = models.CharField(max_length=50, null=True, blank=True)
-    
-    # Should be auto-populated.
-    height = models.IntegerField(default=0)
-    width = models.IntegerField(default=0)
+    params = models.CharField(max_length=50000, blank=True, null=True)
     
     item = models.ForeignKey(
                     'Item', null=True, blank=True, 
                     related_name='query_result_item'    )
+    
+    type = models.CharField(max_length=50)
     
     def save(self, *args, **kwargs):
         """
         When a :class:`.QueryResultItem` is created, it should get or create
         a :class:`.Item`\.
         """
-        
-        i = Item.objects.get_or_create(url=self.url,
-                defaults = {
-                    'title': self.title,
-                    'size': self.size,
-                    'height': self.height,
-                    'width': self.width,
-                    'mime': self.mime,  }   )[0]
 
-        # Associate thumbnail, image, and context.
-        if i.thumbnail is None:
-            i.thumbnail = Thumbnail.objects.get_or_create(url=self.thumbnailURL)[0]
-        if i.image is None:
-            i.image = Image.objects.get_or_create(url=self.url)[0]
+        params = pickle.loads(self.params)
+        
+        ### Images ###
+        if self.type == 'image':
+            i = ImageItem.objects.get_or_create(url=self.url,
+                    defaults = {
+                        'title': self.title,
+                        'size': params['size'],
+                        'height': params['height'],
+                        'width': params['width'],
+                        'mime': params['mime']  }   )[0]
+
+            # Associate thumbnail, image, and context.
+            if i.thumbnail is None:
+                i.thumbnail = Thumbnail.objects.get_or_create(
+                                    url=params['thumbnailURL'][0]   )[0]
+            if i.image is None:
+                i.image = Image.objects.get_or_create(url=self.url)[0]
+        
+        ### Videos ###
+        elif self.type == 'video':
+            i = VideoItem.objects.get_or_create(url=self.url,
+                    defaults = {
+                        'title': self.title,
+                        'mime': params['mime'],
+                        'length': params['length'],
+                        'size': params['size']  }   )[0]
+                      
+        ### Audio ###
+        elif self.type == 'audio':
+            i = AudioItem.objects.get_or_create(url=self.url,
+                    defaults = {
+                        'title': self.title,
+                        'mime': params['mime'],
+                        'length': params['length'],
+                        'size': params['size']  }   )[0]                        
 
         context  = Context.objects.get_or_create(url=self.contextURL)[0]
         i.context.add(context)
@@ -267,13 +290,7 @@ class Item(models.Model):
 
     size = models.IntegerField(default=0, null=True, blank=True)
     mime = models.CharField(max_length=50, null=True, blank=True)
-    height = models.IntegerField(default=0, null=True, blank=True)
-    width = models.IntegerField(default=0, null=True, blank=True)
 
-    thumbnail = models.ForeignKey('Thumbnail', related_name='queryItems',
-                                                          blank=True, null=True)
-    image = models.ForeignKey('Image', related_name='queryItems',
-                                                          blank=True, null=True)
     context = models.ManyToManyField('Context', related_name='items',
                                                           blank=True, null=True)
                                                           
@@ -298,6 +315,57 @@ class Item(models.Model):
 
     def __unicode__(self):
         return unicode(self.title)
+        
+class ImageItem(Item):
+    """
+    """
+    
+    class Meta:
+        verbose_name = 'image'
+        verbose_name_plural = 'images'
+        
+    height = models.IntegerField(default=0, null=True, blank=True)
+    width = models.IntegerField(default=0, null=True, blank=True)        
+        
+    thumbnail = models.ForeignKey(  'Thumbnail', blank=True, null=True,
+                                    related_name='imageitem_thumbnail'   )
+    image = models.ForeignKey('Image', blank=True, null=True,
+                                    related_name='imageitem_fullsize'   )
+
+
+class VideoItem(Item):
+    """
+    """
+    
+    class Meta:
+        verbose_name = 'video'
+        verbose_name_plural = 'videos'
+
+    thumbnails = models.ManyToManyField(    'Thumbnail', blank=True, null=True,
+                                            related_name='video_items'  )
+
+    hifi_video = models.ForeignKey( 'Video', blank=True, null=True,
+                                    related_name='videoitem_hifi'   )
+    lofi_video = models.ForeignKey('Video', blank=True, null=True,
+                                    related_name='videoitem_lofi'   )
+
+    length = models.IntegerField(   default=0, null=True, blank=True    )
+    
+class AudioItem(Item):
+    """
+    """
+    
+    class Meta:
+        verbose_name = 'audio recording'
+        verbose_name_plural = 'audio recordings'
+    
+    thumbnail = models.ForeignKey(  'Thumbnail', blank=True, null=True,
+                                    related_name='audioitem_thumbnail'   )
+                                    
+    audio_segments = models.ManyToManyField(    'Audio', blank=True, null=True,
+                                                related_name='segment'  )
+
+    length = models.IntegerField(   default=0, null=True, blank=True    )
 
 class GroupTask(models.Model):
     task_id = models.CharField(max_length=1000)
@@ -357,6 +425,51 @@ class Image(models.Model):
     
     def __unicode__(self):
         return unicode(self.url)
+        
+class Video(models.Model):
+    """
+    A video object.
+    """
+    
+    url = models.URLField(max_length=2000, unique=True)
+    
+    video = models.FileField(upload_to='videos', null=True, blank=True)
+
+    size = models.IntegerField(default=0)
+    length = models.IntegerField(default=0)    
+    mime = models.CharField(max_length=50, null=True, blank=True)    
+    
+    def __unicode__(self):
+        return unicode(self.url)
+            
+class Audio(models.Model):
+    """
+    An audio object.
+    """
+    
+    url = models.URLField(max_length=2000, unique=True)
+    
+    size = models.IntegerField(default=0)
+    length = models.IntegerField(default=0)    
+    mime = models.CharField(max_length=50, null=True, blank=True)      
+        
+    audio_file = AudioField(upload_to='audio', blank=True,
+                            ext_whitelist=(".mp3", ".wav", ".ogg"),
+                            help_text=("Allowed type - .mp3, .wav, .ogg"))        
+
+    def __unicode__(self):
+        return unicode(self.url) 
+                
+    def audio_file_player(self):
+        """audio player tag for admin"""
+        if self.audio_file:
+            file_url = settings.MEDIA_URL + str(self.audio_file)
+            player_string = '<ul class="playlist"><li style="width:250px;">\
+            <a href="%s">%s</a></li></ul>' % (file_url, os.path.basename(self.audio_file.name))
+            return player_string
+    audio_file_player.allow_tags = True
+    audio_file_player.short_description = ('Audio file player')
+        
 
 class Tag(models.Model):
     """

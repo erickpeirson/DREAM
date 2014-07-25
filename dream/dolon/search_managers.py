@@ -16,6 +16,32 @@ class BaseSearchManager(object):
     """
     def __init__(self):
         pass
+        
+class InternetArchiveManager(BaseSearchManager):
+    """
+    Search manager for Internet Archive.
+    
+    Documentation can be found `here <https://archive.org/help/json.php>`_.
+    """
+    
+    def search(self, params, query, start, end):
+        """
+        Perform a search of the Internet Archive.
+        """
+        
+        #https://archive.org/advancedsearch.php?
+        
+        # q=%22dream+act%22
+        # &fl%5B%5D=collection&fl%5B%5D=creator&fl%5B%5D=date&fl%5B%5D=description&fl%5B%5D=format&fl%5B%5D=identifier&fl%5B%5D=imagecount&fl%5B%5D=mediatype&fl%5B%5D=publisher&fl%5B%5D=rights&fl%5B%5D=source&fl%5B%5D=subject&fl%5B%5D=title&fl%5B%5D=type
+        # &sort%5B%5D=&sort%5B%5D=&sort%5B%5D=
+        # &rows=50
+        # &page=2
+        # &indent=yes
+        # &output=json
+        
+        pass
+    
+    
 
 class GoogleImageSearchManager(BaseSearchManager):
     """
@@ -85,6 +111,7 @@ class GoogleImageSearchManager(BaseSearchManager):
         result['items'] = []
         for item in rjson['items']:
             i = {
+                    'type': 'image',
                     'url': item['link'],
                     'title': item['title'],
                     'size': item['image']['byteSize'],
@@ -97,3 +124,4 @@ class GoogleImageSearchManager(BaseSearchManager):
             result['items'].append(i)
 
         return result, rjson
+        
