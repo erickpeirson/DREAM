@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from tasks import *
-from models import QueryString, QueryEvent, Engine, Thumbnail, Image, Item
+from models import *
 from django.contrib.auth.models import User
 from django.core.files import File
 
@@ -76,6 +76,13 @@ class TestSearch(TestCase):
         
         test_item = Item.objects.get(pk=q_I[0])
         self.assertIsInstance(test_item, Item, 'Expected an Item')
+        self.assertTrue(hasattr(test_item, 'imageitem'))
+        
+        qr_items = test_qresult.resultitems.all()
+        for i in qr_items:
+            self.assertEqual(i.type, 'image')
+            self.assertTrue(hasattr(i.item, 'imageitem'))
+            
 
     def test_getFile(self):
         """
@@ -160,6 +167,76 @@ class TestSearch(TestCase):
         self.assertIsInstance(test_context, Context)
         self.assertEqual(test_context.url, contexturl)
         self.assertGreater(len(test_context.content), 0)
+        
+    def test_QueryResultItem_save(self):    
+        base_params = {
+            'title': 'testTitle',
+            'size': 5,
+            'contextURL': 'http://somewhere/over/here',
+            'url': 'http://right/here'
+            }
+
+        image_params = {k:v for k,v in base_params.iteritems() }
+        image_params.update({
+            'type': 'image',                        
+            'height': 5,
+            'width': 5,
+            'mime': 'image/jpeg',
+            'thumbnailURL': 'http://somewhere/else'
+            })
+            
+        video_params = {k:v for k,v in base_params.iteritems() }
+        video_params.update({
+            'type': 'video',
+            'length': 500,
+            'mime': 'video/mpeg'
+            })
+            
+        audio_params = {k:v for k,v in base_params.iteritems() }
+        audio_params.update({
+            'type': 'audio',
+            'length': 500,
+            'mime': 'audio/audio'
+            })
+        
+        # Test for image
+        qri = QueryResultItem(
+                url = image_params['url'],
+                contextURL = image_params['contextURL'],
+                type = image_params['type'],
+                params = pickle.dumps(image_params)
+                )
+        qri.save()
+            
+        self.assertIsInstance(qri, QueryResultItem)
+        self.assertIsInstance(qri.item, Item)
+        self.assertTrue(hasattr(qri.item, 'imageitem'))
+        
+        # Test for video
+        qrv = QueryResultItem(
+                url = video_params['url']+'/asdf',
+                contextURL = video_params['contextURL'],
+                type = video_params['type'],
+                params = pickle.dumps(video_params)
+                )
+        qrv.save()        
+        
+        self.assertIsInstance(qrv, QueryResultItem)
+        self.assertIsInstance(qrv.item, Item)
+        self.assertTrue(hasattr(qrv.item, 'videoitem'))       
+        
+        # Test for audio
+        qra = QueryResultItem(
+                url = audio_params['url']+'/asdff',
+                contextURL = audio_params['contextURL'],
+                type = audio_params['type'],
+                params = pickle.dumps(audio_params)
+                )
+        qra.save()        
+        
+        self.assertIsInstance(qra, QueryResultItem)
+        self.assertIsInstance(qra.item, Item)
+        self.assertTrue(hasattr(qra.item, 'audioitem'))           
         
 class TestResetSearchUsage(TestCase):
     def setUp(self):

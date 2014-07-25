@@ -11,6 +11,7 @@ from django.core.files import File
 import tempfile
 import urllib2
 from urllib2 import HTTPError
+import cPickle as pickle
 
 import json
 import os
@@ -180,7 +181,7 @@ def search(qstring, start, end, manager_name, params, **kwargs):
 @shared_task
 def processSearch(searchresult, queryeventid, **kwargs):
     """
-    Create a :class:`.QueryResult` and a set of :class:`.QueryItem` from a
+    Create a :class:`.QueryResult` and a set of :class:`.Item` from a
     search result.
     
     Parameters
@@ -193,7 +194,7 @@ def processSearch(searchresult, queryeventid, **kwargs):
     queryResult : int
         ID for a :class:`.QueryResult`
     queryItems : list
-        A list of IDs for :class:`.QueryItem` instances.
+        A list of IDs for :class:`.` instances.
     """
 
     if searchresult == 'ERROR':
@@ -214,12 +215,9 @@ def processSearch(searchresult, queryeventid, **kwargs):
         queryItem = QueryResultItem(
                         url = item['url'],
                         title = unidecode(item['title']),
-                        size = item['size'],
-                        height = item['height'],
-                        width = item['width'],
-                        mime = item['mime'],
+                        params = pickle.dumps(item),
                         contextURL = item['contextURL'],
-                        thumbnailURL = item['thumbnailURL']
+                        type = item['type']
                     )
         queryItem.save()
 
