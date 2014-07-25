@@ -72,13 +72,20 @@ class Engine(models.Model):
     parameters = ListField()    # GET params.
     manager = models.CharField(max_length=100, choices=engineManagers)
     
-    # Limits.
-    ratelimit = models.IntegerField(blank=True, null=True)   # Number of requests per second.
-    daylimit = models.IntegerField(blank=True, null=True)    # Number of requests per day.
-    dayusage = models.IntegerField(default=0)
-    monthlimit = models.IntegerField(blank=True, null=True)  # Number of requests per month.
-    monthusage = models.IntegerField(default=0)
+    ## Limits ##
     
+    # Number of requests per second.
+    ratelimit = models.IntegerField(blank=True, null=True)
+    
+   # Number of requests per day.   
+    daylimit = models.IntegerField(blank=True, null=True)
+    dayusage = models.IntegerField(default=0)   # Counter for daily requests.
+    
+    # Number of requests per month.
+    monthlimit = models.IntegerField(blank=True, null=True)
+    monthusage = models.IntegerField(default=0) # Counter for monthly requests.
+    
+    # Pages.
     pagesize = models.IntegerField(default=10)  # Max no. items per page.
     pagelimit = models.IntegerField(blank=True, null=True)  # Max no. pages.
     
