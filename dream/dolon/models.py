@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from unidecode import unidecode
 
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
@@ -54,7 +53,7 @@ class QueryString(models.Model):
                                     help_text=qs_helptext, unique=True)
 
     def __unicode__(self):
-        return unicode(unidecode(self.querystring))
+        return unicode(self.querystring)
 
     def _Nevents(self):
         return len(self.queryevents.all()) 
@@ -88,7 +87,7 @@ class Engine(models.Model):
         verbose_name = 'Custom search engine'
 
     def __unicode__(self):
-        return unicode(unidecode(self.manager))
+        return unicode(self.manager)
 
 class QueryEvent(models.Model):
     """
@@ -129,7 +128,7 @@ class QueryEvent(models.Model):
         date = pretty_date(self.datetime)
         repr = pattern.format(  self.querystring, self.rangeStart, 
                                 self.rangeEnd, date )
-        return unicode(unidecode(repr))
+        return unicode(repr)
 
     def items(self):
         qs = Item.objects.filter(events__id=obj.id).exclude(hide=True)
@@ -339,7 +338,7 @@ class Image(models.Model):
     width = models.IntegerField(default=0)
     
     def __unicode__(self):
-        return unicode(unidecode(self.url))
+        return unicode(self.url)
 
 class Tag(models.Model):
     """
@@ -349,7 +348,7 @@ class Tag(models.Model):
     text = models.CharField(max_length=200, unique=True)
     
     def __unicode__(self):
-        return unicode(unidecode(self.text))
+        return unicode(self.text)
         
     def items(self):
         return self.tagged_items.all()
@@ -374,5 +373,5 @@ class Context(models.Model):
 
     def __unicode__(self):
         if self.title is not None:
-            return unicode(unidecode(self.title))
-        return unicode(unidecode(self.url))
+            return unicode(self.title)
+        return unicode(self.url)
