@@ -32,7 +32,9 @@ class TestSearch(TestCase):
         self.engine = Engine(
             parameters = [  "key=AIzaSyDhlbNOLTRRVebYs5PNx9snu6SZOsQFYnM",
                             "cx=002775406652749371248:l-zbbsqhcte"  ],
-            manager='GoogleImageSearchManager'  )
+            manager='GoogleImageSearchManager',
+            daylimit=100,
+            monthlimit=3000 )
         self.engine.save()
 
         self.queryevent = QueryEvent(
@@ -159,8 +161,81 @@ class TestSearch(TestCase):
         self.assertEqual(test_context.url, contexturl)
         self.assertGreater(len(test_context.content), 0)
         
+class TestResetSearchUsage(TestCase):
+    def setUp(self):
+        self.user = User()
+        self.user.save()
+
+        self.querystring = QueryString(querystring='dream act legislation')
+        self.querystring.save()
+
+        self.engine = Engine(
+            parameters = [  "key=AIzaSyDhlbNOLTRRVebYs5PNx9snu6SZOsQFYnM",
+                            "cx=002775406652749371248:l-zbbsqhcte"  ],
+            manager='GoogleImageSearchManager',
+            daylimit=100,
+            monthlimit=3000 )
+        self.engine.save()
+
+        self.queryevent = QueryEvent(
+            querystring=self.querystring,
+            rangeStart=1,
+            rangeEnd=10,
+            engine=self.engine,
+            creator=self.user    )
+        self.queryevent.save()   
+
         
+    def test_reset_dayusage(self):
+        self.engine.dayusage += 5
         
+        test_engine = Engine.objects.get(pk=self.engine.id)
+        reset_dayusage()
+        self.assertEqual(test_engine.dayusage, 0)
         
+    def test_reset_monthusage(self):
+        self.engine.monthusage += 5
+        
+        test_engine = Engine.objects.get(pk=self.engine.id)        
+        reset_monthusage()
+        self.assertEqual(test_engine.monthusage, 0)  
+        
+    def test_try_dispatch(self):
+        self.engine.monthusage = 0
+        self.engine.dayusage = 0
+        self.engine.save()
+            
+        try_dispatch(self.queryevent)
+        
+        test_queryevent = QueryEvent.objects.get(pk=self.queryevent.id)
+        test_engine = Engine.objects.get(pk=self.engine.id)
+        self.assertTrue(test_queryevent.dispatched)
+        self.assertEqual(test_engine.dayusage, 1)
+        self.assertEqual(test_engine.monthusage, 1)
+        
+    def test_try_dispatch_overday(self):
+        self.engine.monthusage = 0
+        self.engine.dayusage = 100
+        self.engine.save()
+        
+        test_queryevent = QueryEvent.objects.get(pk=self.queryevent.id)
+        self.assertFalse(test_queryevent.dispatched) 
+        
+    def test_try_dispatch_overmonth(self):
+        self.engine.dayusage = 0
+        self.engine.monthusage = 100
+        self.engine.save()
+        
+        test_queryevent = QueryEvent.objects.get(pk=self.queryevent.id)
+        self.assertFalse(test_queryevent.dispatched)        
+        
+    def test_trigger_dispatchers(self):
+        trigger_dispatchers()
+        
+        test_queryevent = QueryEvent.objects.get(pk=self.queryevent.id)
+        test_engine = Engine.objects.get(pk=self.engine.id)
+        self.assertTrue(test_queryevent.dispatched)
+        self.assertEqual(test_engine.dayusage, 1)
+        self.assertEqual(test_engine.monthusage, 1)        
         
         

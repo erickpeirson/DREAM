@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 
 from django.test import TestCase
-from tasks import GoogleImageSearchManager, spawnSearch
+from tasks import spawnSearch
+from search_managers import GoogleImageSearchManager
 from models import QueryResult, Engine, QueryEvent, QueryString
 import json
 

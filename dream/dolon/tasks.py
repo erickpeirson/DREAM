@@ -95,17 +95,23 @@ def try_dispatch(queryevent):
     Nrequests = math.ceil(float(end-start)/pagesize)
 
     # Only dispatch if within daily and monthly limits.
-    if Nrequests < remaining_today and Nrequests < remaining_month:
+    day_remains = Nrequests < remaining_today or engine.daylimit is None
+    month_remains = Nrequests < remaining_month or engine.monthlimit is None
+    if day_remains and month_remains:
         logger.debug('Attempting dispatch.')
         dispatchQueryEvent(queryevent.id)   
         engine.dayusage += Nrequests
         engine.monthusage += Nrequests
         engine.save()
+        
+        logging.info('Dispatched QueryEvent {0}.'.format(queryevent.id))
     else:
         logger.debug('Search quota for {0} depleted. Aborting.'.format(engine))
+        pass
 
     return None
 
+@shared_task
 def reset_dayusage(*args, **kwargs):
     """
     Set dayusage to 0 for all :class:`.Engine`\s.
@@ -115,6 +121,7 @@ def reset_dayusage(*args, **kwargs):
         engine.dayusage = 0
         engine.save()
 
+@shared_task
 def reset_monthusage(*args, **kwargs):
     """
     Set monthusage to 0 for all :class:`.Engine`\s.
