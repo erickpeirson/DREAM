@@ -479,7 +479,8 @@ def spawnSearch(queryevent, **kwargs):
     """
 
     if queryevent.dispatched:
-        warnings.warn('QueryEvent {0} has already been dispatched.'.format(queryevent))
+        warnings.warn('QueryEvent {0} has already been dispatched.'
+                                                            .format(queryevent))
         return queryevent
 
     qstring = queryevent.querystring.querystring

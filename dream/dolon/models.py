@@ -366,6 +366,8 @@ class AudioItem(Item):
                                                 related_name='segment'  )
 
     length = models.IntegerField(   default=0, null=True, blank=True    )
+    
+    description = models.TextField( null=True, blank=True   )
 
 class GroupTask(models.Model):
     task_id = models.CharField(max_length=1000)
