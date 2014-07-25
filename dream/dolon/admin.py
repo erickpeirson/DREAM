@@ -9,6 +9,11 @@ import uuid
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
+import logging
+logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
+logger = logging.getLogger(__name__)
+logger.setLevel('INFO')
+
 ### Receivers ###
 
 @receiver(pre_delete, sender=Item)
@@ -216,7 +221,6 @@ class QueryEventInline(admin.TabularInline):
     results.allow_tags = True
     
 
-    
 ### ModelAdmins ###
 
 class QueryStringAdmin(admin.ModelAdmin):
@@ -249,7 +253,7 @@ class QueryEventAdmin(admin.ModelAdmin):
     form = QueryEventForm
     
     list_display = ('id', 'querystring', 'datetime', 'range', 
-                    'dispatched', 'search_status', 'thumbnail_status')
+                    'dispatched', 'search_status', )
     list_display_links = ('querystring',)
     actions = [dispatch]
     
@@ -300,8 +304,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         if obj:
             read_only = (   
                 'querystring', 'datetime', 'engine', 'range', 'dispatched', 
-                'results', 'search_status', 'thumbnail_status', 'creator'
-                ) + self.readonly_fields
+                'results', 'search_status', 'creator' ) + self.readonly_fields
             return read_only
         return self.readonly_fields
 
@@ -310,7 +313,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         Should not display :class:`.QueryResult` when adding.
         """
         
-        exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults' ]
+        exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults', 'state' ]
         print obj, self.exclude
         if obj is None:
             self.exclude = exclude + ['dispatched', 'creator']
@@ -597,3 +600,4 @@ admin.site.register(Context, ContextAdmin)
 admin.site.register(Tag, TagAdmin)
 
 admin.site.register(Thumbnail)
+admin.site.register(GroupTask)

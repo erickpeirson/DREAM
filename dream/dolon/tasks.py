@@ -1,15 +1,17 @@
 from __future__ import absolute_import
 
 import logging
-logging.basicConfig()
+logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
+logger.setLevel('INFO')
 
 from BeautifulSoup import BeautifulSoup
 
 from django.core.files import File
 import tempfile
 import urllib2
+from urllib2 import HTTPError
+
 import json
 import os
 import math
@@ -21,6 +23,7 @@ import dolon.search_managers as M
 from dolon.models import *
 
 from celery import shared_task, group, task, chain
+from celery.exceptions import MaxRetriesExceededError
 
 engineManagers = {
     'GoogleImageSearchManager': M.GoogleImageSearchManager,
@@ -121,7 +124,7 @@ def reset_monthusage(*args, **kwargs):
         engine.monthusage = 0
         engine.save()
 
-@shared_task(rate_limit="2/s", ignore_result=False, max_retries=4)
+@shared_task(rate_limit="1/s", ignore_result=False, max_retries=0)
 def search(qstring, start, end, manager_name, params, **kwargs):
     """
     Perform a search for ``string`` using a provided ``manager`` instance.
@@ -152,7 +155,11 @@ def search(qstring, start, end, manager_name, params, **kwargs):
             result, response = manager.imageSearch( params, qstring,
                                                     start=start, end=end )
         except Exception as exc:
-            search.retry(exc=exc)
+            try:
+                search.retry(exc=exc)
+            except (IOError, HTTPError) as exc:
+                logger.info((exc.code, exc.read()))
+                return 'ERROR'
         
     else:   # When testing we don't want to make remote calls.
         import cPickle as pickle
@@ -182,7 +189,12 @@ def processSearch(searchresult, queryeventid, **kwargs):
         A list of IDs for :class:`.QueryItem` instances.
     """
 
-    
+    if searchresult == 'ERROR':
+        qe = QueryEvent.objects.get(pk=queryeventid)
+        qe.state = 'ERROR'
+        qe.save()
+        return 'ERROR'
+
     result, response = searchresult
     
     queryResult = QueryResult(  rangeStart=result['start'],
@@ -235,6 +247,9 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
         Output from :func:`.processSearch`
     """
     
+    if processresult == 'ERROR':
+        return 'ERROR'
+    
     queryresultid, queryitemsid = processresult
     queryresult = QueryResult.objects.get(id=queryresultid)
     queryitems = [ QueryResultItem.objects.get(id=id) for id in queryitemsid ]
@@ -263,7 +278,7 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
 
     return task    
 
-@shared_task(rate_limit='2/s', max_retries=5)
+@shared_task(rate_limit='1/s', max_retries=3)
 def getFile(url):
     """
     Retrieve a resource from `URL`.
@@ -290,7 +305,10 @@ def getFile(url):
     try:
         response = urllib2.urlopen(url)
     except Exception as exc:
-        getFile.retry(exc=exc)
+        try:
+            getFile.retry(exc=exc)
+        except (IOError, HTTPError) as exc:
+            logger.info((exc.code, exc.read()))
     
     mime = dict(response.info())['content-type']
     size = int(dict(response.info())['content-length'])
@@ -364,7 +382,7 @@ def storeImage(result, imageid):
         
     return image.id
     
-@shared_task(rate_limit='2/s', max_retries=5)
+@shared_task(rate_limit='1/s', max_retries=3)
 def getStoreContext(url, contextid):
     """
     Retrieve the HTML contents of a resource and update :class:`.Context` 
@@ -385,7 +403,10 @@ def getStoreContext(url, contextid):
         response = urllib2.urlopen(url)
         response_content = response.read()
     except Exception as exc:
-        getStoreContext.retry(exc=exc)
+        try:
+            getStoreContext.retry(exc=exc)
+        except (IOError, HTTPError) as exc:
+            logger.info((exc.code, exc.read()))        
 
     soup = BeautifulSoup(response_content)
     title = soup.title.getText()
@@ -453,8 +474,7 @@ def spawnSearch(queryevent, **kwargs):
     """
 
     if queryevent.dispatched:
-        warnings.warn('Attempting to spawnSearch() for QueryEvent that has ' + \
-                      ' already been dispatched.', RuntimeWarning)
+        warnings.warn('QueryEvent {0} has already been dispatched.'.format(queryevent))
         return queryevent
 
     qstring = queryevent.querystring.querystring
@@ -462,9 +482,8 @@ def spawnSearch(queryevent, **kwargs):
     end = queryevent.rangeEnd
     engine = engineManagers[queryevent.engine.manager]()
 
-    logger.debug('spawnSearch() for QueryEvent {0},'.format(queryevent.id)    +\
-        ' with term "{0}", start: {1}, end: {2},'.format(qstring, start, end) +\
-        ' using Engine: {0}'.format(engine.name))
+    logger.debug('QueryEvent {0}, term {1}'.format(queryevent.id, qstring)    +\
+        ' {0}-{1}, using Engine: {2}'.format(start, end, engine.name))
 
     params = [ p for p in queryevent.engine.parameters ]
     
@@ -479,7 +498,7 @@ def spawnSearch(queryevent, **kwargs):
     #   
     # QueryEvent.id gets passed around so that the various tasks can attach
     #  the resulting objects to it.
-    logger.debug('spawnSearch: creating jobs')
+    logger.debug('creating jobs for QueryEvent {0}'.format(queryevent.id))
 
     job = group(  ( search.s(qstring, s, min(s+9, end), 
                         queryevent.engine.manager, params, **kwargs) 
@@ -488,9 +507,9 @@ def spawnSearch(queryevent, **kwargs):
                     ) for s in xrange(start, end+1, 10) )
                     
 
-    logger.debug('spawnSearch: dispatching jobs')
+    logger.debug('dispatching jobs for QueryEvent {0}'.format(queryevent.id))
     result = job.apply_async()
     
-    logger.debug('spawnSearch: jobs dispatched')
+    logger.debug('jobs dispatched for QueryEvent {0}'.format(queryevent.id))
     
     return result.id, [ r.id for r in result.results ]
