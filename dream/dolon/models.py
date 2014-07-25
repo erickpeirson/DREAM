@@ -13,7 +13,7 @@ from celery.result import AsyncResult, TaskSetResult
 
 from util import *
 
-engineManagers = (( 'GoogleImageSearchManager', 'Google'),)
+engineManagers = (( 'GoogleImageSearchManager', 'Google Image Search'),)
 
 # Create your models here.
 
@@ -75,26 +75,35 @@ class Engine(models.Model):
     ## Limits ##
     
     # Number of requests per second.
-    ratelimit = models.IntegerField(blank=True, null=True)
+    ratelimit = models.IntegerField(blank=True, null=True,
+                    verbose_name='max calls per second')
     
    # Number of requests per day.   
-    daylimit = models.IntegerField(blank=True, null=True)
-    dayusage = models.IntegerField(default=0)   # Counter for daily requests.
+    daylimit = models.IntegerField(blank=True, null=True, 
+                    verbose_name='max calls per day')
+    #   Counter for daily requests.                    
+    dayusage = models.IntegerField(default=0, verbose_name='calls made today')
     
     # Number of requests per month.
-    monthlimit = models.IntegerField(blank=True, null=True)
-    monthusage = models.IntegerField(default=0) # Counter for monthly requests.
+    monthlimit = models.IntegerField(blank=True, null=True,
+                    verbose_name='max calls per month')
+    #   Counter for monthly requests.
+    monthusage = models.IntegerField(default=0, 
+                    verbose_name='calls made this month') 
     
     # Pages.
-    pagesize = models.IntegerField(default=10)  # Max no. items per page.
-    pagelimit = models.IntegerField(blank=True, null=True)  # Max no. pages.
-    
+    pagesize = models.IntegerField(default=10,  # Max no. items per page.
+                    verbose_name='max results per page')  
+    pagelimit = models.IntegerField(blank=True, null=True, 
+                    verbose_name='max number of pages') # Max no. pages.
+        
     class Meta:
         verbose_name_plural = 'Custom search engines'
         verbose_name = 'Custom search engine'
 
     def __unicode__(self):
-        return unicode(self.manager)
+        return unicode( [ label for value, label in engineManagers 
+                            if value == self.manager ][0] + ' ' + str(self.id) )
 
 class QueryEvent(models.Model):
     """
@@ -105,9 +114,10 @@ class QueryEvent(models.Model):
         verbose_name = 'query'
         verbose_name_plural = 'queries'
     
-    querystring = models.ForeignKey('QueryString', related_name='queryevents')
-    rangeStart = models.IntegerField()
-    rangeEnd = models.IntegerField()
+    querystring = models.ForeignKey('QueryString', related_name='queryevents',
+                                                verbose_name='search string')
+    rangeStart = models.IntegerField(verbose_name='Starting at')
+    rangeEnd = models.IntegerField(verbose_name='Ending at')
     datetime = models.DateTimeField(auto_now=True)
     
     # Tasks and dispathing.
@@ -128,7 +138,8 @@ class QueryEvent(models.Model):
                         related_name='event_instance'   )
                         
                         
-    engine = models.ForeignKey(Engine, related_name='engine_events')
+    engine = models.ForeignKey(Engine, related_name='engine_events',
+                                        verbose_name='Search engine'    )
 
     def __unicode__(self):
         pattern = '"{0}", items {1}-{2}, created {3}'
