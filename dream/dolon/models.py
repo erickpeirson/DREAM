@@ -3,6 +3,11 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from unidecode import unidecode
 
+import logging
+logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
+logger = logging.getLogger(__name__)
+logger.setLevel('INFO')
+
 import ast
 
 from celery.result import AsyncResult, TaskSetResult
@@ -101,6 +106,7 @@ class QueryEvent(models.Model):
     
     # Tasks and dispathing.
     dispatched = models.BooleanField(default=False)
+    state = models.CharField(max_length=50, blank=True, null=True)
     
     search_task = models.ForeignKey(    
                         'GroupTask', null=True, blank=True, 
@@ -114,6 +120,7 @@ class QueryEvent(models.Model):
     queryresults = models.ManyToManyField(
                         'QueryResult', blank=True, null=True,
                         related_name='event_instance'   )
+                        
                         
     engine = models.ForeignKey(Engine, related_name='engine_events')
 
@@ -129,8 +136,22 @@ class QueryEvent(models.Model):
         return unicode(len(qs))
     
     def search_status(self):
+        """
+        Checks associated :class:`.GroupTask` for status.
+        
+        If the :class:`.GroupTask` has state 'ERROR', 'FAILED', or 'DONE', then
+        ``state`` should record that state permanently. Otherwise, ``state``
+        is updated.
+        
+        If there is no associated :class:`.GroupTask`\, returns 'PENDING'.
+        """
+        
         if self.search_task is not None:
-            return self.search_task.state()
+            state = self.search_task.state()
+            if self.state not in ['ERROR','FAILED','DONE']:
+                self.state = state
+                self.save()
+            return self.state
         return 'PENDING'
 
     def thumbnail_status(self):
@@ -269,10 +290,15 @@ class GroupTask(models.Model):
     def state(self):
         subtasks = [ AsyncResult(s) for s in self.subtask_ids ]
         result = TaskSetResult(self.task_id, subtasks)
-        if result.successful():
-            return 'DONE'
-        elif result.failed():
-            return 'FAILED'
+
+        if result.ready():
+            r = result.get()[0]
+            if r == 'ERROR':
+                return r
+            elif result.successful():
+                return 'DONE'
+            elif result.failed():
+                return 'FAILED'
         elif result.waiting():
             return 'RUNNING'
         else:
