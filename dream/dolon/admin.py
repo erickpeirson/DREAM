@@ -388,12 +388,6 @@ class ItemAdmin(admin.ModelAdmin):
             return qs.exclude(hide=True)
         return qs
         
-    def get_changelist_form(self, request, **kwargs):
-        print 'asdf'
-        fs = super(ItemAdmin, self).get_changelist_form(request, **kwargs)
-        print fs
-        return fs
-        
     ## Custom fields...
     def parent(self, obj):
         """
@@ -522,6 +516,12 @@ class ContextAdmin(admin.ModelAdmin):
             return False
         return True
     status.boolean = True
+    
+    def get_model_perms(self, request):
+        """
+        Return empty perms dict thus hiding the model from admin index.
+        """
+        return {}    
 
 class TagAdmin(admin.ModelAdmin):
 #    readonly_fields = ('text', 'items', 'contexts')
@@ -599,23 +599,53 @@ class ImageAdmin(admin.ModelAdmin):
         return None
     fullsize_image.allow_tags = True   
     
+    def get_model_perms(self, request):
+        """
+        Return empty perms dict thus hiding the model from admin index.
+        """
+        return {}    
+    
 class GroupTaskAdmin(admin.ModelAdmin):
     list_display = ('task_id', 'state')
     
+class EngineAdmin(admin.ModelAdmin):
+    readonly_fields = ['dayusage', 'monthusage']
+    list_display = ['name', 'daily_usage', 'monthly_usage']
+    
+    def name(self, obj):
+        return obj.__unicode__()
+    
+    def daily_usage(self, obj):
+        if obj.daylimit is None:
+            return 'Unlimited'
+        else:
+            return '{0}%'.format(100*float(obj.dayusage)/float(obj.daylimit))
+    
+    def monthly_usage(self, obj):
+        if obj.monthlimit is None:
+            return '{0} of unlimited'.format(obj.monthusage)
+        else:
+            return '{0}%'.format(100*float(obj.monthusage)/float(obj.monthlimit))    
+            
+            
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        manager should be readonly when editing.
+        """
+
+        readonly_fields = ['dayusage', 'monthusage']
+        if obj is not None:
+            self.readonly_fields = readonly_fields + ['manager']
+            
+        return super(EngineAdmin, self).get_form(request, obj, **kwargs)
+            
 ### Registration ###
 
 admin.site.register(QueryEvent, QueryEventAdmin)
 admin.site.register(QueryString, QueryStringAdmin)
-
 admin.site.register(Item, ItemAdmin)
-admin.site.register(Image, ImageAdmin)
-
-#admin.site.register(QueryResult)
-
-admin.site.register(Engine)
-admin.site.register(Context, ContextAdmin)
-
+admin.site.register(Engine, EngineAdmin)
 admin.site.register(Tag, TagAdmin)
 
-admin.site.register(Thumbnail)
-admin.site.register(GroupTask)
+admin.site.register(Context, ContextAdmin)
+admin.site.register(Image, ImageAdmin)
