@@ -131,7 +131,7 @@ class QueryEvent(models.Model):
     engine = models.ForeignKey(Engine, related_name='engine_events')
 
     def __unicode__(self):
-        pattern = '"{0}", items {1}-{2}, dispatched {3}'
+        pattern = '"{0}", items {1}-{2}, created {3}'
         date = pretty_date(self.datetime)
         repr = pattern.format(  self.querystring, self.rangeStart, 
                                 self.rangeEnd, date )
