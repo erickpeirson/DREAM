@@ -12,6 +12,14 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
 
+class MediaTypeException(Exception):
+    """
+    Raised when a :class:`.BaseSearchManager` encounters a mismatch between
+    declared and actual media types.
+    """
+
+    pass
+
 class BaseSearchManager(object):
     """
     Base class for search managers.
@@ -31,15 +39,20 @@ class InternetArchiveManager(BaseSearchManager):
     name = 'Internet Archive'
     
     audio_formats = ['mp3', 'wav', 'flac', 'ogg' ]
-    video_formats = []
+    video_formats = ['mp4', 'ogv', 'avi', 'mov']
     
     def search(self, params, query, start, end):
         """
         Perform a search of the Internet Archive.
         """
-        rows = 50
+        rows = (end - start) + 1
+        
+        logger.debug('search for {0}, start: {1}, end: {2}, rows: {3}'
+                                            .format(query, start, end, rows))
+
         params += [ "q={0}".format(urllib2.quote(query)),
                     "rows={0}".format(rows),
+                    "start={0}".format(start),                    
                     "indent=yes",
                     "output=json"   ]
                     
@@ -48,24 +61,51 @@ class InternetArchiveManager(BaseSearchManager):
         
         response = urllib2.urlopen(request)
         
-        return self._handleResponse(unidecode(response.read()))
+        rcontent = response.read()
+        if type(rcontent) is unicode:
+            rcontent = unidecode(rcontent)
+
+
+        return self._handleResponse(rcontent)
     
     def _parseFilemeta(self, baseurl, filemeta_content, mtype):
         # e.g. see http://ia600309.us.archive.org/31/items/Insight_101214/Insight_101214_files.xml
         root = ET.fromstring(filemeta_content)
 
         # Only accept known types.
-        if mtype == 'audio': known = self.audio_formats
-        elif mtype == 'video': known = self.video_formats
+        if mtype == 'audio': 
+            known = self.audio_formats
+            alt = self.video_formats
+            alttype = 'video'
+        elif mtype == 'video':
+            known = self.video_formats
+            alt = self.audio_formats
+            alttype = 'audio'
 
         files = []
+        thumbs = []
+        mtype_match = False
+        alttype_match = False
         for child in root:
             filename = child.attrib['name']
             ext = filename.split('.')[-1].lower()
             if ext in known:   
                 files.append( ''.join([ baseurl, filename ]) )
+                mtype_match = True
+            elif ext in alt:
+                alttype_match = True
+                
+            if child.find('format').text == 'Thumbnail':
+                thumbs.append(''.join([ baseurl, filename ]))
+            
+        # Sometimes mtype is wrong in the metadata record.
+        if not mtype_match and alttype_match:   # Declared mtype is incorrect.
+            logger.debug('No {0} content, but found {1} content'
+                                                        .format(mtype, alttype))
+            raise MediaTypeException('No {0} content, but found {1} content'
+                                                        .format(mtype, alttype))  
 
-        return files
+        return files, thumbs
     
     def _parseMetacontent(self, baseurl, meta_content):
         # e.g. see http://ia600309.us.archive.org/31/items/Insight_101214/Insight_101214_meta.xml
@@ -111,24 +151,21 @@ class InternetArchiveManager(BaseSearchManager):
         # Get URLs for all audio files.
         filemeta = ''.join([baseurl, identifier, '_files.xml'])        
         filemeta_content = urllib2.urlopen(filemeta).read()
-        files = self._parseFilemeta(baseurl, filemeta_content, mtype)
+        files, thumbs = self._parseFilemeta(baseurl, filemeta_content, mtype)
         
         # Get metadata about item: creator, date_published
         metaurl = ''.join([baseurl, identifier, '_meta.xml'])        
         meta_content = urllib2.urlopen(metaurl).read()
         date_pub, creator, desc = self._parseMetacontent(baseurl, meta_content)
-        
-        return contextURL, date_pub, creator, desc, files
+                
+        return contextURL, date_pub, creator, desc, files, thumbs
 
     
     def _handleResponse(self, response=None):
     
-#        rjson = json.loads(response)
+        rjson = json.loads(response)
 
-        with open('./temp.pickle', 'r') as f:
-            rjson = pickle.load(f)
-
-        N = int(rjson['response']['numFound'])
+        N = len(rjson['response']['docs'])
         logger.debug('response contains {0} items'.format(N))
         
         items = []
@@ -138,35 +175,36 @@ class InternetArchiveManager(BaseSearchManager):
             
             # Movies and audio are handled differently.
             #   Video files (movies)...
-            if item['mediatype'] == 'movies': mtype = 'video'
-            
+            if item['mediatype'] == 'movies':
+                mtype = 'video'
+                alttype = 'audio'
             #   Audio files...
             elif item['mediatype'] == 'audio': 
                 mtype = 'audio'
+                alttype = 'video'
+
+            try:    # Catch cases where declared mtype is incorrect.
                 md = self._getDetails(item['identifier'], mtype)
-                contextURL, date_pub, creator, desc, files = md
+            except MediaTypeException:
+                md = self._getDetails(item['identifier'], alttype)
+                mtype = alttype
+            contextURL, date_pub, creator, desc, files, thumbs = md
                 
-            elif item['mediatype'] == 'texts': continue # TODO: handle texts.
-            
-#            server_location = item['
-##            items.append({
-##                'title': item['title'],
-##                'type': mtype,
-##                'thumbnailURL': thumburls,
-##                'url': url })
+            if item['mediatype'] == 'texts': continue # TODO: handle texts?
+
+            items.append({
+                'title': item['title'],
+                'type': mtype,
+                'url': contextURL.split('&')[0],
+                'contextURL': contextURL,
+                'date': date_pub,
+                'creator': creator,
+                'description': desc,
+                'thumbnailURL': thumbs,
+                 })
+        result = { 'items': items }
         
-        #
-        
-        # q=%22dream+act%22
-        # &fl%5B%5D=collection&fl%5B%5D=creator&fl%5B%5D=date&fl%5B%5D=description&fl%5B%5D=format&fl%5B%5D=identifier&fl%5B%5D=imagecount&fl%5B%5D=mediatype&fl%5B%5D=publisher&fl%5B%5D=rights&fl%5B%5D=source&fl%5B%5D=subject&fl%5B%5D=title&fl%5B%5D=type
-        # &sort%5B%5D=&sort%5B%5D=&sort%5B%5D=
-        # &rows=50
-        # &page=2
-        # &indent=yes
-        # &output=json
-        
-    
-    
+        return result, rjson
 
 class GoogleImageSearchManager(BaseSearchManager):
     """
@@ -244,6 +282,7 @@ class GoogleImageSearchManager(BaseSearchManager):
                     'width': item['image']['width'],
                     'mime': item['mime'],
                     'contextURL': item['image']['contextLink'],
+                    'creator': '',
                     'thumbnailURL': item['image']['thumbnailLink']      
                 }
             result['items'].append(i)
