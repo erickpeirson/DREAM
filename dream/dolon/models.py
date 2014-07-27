@@ -122,6 +122,7 @@ class QueryEvent(models.Model):
                                                 verbose_name='search string')
     rangeStart = models.IntegerField(verbose_name='Starting at')
     rangeEnd = models.IntegerField(verbose_name='Ending at')
+
     datetime = models.DateTimeField(auto_now=True)
     
     # Tasks and dispathing.
@@ -228,7 +229,8 @@ class QueryResultItem(models.Model):
                         'size': params['size'],
                         'height': params['height'],
                         'width': params['width'],
-                        'mime': params['mime']  }   )[0]
+                        'mime': params['mime'],
+                        'creator': params['creator']  }   )[0]
 
             # Associate thumbnail, image, and context.
             if i.thumbnail is None:
@@ -244,7 +246,13 @@ class QueryResultItem(models.Model):
                         'title': self.title,
                         'mime': params['mime'],
                         'length': params['length'],
-                        'size': params['size']  }   )[0]
+                        'size': params['size'],
+                        'creator': params['creator']  }   )[0]
+                        
+            if len(i.thumbnails.all()) == 0:
+                for url in params['thumbnailURL']:
+                    thumb = Thumbnail.objects.get_or_create(url=url)[0]                        
+                    i.thumbnails.add(thumb)
                       
         ### Audio ###
         elif self.type == 'audio':
@@ -253,7 +261,12 @@ class QueryResultItem(models.Model):
                         'title': self.title,
                         'mime': params['mime'],
                         'length': params['length'],
-                        'size': params['size']  }   )[0]                        
+                        'size': params['size'],
+                        'creator': params['creator']  }   )[0]     
+                        
+            if i.thumbnail is None:
+                i.thumbnail = Thumbnail.objects.get_or_create(
+                                    url=params['thumbnailURL'][0]   )[0]                                           
 
         context  = Context.objects.get_or_create(url=self.contextURL)[0]
         i.context.add(context)
@@ -296,6 +309,8 @@ class Item(models.Model):
                                                           
     events = models.ManyToManyField('QueryEvent', related_name='items', 
                                                           blank=True, null=True)
+                                                          
+    creator = models.CharField(max_length=400, blank=True, null=True)
     
     creationDate = models.DateTimeField(blank=True, null=True)
     """Unclear what this value should be."""
