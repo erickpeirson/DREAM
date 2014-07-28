@@ -41,7 +41,7 @@ class InternetArchiveManager(BaseSearchManager):
     audio_formats = ['mp3', 'wav', 'flac', 'ogg' ]
     video_formats = ['mp4', 'ogv', 'avi', 'mov']
     
-    def search(self, params, query, start, end):
+    def search(self, params, query, start=1, end=10):
         """
         Perform a search of the Internet Archive.
         """
@@ -201,8 +201,14 @@ class InternetArchiveManager(BaseSearchManager):
                 'creator': creator,
                 'description': desc,
                 'thumbnailURL': thumbs,
+                'files': files,
                  })
-        result = { 'items': items }
+                 
+        start = int(rjson['response']['start'])
+        end = int(rjson['responseHeader']['params']['rows']) + start
+        result = {  'items': items, 
+                    'start': start, 
+                    'end': end  }
         
         return result, rjson
 
@@ -214,7 +220,7 @@ class GoogleImageSearchManager(BaseSearchManager):
     endpoint = "https://www.googleapis.com/customsearch/v1?"
     name = 'Google'
 
-    def imageSearch(self, params, query, start=1, end=10):
+    def search(self, params, query, start=1, end=10):
         """
         Performs an image search for ``query`` via the Google Custom Search API.
 
