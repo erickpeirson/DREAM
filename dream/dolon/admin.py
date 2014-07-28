@@ -80,6 +80,7 @@ def approve(modeladmin, request, queryset):
         images.append(obj.image)
         contexts += [ c for c in obj.context.all() ]
     
+    
     spawnRetrieveImages(images)
     spawnRetrieveContexts(contexts)
 

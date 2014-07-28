@@ -160,7 +160,7 @@ def search(qstring, start, end, manager_name, params, **kwargs):
     if not kwargs.get('testing', False):
         manager = getattr(M, manager_name)()
         try:
-            result, response = manager.imageSearch( params, qstring,
+            result, response = manager.search( params, qstring,
                                                     start=start, end=end )
         except Exception as exc:
             try:

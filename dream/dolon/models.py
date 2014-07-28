@@ -220,7 +220,15 @@ class QueryResultItem(models.Model):
         """
 
         params = pickle.loads(self.params)
+        if 'length' in params: length = params['length']
+        else: length = 0
+            
+        if 'size' in params: size = params['size']
+        else: size = 0
         
+        if 'creator' in params: creator = params['creator']
+        else: creator = ''
+                    
         ### Images ###
         if self.type == 'image':
             i = ImageItem.objects.get_or_create(url=self.url,
@@ -233,7 +241,7 @@ class QueryResultItem(models.Model):
                         'creator': params['creator']  }   )[0]
 
             # Associate thumbnail, image, and context.
-            if i.thumbnail is None:
+            if i.thumbnail is None and len(params['thumbnailURL']) > 0:
                 i.thumbnail = Thumbnail.objects.get_or_create(
                                     url=params['thumbnailURL'][0]   )[0]
             if i.image is None:
@@ -244,29 +252,37 @@ class QueryResultItem(models.Model):
             i = VideoItem.objects.get_or_create(url=self.url,
                     defaults = {
                         'title': self.title,
-                        'mime': params['mime'],
-                        'length': params['length'],
-                        'size': params['size'],
-                        'creator': params['creator']  }   )[0]
+                        'length': length,
+                        'size': size,
+                        'creator': creator  }   )[0]
                         
-            if len(i.thumbnails.all()) == 0:
+            if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
                 for url in params['thumbnailURL']:
                     thumb = Thumbnail.objects.get_or_create(url=url)[0]                        
                     i.thumbnails.add(thumb)
+                    
+            if len(i.videos.all()) == 0 and len(params['files']) > 0:
+                for url in params['files']:
+                    video = Video.objects.get_or_create(url=url)[0]
+                    i.videos.add(video)
                       
         ### Audio ###
         elif self.type == 'audio':
             i = AudioItem.objects.get_or_create(url=self.url,
                     defaults = {
                         'title': self.title,
-                        'mime': params['mime'],
-                        'length': params['length'],
-                        'size': params['size'],
-                        'creator': params['creator']  }   )[0]     
+                        'length': length,
+                        'size': size,
+                        'creator': creator  }   )[0]     
                         
-            if i.thumbnail is None:
+            if i.thumbnail is None and len(params['thumbnailURL']) > 0:
                 i.thumbnail = Thumbnail.objects.get_or_create(
                                     url=params['thumbnailURL'][0]   )[0]                                           
+                                    
+            if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
+                for url in params['files']:
+                    seg = Audio.objects.get_or_create(url=url)[0]
+                    i.audio_segments.add(seg)                                    
 
         context  = Context.objects.get_or_create(url=self.contextURL)[0]
         i.context.add(context)
@@ -302,7 +318,6 @@ class Item(models.Model):
     title = models.CharField(max_length=400, blank=True, null=True)
 
     size = models.IntegerField(default=0, null=True, blank=True)
-    mime = models.CharField(max_length=50, null=True, blank=True)
 
     context = models.ManyToManyField('Context', related_name='items',
                                                           blank=True, null=True)
@@ -359,10 +374,8 @@ class VideoItem(Item):
     thumbnails = models.ManyToManyField(    'Thumbnail', blank=True, null=True,
                                             related_name='video_items'  )
 
-    hifi_video = models.ForeignKey( 'Video', blank=True, null=True,
-                                    related_name='videoitem_hifi'   )
-    lofi_video = models.ForeignKey('Video', blank=True, null=True,
-                                    related_name='videoitem_lofi'   )
+    videos = models.ManyToManyField(    'Video', blank=True, null=True,
+                                        related_name='videoitem'   )
 
     length = models.IntegerField(   default=0, null=True, blank=True    )
     
