@@ -346,6 +346,7 @@ class Item(models.Model):
     """
     
     hide = models.BooleanField(default=False, verbose_name='hidden')
+    retrieved = models.BooleanField(default=False)
 
     def __unicode__(self):
         return unicode(self.title)
