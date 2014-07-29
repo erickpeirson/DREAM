@@ -688,7 +688,27 @@ class AudioAdmin(admin.ModelAdmin):
     def get_actions(self, request):
         actions = super(AudioFileAdmin, self).get_actions(request)
         del actions['delete_selected']
-        return actions    
+        return actions
+        
+    def get_model_perms(self, request):
+        """
+        Return empty perms dict thus hiding the model from admin index.
+        """
+        return {}        
+        
+class ThumbnailAdmin(admin.ModelAdmin):
+    def get_model_perms(self, request):
+        """
+        Return empty perms dict thus hiding the model from admin index.
+        """
+        return {}
+        
+class VideoAdmin(admin.ModelAdmin):
+    def get_model_perms(self, request):
+        """
+        Return empty perms dict thus hiding the model from admin index.
+        """
+        return {}
             
 ### Registration ###
 
@@ -701,5 +721,5 @@ admin.site.register(Tag, TagAdmin)
 admin.site.register(Context, ContextAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Audio, AudioAdmin)
-admin.site.register(Video)
-admin.site.register(Thumbnail)
+admin.site.register(Video, VideoAdmin)
+admin.site.register(Thumbnail, ThumbnailAdmin)
