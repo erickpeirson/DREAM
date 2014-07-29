@@ -447,24 +447,21 @@ class ItemAdmin(admin.ModelAdmin):
         return '<ul>{0}</ul>'.format(repr)
     contexts.allow_tags = True
     
-    def _format_thumb(self, thumb):
-        if thumb is not None and thumb.image is not None:
+    def _format_thumb(self, obj, thumb, list):
+        if thumb is not None and thumb.image is not None:   
+
             pattern = '<a href="{0}"><img src="{1}"/></a>'
             if list:
                 fullsize_url = get_admin_url(obj)
-            else:
+            else:   
                 if hasattr(obj, 'imageitem'):
-                    if obj.imagitem.image is not None:
-                        fullsize_url = get_admin_url(obj.image)
+                    if obj.imageitem.image is not None:
+                        fullsize_url = get_admin_url(obj.imageitem.image)
                     else:
                         fullsize_url = '#'
                 else:
                     fullsize_url = '#'
-                    
-            if thumb.image is not None:
-                return pattern.format(fullsize_url, thumb.image.url)
-            else:
-                return None            
+            return pattern.format(fullsize_url, thumb.image.url)
         return None  
         
     def _format_embed(self, videos):
@@ -497,29 +494,12 @@ class ItemAdmin(admin.ModelAdmin):
             return None
 
         if hasattr(obj, 'imageitem'):
-            return self._format_thumb(obj.imageitem.thumbnail)            
+            return self._format_thumb(obj, obj.imageitem.thumbnail, list)            
         elif hasattr(obj, 'audioitem'):
-            return self._format_thumb(obj.audioitem.thumbnail)
+            return self._format_thumb(obj, obj.audioitem.thumbnail, list)
         elif hasattr(obj, 'videoitem'):
             videos = obj.videoitem.videos.all()
             return self._format_embed(videos)
-                
-            
-            # Check to make sure that there is video content to embed. If not,
-            #  try to get a thumbnail. If that fails, return None.
-#            if len(videos) > 0:
-#                try:
-#                    videos[0].video.url
-#                except ValueError:
-#                    try:
-#                        return self._format_thumb(
-#                                        obj.videoitem.thumbnails.all()[0]   
-#                                    )
-#                    except IndexError:
-#                        return None
-                
-            
-
     item_image.allow_tags = True
     
     def query_events(self, obj):
@@ -722,3 +702,4 @@ admin.site.register(Context, ContextAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Audio, AudioAdmin)
 admin.site.register(Video)
+admin.site.register(Thumbnail)
