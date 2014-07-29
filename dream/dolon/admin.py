@@ -62,8 +62,7 @@ def dispatch(modeladmin, request, queryset):
     """
 
     for obj in queryset:
-        dispatchQueryEvent(obj.id)
-
+        try_dispatch(obj)
 dispatch.short_description = 'Dispatch selected query'    
 
 def approve(modeladmin, request, queryset):
@@ -72,16 +71,31 @@ def approve(modeladmin, request, queryset):
     """
     
     images = []
+    videos = []
+    audio = []
     contexts = []
     for obj in queryset:
         obj.status = 'AP'
         obj.save()
         
-        images.append(obj.image)
-        contexts += [ c for c in obj.context.all() ]
-    
+        if hasattr(obj, 'imageitem'):
+            print 'image', obj
+            images.append(obj.imageitem.image)
+            contexts += [ c for c in obj.imageitem.context.all() ]
+        elif hasattr(obj, 'videoitem'):
+            print 'video', obj
+            videos += obj.videoitem.videos.all()
+            contexts += [ c for c in obj.videoitem.context.all() ]            
+        elif hasattr(obj, 'audioitem'):
+            print 'audio', obj
+            audio += obj.audioitem.audio_segments.all()
+            contexts += [ c for c in obj.audioitem.context.all() ]            
+
+    print contexts
     
     spawnRetrieveImages(images)
+    spawnRetrieveAudio(audio)
+    spawnRetrieveVideo(videos)
     spawnRetrieveContexts(contexts)
 
 approve.short_description = 'Approve selected items'
@@ -348,15 +362,16 @@ class QueryEventAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
-    list_display = ('thumb_image','title', 'height','width', 'status',)
+    list_display = ('thumb_image','title', 'status',)
     readonly_fields = ( 'item_image', 'resource', 'status', 'size', 
-                        'height', 'width', 'mime', 'query_events', 'contexts',
+                        'query_events', 'contexts',
                         'creationDate',  'children', 'parent', 'hide')
     exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url')
     list_filter = ('status','events','tags')
     list_editable = ['title',]
     list_select_related = True
     search_fields = ['title',]
+    list_per_page = 5
     
     actions = [approve, reject, pend, merge]
         
@@ -446,6 +461,42 @@ class ItemAdmin(admin.ModelAdmin):
         return '<ul>{0}</ul>'.format(repr)
     contexts.allow_tags = True
     
+    def _format_thumb(self, thumb):
+        if thumb is not None and thumb.image is not None:
+            pattern = '<a href="{0}"><img src="{1}"/></a>'
+            if list:
+                fullsize_url = get_admin_url(obj)
+            else:
+                if hasattr(obj, 'imageitem'):
+                    if obj.imagitem.image is not None:
+                        fullsize_url = get_admin_url(obj.image)
+                    else:
+                        fullsize_url = '#'
+                else:
+                    fullsize_url = '#'
+                    
+            if thumb.image is not None:
+                return pattern.format(fullsize_url, thumb.image.url)
+            else:
+                return None            
+        return None  
+        
+    def _format_embed(self, videos):
+        if len(videos) == 0:
+            return None
+            
+        pattern = '<video width="320" height="240" controls>\n\t{0}\n</video>'
+        spattern = '<source src="{0}" type="{1}" />'
+        
+        vformatted = []
+        for video in videos:
+            try:
+                vformatted.append(spattern.format(video.video.url, video.mime))
+            except ValueError:
+                vformatted.append(spattern.format(video.url, ''))
+        
+        return pattern.format('\n'.join(vformatted))
+    
     def item_image(self, obj, list=False):
         """
         Generates a thumbnail image element, with a link to the fullsize
@@ -454,21 +505,35 @@ class ItemAdmin(admin.ModelAdmin):
 
         try:    # If something went wrong when downloading a thumbnail, 
                 #  this will raise a ValueError.
-            obj.thumbnail.image.url
+            if hasattr(obj, 'imageitem'):
+                obj.imageitem.thumbnail.image.url
         except:# ValueError, AttributeError:
             return None
 
-        if obj.thumbnail is not None and obj.thumbnail.image is not None:
-            pattern = '<a href="{0}"><img src="{1}"/></a>'
-            if list:
-                fullsize_url = get_admin_url(obj)
-            else:
-                if obj.image is not None:
-                    fullsize_url = get_admin_url(obj.image)
-                else:
-                    fullsize_url = '#'
-            return pattern.format(fullsize_url, obj.thumbnail.image.url)
-        return None
+        if hasattr(obj, 'imageitem'):
+            return self._format_thumb(obj.imageitem.thumbnail)            
+        elif hasattr(obj, 'audioitem'):
+            return self._format_thumb(obj.audioitem.thumbnail)
+        elif hasattr(obj, 'videoitem'):
+            videos = obj.videoitem.videos.all()
+            return self._format_embed(videos)
+                
+            
+            # Check to make sure that there is video content to embed. If not,
+            #  try to get a thumbnail. If that fails, return None.
+#            if len(videos) > 0:
+#                try:
+#                    videos[0].video.url
+#                except ValueError:
+#                    try:
+#                        return self._format_thumb(
+#                                        obj.videoitem.thumbnails.all()[0]   
+#                                    )
+#                    except IndexError:
+#                        return None
+                
+            
+
     item_image.allow_tags = True
     
     def query_events(self, obj):
@@ -641,7 +706,7 @@ class EngineAdmin(admin.ModelAdmin):
         return super(EngineAdmin, self).get_form(request, obj, **kwargs)
         
 class AudioAdmin(admin.ModelAdmin):
-    list_display = ('audio_file_player')
+    list_display = ('audio_file_player',)
     actions = ['custom_delete_selected']
 
     def custom_delete_selected(self, request, queryset):
@@ -669,4 +734,5 @@ admin.site.register(Tag, TagAdmin)
 
 admin.site.register(Context, ContextAdmin)
 admin.site.register(Image, ImageAdmin)
-admin.site.register(Audio, AudioAdin)
+admin.site.register(Audio, AudioAdmin)
+admin.site.register(Video)

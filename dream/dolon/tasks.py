@@ -3,11 +3,13 @@ from __future__ import absolute_import
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel('INFO')
+logger.setLevel('DEBUG')
 
 from BeautifulSoup import BeautifulSoup
 
 from django.core.files import File
+from django.http import HttpRequest
+
 import tempfile
 import urllib2
 from urllib2 import HTTPError
@@ -28,6 +30,7 @@ from celery.exceptions import MaxRetriesExceededError
 
 engineManagers = {
     'GoogleImageSearchManager': M.GoogleImageSearchManager,
+    'InternetArchiveManager': M.InternetArchiveManager,
 }
 
 @shared_task
@@ -73,8 +76,15 @@ def try_dispatch(queryevent):
     logger.debug('Trying to dispatch queryevent {0}'.format(queryevent.id))
     
     engine = queryevent.engine
-    remaining_today = engine.daylimit - engine.dayusage
-    remaining_month = engine.monthlimit - engine.monthusage
+    if engine.daylimit is None:
+        remaining_today = 4000000000000
+    else:
+        remaining_today = engine.daylimit - engine.dayusage
+    
+    if engine.monthlimit is None:
+        remaining_month = 4000000000000
+    else:
+        remaining_month = engine.monthlimit - engine.monthusage
     
     logger.debug('Remaining today: {0}, remaining this month: {1}'
                                       .format(remaining_today, remaining_month))
@@ -256,13 +266,25 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
         return 'ERROR'
     
     queryresultid, queryitemsid = processresult
+    logger.debug(queryresultid, queryitemsid)
     queryresult = QueryResult.objects.get(id=queryresultid)
     queryitems = [ QueryResultItem.objects.get(id=id) for id in queryitemsid ]
     
     logger.debug('spawnThumbnails: creating jobs')    
-    job = group( ( getFile.s(item.thumbnailURL) 
-                    | storeThumbnail.s(item.item.thumbnail.id) 
-                    ) for item in queryitems )
+
+    thumbs = []
+    for qi in queryitems:
+        print qi.item.__dict__
+        if hasattr(qi.item, 'audioitem'):
+            thumbs.append(qi.item.audioitem.thumbnail)            
+        elif hasattr(qi.item, 'imageitem'):
+            thumbs.append(qi.item.imageitem.thumbnail)
+        elif hasattr(qi.item, 'videoitem'):
+            thumbs += qi.item.videoitem.thumbnails.all()
+
+    job = group( ( getFile.s(thumb.url) 
+                    | storeThumbnail.s(thumb.id) 
+                    ) for thumb in thumbs if thumb is not None )
 
     logger.debug('spawnThumbnails: dispatching jobs')
     result = job.apply_async()    
@@ -283,7 +305,7 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
 
     return task    
 
-@shared_task(rate_limit='1/s', max_retries=3)
+@shared_task(rate_limit='4/s', max_retries=0)
 def getFile(url):
     """
     Retrieve a resource from `URL`.
@@ -305,7 +327,8 @@ def getFile(url):
     size : int
         Filesize.
     """
-
+    print url
+    
     filename = url.split('/')[-1]
     try:
         response = urllib2.urlopen(url)
@@ -384,10 +407,44 @@ def storeImage(result, imageid):
         file = File(f)
         image.image.save(filename, file, True)
         image.save()
-        
+    
     return image.id
     
-@shared_task(rate_limit='1/s', max_retries=3)
+@shared_task
+def storeAudio(result, audioid):
+    
+    url, filename, fpath, mime, size = result
+    
+    audio = Audio.objects.get(pk=audioid)
+    audio.size = size
+    audio.mime = mime
+    
+    with open(fpath, 'rb') as f:
+        file = File(f)
+        audio.audio_file = file
+        #.save(filename, file, True)
+        audio.save()
+        
+    return audio.id
+    
+@shared_task
+def storeVideo(result, videoid):
+    
+    url, filename, fpath, mime, size = result
+    
+    video = Video.objects.get(pk=videoid)
+    video.size = size
+    video.mime = mime
+    
+    with open(fpath, 'rb') as f:
+        file = File(f)
+        video.video = file
+        #.save(filename, file, True)
+        video.save()
+        
+    return video.id    
+    
+@shared_task(rate_limit='4/s', max_retries=3)
 def getStoreContext(url, contextid):
     """
     Retrieve the HTML contents of a resource and update :class:`.Context` 
@@ -423,10 +480,7 @@ def getStoreContext(url, contextid):
     
     return context.id
 
-
-
 #### Was dolon.managers #####
-
 
 def dispatchQueryEvent(queryevent_id):
     queryevent = QueryEvent.objects.get(pk=queryevent_id)
@@ -451,6 +505,28 @@ def spawnRetrieveImages(queryset):
     result = job.apply_async()
 
     return result.id, [ r.id for r in result.results ]    
+    
+def spawnRetrieveAudio(queryset):
+    """
+    Generates a set of tasks to retrieve audio files.
+    """
+    
+    job = group( ( getFile.s(i.url) | storeAudio.s(i.id) ) for i in queryset )
+
+    result = job.apply_async()
+
+    return result.id, [ r.id for r in result.results ]  
+    
+def spawnRetrieveVideo(queryset):
+    """
+    Generates a set of tasks to retrieve audio files.
+    """
+    
+    job = group( ( getFile.s(i.url) | storeVideo.s(i.id) ) for i in queryset )
+
+    result = job.apply_async()
+
+    return result.id, [ r.id for r in result.results ]      
     
 def spawnRetrieveContexts(queryset):
     """

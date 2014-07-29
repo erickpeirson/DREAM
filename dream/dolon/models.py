@@ -8,7 +8,7 @@ import os.path
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel('INFO')
+logger.setLevel('DEBUG')
 
 import ast
 import cPickle as pickle
@@ -17,7 +17,10 @@ from celery.result import AsyncResult, TaskSetResult
 
 from util import *
 
-engineManagers = (( 'GoogleImageSearchManager', 'Google Image Search'),)
+engineManagers = (
+    ( 'GoogleImageSearchManager', 'Google Image Search'),
+    ( 'InternetArchiveManager', 'Internet Archive'),
+)
 
 # Create your models here.
 
@@ -235,13 +238,14 @@ class QueryResultItem(models.Model):
                     defaults = {
                         'title': self.title,
                         'size': params['size'],
-                        'height': params['height'],
-                        'width': params['width'],
-                        'mime': params['mime'],
+#                        'height': params['height'],
+#                        'width': params['width'],
+#                        'mime': params['mime'],
                         'creator': params['creator']  }   )[0]
 
             # Associate thumbnail, image, and context.
             if i.thumbnail is None and len(params['thumbnailURL']) > 0:
+                print params['thumbnailURL']
                 i.thumbnail = Thumbnail.objects.get_or_create(
                                     url=params['thumbnailURL'][0]   )[0]
             if i.image is None:
@@ -482,10 +486,11 @@ class Audio(models.Model):
     size = models.IntegerField(default=0)
     length = models.IntegerField(default=0)    
     mime = models.CharField(max_length=50, null=True, blank=True)      
-        
-    audio_file = AudioField(upload_to='audio', blank=True,
-                            ext_whitelist=(".mp3", ".wav", ".ogg"),
-                            help_text=("Allowed type - .mp3, .wav, .ogg"))        
+
+    audio_file = models.FileField(upload_to='audio', null=True, blank=True)
+#    audio_file = AudioField(    upload_to='audio', blank=True,
+#                                ext_whitelist=(".mp3", ".wav", ".ogg"),
+#                                help_text=("Allowed type - .mp3, .wav, .ogg")  )        
 
     def __unicode__(self):
         return unicode(self.url) 

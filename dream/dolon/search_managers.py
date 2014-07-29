@@ -126,7 +126,8 @@ class InternetArchiveManager(BaseSearchManager):
     
     def _getContext(self, identifier):
         # Use this as the context url.
-        request = self.details_endpoint + identifier + '&output=json'
+        contextURL = self.details_endpoint + identifier
+        request = contextURL + '&output=json'
 
         logger.debug('request: {0}'.format(request))
 
@@ -138,7 +139,7 @@ class InternetArchiveManager(BaseSearchManager):
         dir = rjson['dir']
         baseurl = ''.join(['http://', server, dir, '/' ])
         
-        return request, baseurl
+        return contextURL, baseurl
     
     def _getDetails(self, identifier, mtype):
         """
@@ -195,7 +196,7 @@ class InternetArchiveManager(BaseSearchManager):
             items.append({
                 'title': item['title'],
                 'type': mtype,
-                'url': contextURL.split('&')[0],
+                'url': contextURL,
                 'contextURL': contextURL,
                 'date': date_pub,
                 'creator': creator,
@@ -282,14 +283,14 @@ class GoogleImageSearchManager(BaseSearchManager):
             i = {
                     'type': 'image',
                     'url': item['link'],
-                    'title': item['title'],
+                    'title': unidecode(item['title']),
                     'size': item['image']['byteSize'],
                     'height': item['image']['height'],
                     'width': item['image']['width'],
                     'mime': item['mime'],
                     'contextURL': item['image']['contextLink'],
                     'creator': '',
-                    'thumbnailURL': item['image']['thumbnailLink']      
+                    'thumbnailURL': [item['image']['thumbnailLink'],]
                 }
             result['items'].append(i)
 
