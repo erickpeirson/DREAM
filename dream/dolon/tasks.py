@@ -480,8 +480,7 @@ def storeAudio(result, audioid):
     
     with open(fpath, 'rb') as f:
         file = File(f)
-        audio.audio_file = file
-        #.save(filename, file, True)
+        audio.audio_file.save(filename, file, True)
         audio.save()
         
     return audio.id
@@ -497,8 +496,7 @@ def storeVideo(result, videoid):
     
     with open(fpath, 'rb') as f:
         file = File(f)
-        video.video = file
-        #.save(filename, file, True)
+        video.video.save(filename, file, True)
         video.save()
         
     return video.id    
