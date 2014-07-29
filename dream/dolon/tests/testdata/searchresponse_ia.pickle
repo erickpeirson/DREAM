@@ -7,7 +7,7 @@ p4
 I0
 sVQTime
 p5
-I22
+I2938
 sVparams
 p6
 (dp7
@@ -47,10 +47,10 @@ p22
 I1
 sVmaxScore
 p23
-F4.2883940000000003
+F4.2918735000000003
 sVnumFound
 p24
-I712
+I713
 sVdocs
 p25
 (lp26
@@ -105,7 +105,7 @@ p51
 I7
 sVscore
 p52
-F3.5666685
+F3.5691264
 sVidentifier
 p53
 VDreamActAudio
@@ -165,7 +165,7 @@ p81
 I1
 sVscore
 p82
-F3.5266449999999998
+F3.5291983999999998
 sVlicenseurl
 p83
 Vhttp://creativecommons.org/licenses/by-nc-nd/3.0/
@@ -252,7 +252,7 @@ p125
 I0
 sVscore
 p126
-F3.5265279999999999
+F3.5291047
 sVlicenseurl
 p127
 Vhttp://creativecommons.org/licenses/by/3.0/us/
@@ -325,7 +325,7 @@ p162
 I0
 sVscore
 p163
-F3.4630459999999998
+F3.4657521
 sVlicenseurl
 p164
 Vhttp://creativecommons.org/licenses/by/3.0/us/
@@ -387,7 +387,7 @@ p193
 I1
 sVscore
 p194
-F3.3966126000000001
+F3.3994775000000002
 sVlicenseurl
 p195
 Vhttp://creativecommons.org/licenses/by-nc-sa/2.0/
@@ -459,7 +459,7 @@ p229
 I0
 sVscore
 p230
-F3.2550728000000002
+F3.2579832
 sVlicenseurl
 p231
 Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
@@ -531,7 +531,7 @@ p265
 I1
 sVscore
 p266
-F3.1915385999999999
+F3.1945944000000002
 sVlicenseurl
 p267
 Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
@@ -603,7 +603,7 @@ p301
 I0
 sVscore
 p302
-F3.1902080000000002
+F3.1932659999999999
 sVlicenseurl
 p303
 Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
@@ -703,7 +703,7 @@ p351
 I0
 sVscore
 p352
-F3.0500653
+F3.0523666999999999
 sVlicenseurl
 p353
 Vhttp://creativecommons.org/publicdomain/zero/1.0/
@@ -782,7 +782,7 @@ p391
 I0
 sVscore
 p392
-F2.7452152000000001
+F2.7475665
 sVlicenseurl
 p393
 Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
