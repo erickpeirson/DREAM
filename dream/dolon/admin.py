@@ -70,35 +70,21 @@ def approve(modeladmin, request, queryset):
     Approves all selected :class:`.Items`\.
     """
     
-    images = []
-    videos = []
-    audio = []
     contexts = []
     for obj in queryset:
         obj.status = 'AP'
         obj.save()
-        
-        if hasattr(obj, 'imageitem'):
-            print 'image', obj
-            images.append(obj.imageitem.image)
-            contexts += [ c for c in obj.imageitem.context.all() ]
-        elif hasattr(obj, 'videoitem'):
-            print 'video', obj
-            videos += obj.videoitem.videos.all()
-            contexts += [ c for c in obj.videoitem.context.all() ]            
-        elif hasattr(obj, 'audioitem'):
-            print 'audio', obj
-            audio += obj.audioitem.audio_segments.all()
-            contexts += [ c for c in obj.audioitem.context.all() ]            
-
-    print contexts
-    
-    spawnRetrieveImages(images)
-    spawnRetrieveAudio(audio)
-    spawnRetrieveVideo(videos)
-    spawnRetrieveContexts(contexts)
-
 approve.short_description = 'Approve selected items'
+
+def retrieve_content(modeladmin, request, queryset):
+    """
+    Retrieves content and contexts for a :class:`.Item`\.
+    """
+    
+    for obj in queryset:
+        if not obj.retrieved:
+            try_retrieve(obj)
+retrieve_content.short_description = 'Retrieve content for selected items'        
         
 def reject(modeladmin, request, queryset):
     """
@@ -362,9 +348,9 @@ class QueryEventAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
-    list_display = ('thumb_image','title', 'status',)
-    readonly_fields = ( 'item_image', 'resource', 'status', 'size', 
-                        'query_events', 'contexts',
+    list_display = ('thumb_image','title', 'status','retrieved')
+    readonly_fields = ( 'item_image', 'resource', 'status', 'retrieved', 
+                        'size', 'query_events', 'contexts',
                         'creationDate',  'children', 'parent', 'hide')
     exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url')
     list_filter = ('status','events','tags')
@@ -373,7 +359,7 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ['title',]
     list_per_page = 5
     
-    actions = [approve, reject, pend, merge]
+    actions = [ approve, reject, pend, merge, retrieve_content ]
         
     def save_model(self, request, obj, form, change):
         """

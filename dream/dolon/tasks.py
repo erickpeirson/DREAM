@@ -33,29 +33,82 @@ engineManagers = {
     'InternetArchiveManager': M.InternetArchiveManager,
 }
 
-@shared_task
+@shared_task    # Scheduled.
 def trigger_dispatchers(*args, **kwargs):
     """
     Try to dispatch all pending :class:`.QueryEvent`\s.
     
-    
     Returns
     -------
     dispatched : list
-        IDs of dispatched QueryEvents.
+        IDs of dispatched :class:`.QueryEvents`\.
     """
 
     # Get all pending QueryEvents.
     queryevents = QueryEvent.objects.filter(dispatched=False)
 
-    logger.info('tasks.trigger_dispatchers: Found {0} pending QueryEvents.'
-                                                      .format(len(queryevents)))
+    logger.info('Found {0} pending QueryEvents.'.format(len(queryevents)))
     dispatched = []
     for qe in queryevents:
         try_dispatch(qe)
         dispatched.append(qe.id)
         
     return dispatched
+    
+@shared_task    # Scheduled.
+def trigger_retrieve(*args, **kwargs):
+    """
+    Try to retrieve content and contexts for all :class:`.Item` objects that
+    are approved (but not already retrieved).
+    
+    Returns
+    -------
+    retrieved : list
+        IDs of retrieved :class:`Item`\s.
+    """
+    
+    # Get all approved, non-retrieved Items.
+    items = Item.objects.filter(status='AP').filter(retrieved=False)
+    
+    logger.info('Found {0} approved Items.'.format(len(items)))
+    
+    retrieved = []
+    for item in items:
+        try_retrieve(item)
+        retrieved.append(item.id)
+        
+    return retrieved
+    
+def try_retrieve(obj, *args, **kwargs):
+    """
+    Attempt to retrieve content for an :class:`.Item` instance.
+    
+    Parameters
+    ----------
+    obj : :class:`.Item`
+    """
+    
+    images = []
+    videos = []
+    audio = []
+    contexts = []
+    if hasattr(obj, 'imageitem'):
+        images.append(obj.imageitem.image)
+        contexts += [ c for c in obj.imageitem.context.all() ]
+    elif hasattr(obj, 'videoitem'):
+        videos += obj.videoitem.videos.all()
+        contexts += [ c for c in obj.videoitem.context.all() ]            
+    elif hasattr(obj, 'audioitem'):
+        audio += obj.audioitem.audio_segments.all()
+        contexts += [ c for c in obj.audioitem.context.all() ]            
+    
+    spawnRetrieveImages(images)
+    spawnRetrieveAudio(audio)
+    spawnRetrieveVideo(videos)
+    spawnRetrieveContexts(contexts)
+    
+    obj.retrieved = True
+    obj.save()
         
 def try_dispatch(queryevent):
     """
@@ -76,6 +129,9 @@ def try_dispatch(queryevent):
     logger.debug('Trying to dispatch queryevent {0}'.format(queryevent.id))
     
     engine = queryevent.engine
+    
+    # Calculate remaining daily and monthly usage. If there are no limits, then
+    #  set remaining values unreasonably high.
     if engine.daylimit is None:
         remaining_today = 4000000000000
     else:
@@ -89,11 +145,14 @@ def try_dispatch(queryevent):
     logger.debug('Remaining today: {0}, remaining this month: {1}'
                                       .format(remaining_today, remaining_month))
 
+    # Get the page limit for this engine.
     if engine.pagelimit is not None:
         pagelimit = engine.pagelimit
     else:
         pagelimit = 400000000000    # Is this high enough?
 
+    # Make sure that the resulting queries won't exceed limits, and that the
+    #  starting and ending indices are sensical.
     pagesize = engine.pagesize
     start = queryevent.rangeStart
     end = min(queryevent.rangeEnd, pagelimit*pagesize)
@@ -115,8 +174,10 @@ def try_dispatch(queryevent):
         engine.monthusage += Nrequests
         engine.save()
         
+        # Success!
         logging.info('Dispatched QueryEvent {0}.'.format(queryevent.id))
     else:
+        # Over limits. Hold off until next time.
         logger.debug('Search quota for {0} depleted. Aborting.'.format(engine))
         pass
 
