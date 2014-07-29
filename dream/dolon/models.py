@@ -238,9 +238,6 @@ class QueryResultItem(models.Model):
                     defaults = {
                         'title': self.title,
                         'size': params['size'],
-#                        'height': params['height'],
-#                        'width': params['width'],
-#                        'mime': params['mime'],
                         'creator': params['creator']  }   )[0]
 
             # Associate thumbnail, image, and context.
