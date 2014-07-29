@@ -327,7 +327,7 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
         return 'ERROR'
     
     queryresultid, queryitemsid = processresult
-    logger.debug(queryresultid, queryitemsid)
+    logger.debug("{0}, {1}".format(queryresultid, queryitemsid))
     queryresult = QueryResult.objects.get(id=queryresultid)
     queryitems = [ QueryResultItem.objects.get(id=id) for id in queryitemsid ]
     
@@ -335,7 +335,6 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
 
     thumbs = []
     for qi in queryitems:
-        print qi.item.__dict__
         if hasattr(qi.item, 'audioitem'):
             thumbs.append(qi.item.audioitem.thumbnail)            
         elif hasattr(qi.item, 'imageitem'):
@@ -348,7 +347,7 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
                     ) for thumb in thumbs if thumb is not None )
 
     logger.debug('spawnThumbnails: dispatching jobs')
-    result = job.apply_async()    
+    result = job.apply_async(link=readResult.s())    
     
     logger.debug('spawnThumbnails: jobs dispatched')
 
@@ -388,7 +387,6 @@ def getFile(url):
     size : int
         Filesize.
     """
-    print url
     
     filename = url.split('/')[-1]
     try:
@@ -563,7 +561,7 @@ def spawnRetrieveImages(queryset):
     
     job = group( ( getFile.s(i.url) | storeImage.s(i.id) ) for i in queryset )
 
-    result = job.apply_async()
+    result = job.apply_async(link=readResult.s())
 
     return result.id, [ r.id for r in result.results ]    
     
@@ -574,7 +572,7 @@ def spawnRetrieveAudio(queryset):
     
     job = group( ( getFile.s(i.url) | storeAudio.s(i.id) ) for i in queryset )
 
-    result = job.apply_async()
+    result = job.apply_async(link=readResult.s())
 
     return result.id, [ r.id for r in result.results ]  
     
@@ -585,7 +583,7 @@ def spawnRetrieveVideo(queryset):
     
     job = group( ( getFile.s(i.url) | storeVideo.s(i.id) ) for i in queryset )
 
-    result = job.apply_async()
+    result = job.apply_async(link=readResult.s())
 
     return result.id, [ r.id for r in result.results ]      
     
@@ -596,9 +594,25 @@ def spawnRetrieveContexts(queryset):
     
     job = group( ( getStoreContext.s(i.url, i.id) ) for i in queryset )
 
-    result = job.apply_async()
+    result = job.apply_async(link=readResult.s())
 
     return result.id, [ r.id for r in result.results ]       
+
+@shared_task
+def readResult(*args, **kwargs):
+    """
+    Reads the result of a task, so as to clear the queue.
+    """
+    
+    pass
+    
+@shared_task
+def completeQueryEvent(result, queryeventid):
+    queryevent = QueryEvent.objects.get(pk=queryeventid)
+    queryevent.state = 'DONE'
+    queryevent.save()
+    
+    logging.debug('completed QueryEvent {0}'.format(queryeventid))
 
 def spawnSearch(queryevent, **kwargs):
     """
@@ -651,7 +665,7 @@ def spawnSearch(queryevent, **kwargs):
                     
 
     logger.debug('dispatching jobs for QueryEvent {0}'.format(queryevent.id))
-    result = job.apply_async()
+    result = job.apply_async(link=completeQueryEvent.s(queryevent.id))
     
     logger.debug('jobs dispatched for QueryEvent {0}'.format(queryevent.id))
     
