@@ -1,0 +1,3866 @@
+(dp1
+VresponseHeader
+p2
+(dp3
+Vstatus
+p4
+I0
+sVQTime
+p5
+I11442
+sVparams
+p6
+(dp7
+Vqin
+p8
+V"dream act"
+p9
+sVindent
+p10
+Vyes
+p11
+sVjson.wrf
+p12
+V
+sVq
+V(title:"dream act"^100 OR description:"dream act"^15 OR collection:"dream act"^10 OR language:"dream act"^10 OR text:"dream act"^1)
+p13
+sVstart
+p14
+V0
+sVwt
+p15
+Vjson
+p16
+sVrows
+p17
+V50
+p18
+sVfl
+p19
+V
+sssVresponse
+p20
+(dp21
+Vstart
+p22
+I0
+sVmaxScore
+p23
+F6.0525520000000004
+sVnumFound
+p24
+I89
+sVdocs
+p25
+(lp26
+(dp27
+Vweek
+p28
+I0
+sVdescription
+p29
+VInterview with student activist and community organizer, Wooten Gough, on immigration and the DREAM Act. Aired on GROW(Greensboro Radio Outlooks on the World) December 8, 2011.
+p30
+sVtitle
+p31
+VDREAM Act
+p32
+sVdownloads
+p33
+I13
+sVformat
+p34
+(lp35
+VArchive BitTorrent
+p36
+aVMetadata
+p37
+aVOgg Vorbis
+p38
+aVVBR MP3
+p39
+asVsubject
+p40
+(lp41
+VDREAM Act
+p42
+aVImmigration
+p43
+aVNorth Carolina
+p44
+aVNC
+p45
+aVactivism
+p46
+aVcommunity organizer
+p47
+asVmediatype
+p48
+Vaudio
+p49
+sVcollection
+p50
+(lp51
+Vopensource_audio
+p52
+asVmonth
+p53
+I0
+sVscore
+p54
+F6.0525520000000004
+sVidentifier
+p55
+VDreamAct
+p56
+sVcreator
+p57
+(lp58
+VCarla Guzman, David Englebretson
+p59
+asVpublicdate
+p60
+V2011-12-09T15:44:06Z
+p61
+sa(dp62
+Vweek
+p63
+I2
+sVdescription
+p64
+VImmigration Advocates Target GOP In DREAM Act Ads
+p65
+sVtitle
+p66
+VDream Act Audio
+p67
+sVdownloads
+p68
+I1389
+sVformat
+p69
+(lp70
+VArchive BitTorrent
+p71
+aVMetadata
+p72
+aVOgg Vorbis
+p73
+aVVBR MP3
+p74
+asVsubject
+p75
+(lp76
+VDream
+p77
+aVAct
+p78
+aVAudio
+p79
+aVRecording
+p80
+asVmediatype
+p81
+Vaudio
+p82
+sVcollection
+p83
+(lp84
+Vopensource_audio
+p85
+asVmonth
+p86
+I7
+sVscore
+p87
+F5.0341325000000001
+sVidentifier
+p88
+VDreamActAudio
+p89
+sVpublicdate
+p90
+V2010-12-12T14:44:54Z
+p91
+sa(dp92
+Vweek
+p93
+I0
+sVpublicdate
+p94
+V2010-06-26T20:06:46Z
+p95
+sVtitle
+p96
+VDream Act Supporters
+p97
+sVdownloads
+p98
+I11
+sVformat
+p99
+(lp100
+VArchive BitTorrent
+p101
+aVMetadata
+p102
+aVOgg Vorbis
+p103
+aVVBR MP3
+p104
+asVsubject
+p105
+(lp106
+VThe Lion Star Blog
+p107
+aVJaime Abeytia
+p108
+aVEl Paso
+p109
+aVDream Act
+p110
+asVmediatype
+p111
+Vaudio
+p112
+sVcollection
+p113
+(lp114
+Vopensource_audio
+p115
+asVmonth
+p116
+I0
+sVscore
+p117
+F4.9775887000000001
+sVlicenseurl
+p118
+Vhttp://creativecommons.org/licenses/by-nc-nd/3.0/
+p119
+sVidentifier
+p120
+VDreamActSupporters
+p121
+sVcreator
+p122
+(lp123
+VJaime Abeytia, Author of The Lion Star Blog
+p124
+asVdescription
+p125
+VImpromptu interview with supporters of the Dream Act that were walking from the Providence East Hospital to the Downtown area to raise awareness of the Dream Act.
+p126
+sa(dp127
+Vweek
+p128
+I0
+sVpublicdate
+p129
+V2009-09-23T16:42:09Z
+p130
+sVtitle
+p131
+VThe Dream Act 2
+p132
+sVdownloads
+p133
+I46
+sVformat
+p134
+(lp135
+V512Kb MPEG4
+p136
+aVAnimated GIF
+p137
+aVArchive BitTorrent
+p138
+aVMPEG4
+p139
+aVMetadata
+p140
+aVOgg Video
+p141
+aVThumbnail
+p142
+asVsubject
+p143
+(lp144
+VThe Rapidian
+p145
+aVnews
+p146
+aVGRCMC
+p147
+aVCMC
+p148
+aVGrand Rapids Community Foundation
+p149
+aVGRTV
+p150
+aVWYCE
+p151
+aVcitizen journalism
+p152
+aVThe Dream Act
+p153
+aVEducation
+p154
+asVmediatype
+p155
+Vmovies
+p156
+sVcollection
+p157
+(lp158
+Vopensource_movies
+p159
+asVmonth
+p160
+I0
+sVscore
+p161
+F4.9223375000000003
+sVlicenseurl
+p162
+Vhttp://creativecommons.org/licenses/by/3.0/us/
+p163
+sVidentifier
+p164
+VTheDreamAct2
+p165
+sVcreator
+p166
+(lp167
+VGretchen Vinnedge
+p168
+asVdescription
+p169
+VStudents who are illegal aliens hoping for help from the Dream Act to realize their dream of becoming US citizens.
+p170
+sa(dp171
+Vweek
+p172
+I0
+sVpublicdate
+p173
+V2009-09-12T22:30:47Z
+p174
+sVtitle
+p175
+VThe Dream Act
+p176
+sVdownloads
+p177
+I99
+sVformat
+p178
+(lp179
+VAIFF
+p180
+aVArchive BitTorrent
+p181
+aVMetadata
+p182
+aVVBR M3U
+p183
+aVVBR MP3
+p184
+aVVBR ZIP
+p185
+asVsubject
+p186
+(lp187
+VThe Rapidian
+p188
+aVGrand Rapids MI
+p189
+aVThe Dream Act
+p190
+aVimmigration
+p191
+asVmediatype
+p192
+Vaudio
+p193
+sVcollection
+p194
+(lp195
+Vopensource_audio
+p196
+asVmonth
+p197
+I0
+sVscore
+p198
+F4.8877087000000001
+sVlicenseurl
+p199
+Vhttp://creativecommons.org/licenses/by/3.0/us/
+p200
+sVidentifier
+p201
+VTheDreamAct_390
+p202
+sVcreator
+p203
+(lp204
+VGretchen Vinnedge
+p205
+asVdescription
+p206
+VInterview of several Grand Rapids area students dealing with the issue of being an illegal alien and how the Dream Act could change their lives.
+p207
+sa(dp208
+Vweek
+p209
+I0
+sVpublicdate
+p210
+V2008-08-21T22:07:57Z
+p211
+sVtitle
+p212
+VDream Act - Santa Barbara
+p213
+sVdownloads
+p214
+I44
+sVformat
+p215
+(lp216
+V512Kb MPEG4
+p217
+aVAnimated GIF
+p218
+aVMPEG4
+p219
+aVMetadata
+p220
+aVOgg Video
+p221
+aVThumbnail
+p222
+asVmediatype
+p223
+Vmovies
+p224
+sVcollection
+p225
+(lp226
+Vbliptv
+p227
+asVmonth
+p228
+I0
+sVscore
+p229
+F4.7938584999999998
+sVlicenseurl
+p230
+Vhttp://creativecommons.org/licenses/by-nc-sa/2.0/
+p231
+sVidentifier
+p232
+VDorothyVid-DreamActSantaBarbara636
+p233
+sVdescription
+p234
+VDream Act legislation for Callifornia was discussed in Santa Barbara at an event on the library grounds, downtown. A cheerful group of would be college students and supporters talked about the need for the legislation and what it means to all Californians. This law, if passed, would allow undocumented students who have attended schools here for 3 years or more, to apply for loans and scholarships when they goAA  on to college.
+p235
+sa(dp236
+Vweek
+p237
+I0
+sVpublicdate
+p238
+V2014-04-16T18:06:38Z
+p239
+sVtitle
+p240
+VThe New York Dream Act
+p241
+sVdownloads
+p242
+I7
+sVformat
+p243
+(lp244
+VAnimated GIF
+p245
+aVArchive BitTorrent
+p246
+aVMPEG1
+p247
+aVMetadata
+p248
+aVOgg Video
+p249
+aVThumbnail
+p250
+aVh.264
+p251
+asVsubject
+p252
+(lp253
+VOpen
+p254
+aVBronxnet
+p255
+aVPublic
+p256
+aVAccess
+p257
+aVBronxmedia
+p258
+aVEntertainment
+p259
+aVSports
+p260
+aVMusic
+p261
+aVPerforms
+p262
+aVBronx
+p263
+aVNYC
+p264
+aVNew York
+p265
+aVDaren Jaime
+p266
+aVDream Act
+p267
+aVFarmworkers Fair Labor Practices Act
+p268
+aVLabor
+p269
+aVAssemblyman
+p270
+aVMarcos Crespo
+p271
+aVFrancisco Moya
+p272
+asVmediatype
+p273
+Vmovies
+p274
+sVcollection
+p275
+(lp276
+Vopensource_movies
+p277
+asVmonth
+p278
+I0
+sVscore
+p279
+F4.2674947000000003
+sVlicenseurl
+p280
+Vhttp://creativecommons.org/publicdomain/zero/1.0/
+p281
+sVidentifier
+p282
+VTheNewYorkDreamAct
+p283
+sVcreator
+p284
+(lp285
+VOpen
+p286
+asVdescription
+p287
+VHere, to discuss the New York Dream Act and the Farmworkers Fair Labor Practices Act, is the Assemblyman of the 85th district, Marcos Crespo, and the Assemblyman of the 39th district, Francisco Moya.
+p288
+sa(dp289
+Vweek
+p290
+I0
+sVpublicdate
+p291
+V2013-10-18T03:56:03Z
+p292
+sVtitle
+p293
+VUMBC study: Dream Act policy brief
+p294
+sVdownloads
+p295
+I7
+sVformat
+p296
+(lp297
+VAbbyy GZ
+p298
+aVAnimated GIF
+p299
+aVArchive BitTorrent
+p300
+aVDjVu
+p301
+aVDjVuTXT
+p302
+aVDjvu XML
+p303
+aVEPUB
+p304
+aVMetadata
+p305
+aVScandata
+p306
+aVSingle Page Processed JP2 ZIP
+p307
+aVText PDF
+p308
+asVsubject
+p309
+(lp310
+Vdocumentcloud
+p311
+aVwashingtonexaminer
+p312
+aV5018-emily-babay
+p313
+asVmediatype
+p314
+Vtexts
+p315
+sVcollection
+p316
+(lp317
+Vopensource
+p318
+asVmonth
+p319
+I0
+sVcontributor
+p320
+(lp321
+VEmily Babay (Washington Examiner)
+p322
+asVscore
+p323
+F3.7951731999999998
+sVdate
+p324
+V2012-10-08T00:00:00Z
+p325
+sVidentifier
+p326
+V457898-umbc-study-dream-act-policy-brief
+p327
+sVdescription
+p328
+VUnofficial mirror of http://www.documentcloud.org/documents/457898-umbc-study-dream-act-policy-brief.html
+p329
+sa(dp330
+Vweek
+p331
+I0
+sVpublicdate
+p332
+V2013-10-25T10:51:33Z
+p333
+sVtitle
+p334
+VLAO report on DREAM Act - 11/30
+p335
+sVdownloads
+p336
+I8
+sVformat
+p337
+(lp338
+VAbbyy GZ
+p339
+aVAnimated GIF
+p340
+aVArchive BitTorrent
+p341
+aVDjVu
+p342
+aVDjVuTXT
+p343
+aVDjvu XML
+p344
+aVEPUB
+p345
+aVMetadata
+p346
+aVScandata
+p347
+aVSingle Page Processed JP2 ZIP
+p348
+aVText PDF
+p349
+asVsubject
+p350
+(lp351
+Vdocumentcloud
+p352
+aVdailycal
+p353
+aV1252-jordan-bachlombardo
+p354
+asVmediatype
+p355
+Vtexts
+p356
+sVcollection
+p357
+(lp358
+Vopensource
+p359
+asVmonth
+p360
+I0
+sVcontributor
+p361
+(lp362
+VJordan Bach-Lombardo (The Daily Californian)
+p363
+asVscore
+p364
+F3.7582138
+sVdate
+p365
+V2011-11-30T00:00:00Z
+p366
+sVidentifier
+p367
+V269533-lao-report-on-dream-act-11-30
+p368
+sVdescription
+p369
+VUnofficial mirror of http://www.documentcloud.org/documents/269533-lao-report-on-dream-act-11-30.html
+p370
+sa(dp371
+Vweek
+p372
+I0
+sVpublicdate
+p373
+V2010-06-02T18:33:42Z
+p374
+sVtitle
+p375
+VShare the Dream! Dream Act Part 4
+p376
+sVdownloads
+p377
+I22
+sVformat
+p378
+(lp379
+V512Kb MPEG4
+p380
+aVAnimated GIF
+p381
+aVArchive BitTorrent
+p382
+aVMetadata
+p383
+aVOgg Video
+p384
+aVQuickTime
+p385
+aVThumbnail
+p386
+asVsubject
+p387
+(lp388
+VShare
+p389
+aVthe
+p390
+aVDream
+p391
+aVAct
+p392
+aVPart 4
+p393
+asVmediatype
+p394
+Vmovies
+p395
+sVcollection
+p396
+(lp397
+Vopensource_movies
+p398
+asVmonth
+p399
+I0
+sVscore
+p400
+F3.7228653
+sVlicenseurl
+p401
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p402
+sVidentifier
+p403
+VShareTheDreamDreamActPart4
+p404
+sVdescription
+p405
+VLMU Professor Herbert Medina discusses the importance of the Dream Act. Share the dream! Re-post this video on your wall. Facebook.com/Cuentame
+p406
+sa(dp407
+Vweek
+p408
+I1
+sVpublicdate
+p409
+V2010-06-02T18:53:41Z
+p410
+sVtitle
+p411
+VShare the DREAM! Dream Act Part 3
+p412
+sVdownloads
+p413
+I24
+sVformat
+p414
+(lp415
+V512Kb MPEG4
+p416
+aVAnimated GIF
+p417
+aVArchive BitTorrent
+p418
+aVMetadata
+p419
+aVOgg Video
+p420
+aVQuickTime
+p421
+aVThumbnail
+p422
+asVsubject
+p423
+(lp424
+VShare
+p425
+aVthe
+p426
+aVDream
+p427
+aVAct
+p428
+aVPart 3
+p429
+asVmediatype
+p430
+Vmovies
+p431
+sVcollection
+p432
+(lp433
+Vopensource_movies
+p434
+asVmonth
+p435
+I1
+sVscore
+p436
+F3.6488624000000001
+sVlicenseurl
+p437
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p438
+sVidentifier
+p439
+VShareTheDreamDreamActPart3
+p440
+sVdescription
+p441
+VIf passed, the DREAM Act would provide financial assistance to hundreds of thousands of undocumented youth who would qualify. Every year, only 5-10% of undocumented high school grads go on to college, many due to lack of funds. Continue sharing the DREAM! Re-post this video on your wall. Facebook.com/Cuentame
+p442
+sa(dp443
+Vweek
+p444
+I0
+sVpublicdate
+p445
+V2010-06-02T18:57:31Z
+p446
+sVtitle
+p447
+VShare the Dream - Dream Act Part 2
+p448
+sVdownloads
+p449
+I18
+sVformat
+p450
+(lp451
+V512Kb MPEG4
+p452
+aVAnimated GIF
+p453
+aVArchive BitTorrent
+p454
+aVMetadata
+p455
+aVOgg Video
+p456
+aVQuickTime
+p457
+aVThumbnail
+p458
+asVsubject
+p459
+(lp460
+VShare
+p461
+aVthe
+p462
+aVDream
+p463
+aVAct
+p464
+aVPart 2
+p465
+asVmediatype
+p466
+Vmovies
+p467
+sVcollection
+p468
+(lp469
+Vopensource_movies
+p470
+asVmonth
+p471
+I0
+sVscore
+p472
+F3.6472804999999999
+sVlicenseurl
+p473
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p474
+sVidentifier
+p475
+VShareTheDream-DreamActPart2
+p476
+sVdescription
+p477
+V'Alonzo' is among the thousands of undocumented college graduates who hit a road block after graduation due to the fact that it becomes difficult to find or keep employment because of their legal status. Over a million young people depend on the Dream Act to continue their education and become legalized. Share the dream. Re-post this video to your wall. Facebook.com/Cuentame
+p478
+sa(dp479
+Vweek
+p480
+I0
+sVpublicdate
+p481
+V2010-06-02T18:39:48Z
+p482
+sVtitle
+p483
+VYour Dream Stops Here! Dream Act Part 1
+p484
+sVdownloads
+p485
+I15
+sVformat
+p486
+(lp487
+V512Kb MPEG4
+p488
+aVAnimated GIF
+p489
+aVArchive BitTorrent
+p490
+aVMetadata
+p491
+aVOgg Video
+p492
+aVQuickTime
+p493
+aVThumbnail
+p494
+asVsubject
+p495
+(lp496
+VYour
+p497
+aVDream
+p498
+aVStops
+p499
+aVHere
+p500
+aVAct
+p501
+aVPart 1
+p502
+asVmediatype
+p503
+Vmovies
+p504
+sVcollection
+p505
+(lp506
+Vopensource_movies
+p507
+asVmonth
+p508
+I0
+sVscore
+p509
+F3.1384121999999999
+sVlicenseurl
+p510
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p511
+sVidentifier
+p512
+VYourDreamStopsHereDreamActPart1
+p513
+sVdescription
+p514
+VActivist/Blogger Kyle De Beausset talks about the importance of the Dream Act for undocumented youth. What is...or was your dream?
+p515
+sa(dp516
+Vweek
+p517
+I0
+sVpublicdate
+p518
+V2012-03-24T16:28:12Z
+p519
+sVtitle
+p520
+VDREAM Act Interview
+p521
+sVdownloads
+p522
+I1
+sVformat
+p523
+(lp524
+VArchive BitTorrent
+p525
+aVMetadata
+p526
+aVUnknown
+p527
+asVsubject
+p528
+(lp529
+Vdream act
+p530
+aVlatino
+p531
+asVmediatype
+p532
+Vaudio
+p533
+sVcollection
+p534
+(lp535
+Vopensource_audio
+p536
+asVmonth
+p537
+I0
+sVscore
+p538
+F3.1148584000000001
+sVidentifier
+p539
+VDreamActInterview
+p540
+sVcreator
+p541
+(lp542
+VDavid Giron
+p543
+asVdescription
+p544
+V3/24/12
+p545
+sa(dp546
+Vweek
+p547
+I0
+sVdescription
+p548
+VIn next weekAC/s election, Maryland voters will be deciding the fate of a bill that would allow undocumented immigrants access to in-state tuition at state colleges. The bill known as the Maryland Dream Act was signed into law by Maryland Governor Martin OAC/Malley in May of last year, but opponents forced it onto the ballot of this yearAC/s election. So far a federal Dream Act has failed to become law, though it was introduced into congress this term. MarylandAC/s measure will be the first time that a Dream Act will be decided on by popular vote. FSRNAC/s Clayton Conn reports.
+p549
+sVtitle
+p550
+VMaryland voters to decide on state Dream Act
+p551
+sVdownloads
+p552
+I11
+sVformat
+p553
+(lp554
+VArchive BitTorrent
+p555
+aVMetadata
+p556
+aVOgg Vorbis
+p557
+aVVBR MP3
+p558
+asVsubject
+p559
+(lp560
+VMaryland voters to decide on state Dream Act
+p561
+asVmediatype
+p562
+Vaudio
+p563
+sVcollection
+p564
+(lp565
+Vopensource_audio
+p566
+asVmonth
+p567
+I0
+sVscore
+p568
+F3.1104742999999999
+sVidentifier
+p569
+VMarylandVotersToDecideOnStateDreamAct
+p570
+sVcreator
+p571
+(lp572
+Vtonelada
+p573
+asVpublicdate
+p574
+V2012-11-04T22:28:03Z
+p575
+sa(dp576
+Vweek
+p577
+I0
+sVpublicdate
+p578
+V2010-12-13T18:56:59Z
+p579
+sVtitle
+p580
+VOMB Audio MIRA SIM presser on DREAM Act Dec 13 2010 Ada Fuentes
+p581
+sVdownloads
+p582
+I57
+sVformat
+p583
+(lp584
+VArchive BitTorrent
+p585
+aVMetadata
+p586
+aVOgg Vorbis
+p587
+aVVBR MP3
+p588
+asVsubject
+p589
+(lp590
+Vomb
+p591
+aVopen media boston
+p592
+aVDREAM Act
+p593
+aVMIRA Coalition. SIM
+p594
+aVAda Fuentes
+p595
+asVmediatype
+p596
+Vaudio
+p597
+sVcollection
+p598
+(lp599
+Vopensource_audio
+p600
+asVmonth
+p601
+I0
+sVscore
+p602
+F2.4643326000000001
+sVlicenseurl
+p603
+Vhttp://creativecommons.org/publicdomain/zero/1.0/
+p604
+sVidentifier
+p605
+VOmbAudioMiraSimPresserOnDreamActDec132010AdaFuentes
+p606
+sVcreator
+p607
+(lp608
+Vdave goodman (I.B.I.S. Radio)
+p609
+asVdescription
+p610
+VBOSTON/Government Center AC/ Members of the Massachusetts Immigrant and Refugee Alliance Coalition (MIRA) and the Student Immigration Movement (SIM) today urged MA Senator Scott Brown to vote yes in support of the DREAM Act (Development, Relief and Education for Alien Minors) legislation when it comes up for a vote this week in the Senate. Brown has indicated he would oppose the legislation which provides a way to citizenship for young immigrants who agree to attend college or join the U.S. military.
+p611
+sa(dp612
+Vweek
+p613
+I0
+sVpublicdate
+p614
+V2010-12-13T23:26:18Z
+p615
+sVtitle
+p616
+VOMB Audio MIRA SIM presser on DREAM Act Dec 13 2010 Renata Teodoro
+p617
+sVdownloads
+p618
+I25
+sVformat
+p619
+(lp620
+VArchive BitTorrent
+p621
+aVMetadata
+p622
+aVOgg Vorbis
+p623
+aVVBR MP3
+p624
+asVsubject
+p625
+(lp626
+Vomb
+p627
+aVopen media boston
+p628
+aVDREAM Act
+p629
+aVMIRA Coalition. SIM
+p630
+aVRenata Teodoro
+p631
+asVmediatype
+p632
+Vaudio
+p633
+sVcollection
+p634
+(lp635
+Vopensource_audio
+p636
+asVmonth
+p637
+I0
+sVscore
+p638
+F2.4643326000000001
+sVlicenseurl
+p639
+Vhttp://creativecommons.org/publicdomain/zero/1.0/
+p640
+sVidentifier
+p641
+VOmbAudioMiraSimPresserOnDreamActDec132010RenataTeodoro
+p642
+sVcreator
+p643
+(lp644
+Vdave goodman (I.B.I.S. Radio)
+p645
+asVdescription
+p646
+VBOSTON/Government Center AC/ Members of the Massachusetts Immigrant and Refugee Alliance Coalition (MIRA) and the Student Immigrant Movement (SIM) today urged MA Senator Scott Brown to vote yes in support of the DREAM Act (Development, Relief and Education for Alien Minors) legislation when it comes up for a vote this week in the Senate. Brown has indicated he would oppose the legislation which provides a way to citizenship for young immigrants who agree to attend college or join the U.S. military.
+p647
+sa(dp648
+Vweek
+p649
+I0
+sVpublicdate
+p650
+V2010-12-13T22:30:55Z
+p651
+sVtitle
+p652
+VOMB Audio MIRA SIM presser on DREAM Act Dec 13 2010 Aaron Spencer
+p653
+sVdownloads
+p654
+I26
+sVformat
+p655
+(lp656
+VArchive BitTorrent
+p657
+aVMetadata
+p658
+aVOgg Vorbis
+p659
+aVVBR MP3
+p660
+asVsubject
+p661
+(lp662
+Vomb
+p663
+aVopen media boston
+p664
+aVDREAM Act
+p665
+aVMIRA Coalition. SIM
+p666
+aVaaron Spencer
+p667
+asVmediatype
+p668
+Vaudio
+p669
+sVcollection
+p670
+(lp671
+Vopensource_audio
+p672
+asVmonth
+p673
+I0
+sVscore
+p674
+F2.4643326000000001
+sVlicenseurl
+p675
+Vhttp://creativecommons.org/publicdomain/zero/1.0/
+p676
+sVidentifier
+p677
+VOmbAudioMiraSimPresserOnDreamActDec132010AaronSpencer
+p678
+sVcreator
+p679
+(lp680
+Vdave goodman (I.B.I.S. Radio)
+p681
+asVdescription
+p682
+VBOSTON/Government Center AC/ Members of the Massachusetts Immigrant and Refugee Alliance Coalition (MIRA) and the Student Immigrant Movement (SIM) today urged MA Senator Scott Brown to vote yes in support of the DREAM Act (Development, Relief and Education for Alien Minors) legislation when it comes up for a vote this week in the Senate. Brown has indicated he would oppose the legislation which provides a way to citizenship for young immigrants who agree to attend college or join the U.S. military.
+p683
+sa(dp684
+Vweek
+p685
+I0
+sVpublicdate
+p686
+V2010-12-13T23:10:34Z
+p687
+sVtitle
+p688
+VOMB Audio MIRA SIM presser on DREAM Act Dec 13 2010 Felix Arroyo
+p689
+sVdownloads
+p690
+I20
+sVformat
+p691
+(lp692
+VArchive BitTorrent
+p693
+aVMetadata
+p694
+aVOgg Vorbis
+p695
+aVVBR MP3
+p696
+asVsubject
+p697
+(lp698
+Vomb
+p699
+aVopen media boston
+p700
+aVDREAM Act
+p701
+aVMIRA Coalition. SIM
+p702
+aVFelix Arroyo
+p703
+asVmediatype
+p704
+Vaudio
+p705
+sVcollection
+p706
+(lp707
+Vopensource_audio
+p708
+asVmonth
+p709
+I0
+sVscore
+p710
+F2.4643326000000001
+sVlicenseurl
+p711
+Vhttp://creativecommons.org/publicdomain/zero/1.0/
+p712
+sVidentifier
+p713
+VOmbAudioMiraSimPresserOnDreamActDec132010FelixArroyo
+p714
+sVcreator
+p715
+(lp716
+Vdave goodman (I.B.I.S. Radio)
+p717
+asVdescription
+p718
+VBOSTON/Government Center AC/ Members of the Massachusetts Immigrant and Refugee Alliance Coalition (MIRA) and the Student Immigrant Movement (SIM) today urged MA Senator Scott Brown to vote yes in support of the DREAM Act (Development, Relief and Education for Alien Minors) legislation when it comes up for a vote this week in the Senate. Brown has indicated he would oppose the legislation which provides a way to citizenship for young immigrants who agree to attend college or join the U.S. military.
+p719
+sa(dp720
+Vweek
+p721
+I0
+sVpublicdate
+p722
+V2014-04-24T18:21:15Z
+p723
+sVtitle
+p724
+VA reason to dream: reflections on the DREAM Act
+p725
+sVdownloads
+p726
+I2
+sVformat
+p727
+(lp728
+VArchive BitTorrent
+p729
+aVJSON
+p730
+aVMetadata
+p731
+aVOgg Vorbis
+p732
+aVVBR MP3
+p733
+asVmediatype
+p734
+Vaudio
+p735
+sVcollection
+p736
+(lp737
+Vpopuparchive
+p738
+aVopensource_audio
+p739
+asVmonth
+p740
+I0
+sVscore
+p741
+F1.9500154000000001
+sVidentifier
+p742
+Va-reason-to-dream-reflections-on-the-dream-act.adHaKU.popuparchive.org
+p743
+sVsubject
+p744
+(lp745
+VKALW Archive
+p746
+asa(dp747
+Vweek
+p748
+I0
+sVpublicdate
+p749
+V2014-04-25T17:28:22Z
+p750
+sVtitle
+p751
+VCalifornia one step closer to the DREAM Act
+p752
+sVdownloads
+p753
+I2
+sVformat
+p754
+(lp755
+VArchive BitTorrent
+p756
+aVJSON
+p757
+aVMetadata
+p758
+aVOgg Vorbis
+p759
+aVVBR MP3
+p760
+asVmediatype
+p761
+Vaudio
+p762
+sVcollection
+p763
+(lp764
+Vpopuparchive
+p765
+aVopensource_audio
+p766
+asVmonth
+p767
+I0
+sVscore
+p768
+F1.9500154000000001
+sVidentifier
+p769
+Vcalifornia-one-step-closer-to-the-dream-act.wOxwby.popuparchive.org
+p770
+sVsubject
+p771
+(lp772
+VKALW Archive
+p773
+asa(dp774
+Vweek
+p775
+I1
+sVpublisher
+p776
+(lp777
+VOxford, Blackwell
+p778
+asVpublicdate
+p779
+V2010-07-05T15:58:17Z
+p780
+sVlanguage
+p781
+(lp782
+Veng
+p783
+aVgre
+p784
+asVtitle
+p785
+VA Midsummer-Night's Dream, Act. III. Scene I
+p786
+sVdownloads
+p787
+I90
+sVformat
+p788
+(lp789
+VAbbyy GZ
+p790
+aVAnimated GIF
+p791
+aVArchive BitTorrent
+p792
+aVDjVu
+p793
+aVDjVuTXT
+p794
+aVDjvu XML
+p795
+aVDublin Core
+p796
+aVGrayscale LuraTech PDF
+p797
+aVMARC
+p798
+aVMARC Binary
+p799
+aVMARC Source
+p800
+aVMetadata
+p801
+aVScandata
+p802
+aVSingle Page Original JP2 Tar
+p803
+aVSingle Page Processed JP2 ZIP
+p804
+aVText PDF
+p805
+asVmediatype
+p806
+Vtexts
+p807
+sVcollection
+p808
+(lp809
+Vrobarts
+p810
+aVtoronto
+p811
+asVmonth
+p812
+I1
+sVcontributor
+p813
+(lp814
+VRobarts - University of Toronto
+p815
+asVscore
+p816
+F1.9444494000000001
+sVdate
+p817
+V1922-01-01T00:00:00Z
+p818
+sVidentifier
+p819
+Vmidsummernightsd00leve
+p820
+sVcreator
+p821
+(lp822
+VLevens, Robert Graham Cochrane
+p823
+asVdescription
+p824
+V26
+p825
+sa(dp826
+Vweek
+p827
+I0
+sVdescription
+p828
+VMaryland joins Maine & Washington in breaking the pattern of same sex marriage initiatives losing at the ballot box. Until yesterday, they had failed in 30 states. Voters in Maryland legalized same sex marriage with a narrow 52 percent win. They also passed another groundbreaking measure: allowing undocumented students access to in-state college tuition. FSRNAC/s Clayton Conn has more.
+p829
+sVtitle
+p830
+VMaryland Dream Act to give in-state tuition to undocumented youth
+p831
+sVdownloads
+p832
+I18
+sVformat
+p833
+(lp834
+VArchive BitTorrent
+p835
+aVMetadata
+p836
+aVOgg Vorbis
+p837
+aVVBR MP3
+p838
+asVsubject
+p839
+(lp840
+VMaryland Dream Act to give in-state tuition to undocumented youth
+p841
+asVmediatype
+p842
+Vaudio
+p843
+sVcollection
+p844
+(lp845
+Vopensource_audio
+p846
+asVmonth
+p847
+I0
+sVscore
+p848
+F1.5582904
+sVidentifier
+p849
+VMarylandDreamActToGiveIn-stateTuitionToUndocumentedYouth
+p850
+sVcreator
+p851
+(lp852
+Vtonelada
+p853
+asVpublicdate
+p854
+V2012-11-08T00:36:32Z
+p855
+sa(dp856
+Vweek
+p857
+I2
+sVpublicdate
+p858
+V2014-07-22T20:45:17Z
+p859
+sVlanguage
+p860
+(lp861
+Venglish
+p862
+asVtitle
+p863
+VThe BlazeTV Highlights: This is what a dictator does
+p864
+sVdownloads
+p865
+I2
+sVformat
+p866
+(lp867
+VAnimated GIF
+p868
+aVArchive BitTorrent
+p869
+aVMPEG4
+p870
+aVMetadata
+p871
+aVOgg Video
+p872
+aVThumbnail
+p873
+asVsubject
+p874
+(lp875
+Vtheblaze
+p876
+aVgbtv
+p877
+aVbeck_archive
+p878
+aVThe BlazeTV Highlights
+p879
+aVGlenn Beck
+p880
+aVPat Gray
+p881
+aV2012 Election
+p882
+aVDrugs
+p883
+aV
+aVMainstream Media
+p884
+aVNational Security
+p885
+aVGBTV_SHORT_FEATURE
+p886
+aVStu Burguiere
+p887
+aVDemocrats
+p888
+aVIslamic Extremism
+p889
+aVGBTV_RTH
+p890
+aVRadio Program
+p891
+aVMuslim Brotherhood
+p892
+aVShareable PlayOnFacebook
+p893
+aV
+aVBarack Obama
+p894
+aVhighlight
+p895
+aVMEDIA_ARCHIVE
+p896
+aVEmbeddable
+p897
+aVImmigration
+p898
+aVProgressives
+p899
+asVmediatype
+p900
+Vmovies
+p901
+sVcollection
+p902
+(lp903
+Vglennbecktv
+p904
+asVmonth
+p905
+I3
+sVscore
+p906
+F0.19677620000000001
+sVyear
+p907
+I2012
+sVdate
+p908
+V2012-06-15T00:00:00Z
+p909
+sVidentifier
+p910
+Vrth_22299849_1200K
+p911
+sVcreator
+p912
+(lp913
+VTheBlaze
+p914
+asVdescription
+p915
+VPresident Obama enacts the Dream Act without a vote or even an executive order.
+p916
+sa(dp917
+Vpublicdate
+p918
+V2014-06-06T21:47:02Z
+p919
+sVlanguage
+p920
+(lp921
+Venglish
+p922
+asVtitle
+p923
+VThe Joy Cardin Show 2011-06-29 7:00am
+p924
+sVformat
+p925
+(lp926
+VArchive BitTorrent
+p927
+aVMetadata
+p928
+aVOgg Vorbis
+p929
+aVVBR MP3
+p930
+asVsubject
+p931
+(lp932
+VWisconsin Public Radio
+p933
+aVThe Joy Cardin Show
+p934
+asVmediatype
+p935
+Vaudio
+p936
+sVcollection
+p937
+(lp938
+Vjoycardin
+p939
+asVscore
+p940
+F0.17672561000000001
+sVyear
+p941
+I2011
+sVdate
+p942
+V2011-06-29T00:00:00Z
+p943
+sVidentifier
+p944
+Vwpr-jca110629b
+p945
+sVcreator
+p946
+(lp947
+VThe Joy Cardin Show
+p948
+asVdescription
+p949
+V<a href="http://www.wpr.org/shows/big-question-should-congress-pass-dream-act" rel="nofollow">Big Question: Should Congress Pass the Dream Act?</a> - After seven, Joy Cardin asks this week's Big Question on an immigration issue: Should Congress pass the Dream Act, creating a path to citizenship for many young illegal immigrants?
+p950
+sa(dp951
+Vweek
+p952
+I0
+sVdescription
+p953
+VNight Talk Dallas Show Audio for 12/20/10 - New Words of 2010, American religious polls, DADT Dream Act
+p954
+sVtitle
+p955
+VNight Talk Dallas 12/20/10
+p956
+sVdownloads
+p957
+I4
+sVformat
+p958
+(lp959
+VArchive BitTorrent
+p960
+aVMetadata
+p961
+aVOgg Vorbis
+p962
+aVVBR MP3
+p963
+asVsubject
+p964
+(lp965
+VRational Broadcasting
+p966
+aVRich Hancock
+p967
+aVRick Vanderslice
+p968
+aVNight Talk Dallas
+p969
+asVmediatype
+p970
+Vaudio
+p971
+sVcollection
+p972
+(lp973
+Vopensource_audio
+p974
+asVmonth
+p975
+I0
+sVscore
+p976
+F0.17385349999999999
+sVidentifier
+p977
+VNightTalkDallas122010
+p978
+sVpublicdate
+p979
+V2010-12-21T23:58:24Z
+p980
+sa(dp981
+Vweek
+p982
+I0
+sVdescription
+p983
+VNews/Business. (2010) Passage of the repeal of Don't Ask, Don't Tell; the Dream Act. (CC)
+p984
+sVtitle
+p985
+VInside Washington : KFSF : December 26, 2010 6:00pm-6:30pm PST
+p986
+sVdownloads
+p987
+I103
+sVformat
+p988
+(lp989
+VAnimated GIF
+p990
+aVClosed Caption Text
+p991
+aVExtended Data Services
+p992
+aVJSON
+p993
+aVMP3
+p994
+aVMPEG2
+p995
+aVMetadata
+p996
+aVSubRip
+p997
+aVThumbnail
+p998
+aVVideo Index
+p999
+aVh.264
+p1000
+asVsubject
+p1001
+(lp1002
+VInside Washington
+p1003
+aVTelevision Program
+p1004
+asVmediatype
+p1005
+Vmovies
+p1006
+sVcontributor
+p1007
+(lp1008
+VKFSF
+p1009
+asVmonth
+p1010
+I0
+sVsource
+p1011
+VComcast Cable
+p1012
+sVscore
+p1013
+F0.17202696000000001
+sVcollection
+p1014
+(lp1015
+VTV-KFSF
+p1016
+aVtvarchive
+p1017
+aVnotnews
+p1018
+asVyear
+p1019
+I2010
+sVdate
+p1020
+V2010-12-27T00:00:00Z
+p1021
+sVidentifier
+p1022
+VKFSF_20101227_020000_Inside_Washington
+p1023
+sVpublicdate
+p1024
+V2010-12-27T05:52:08Z
+p1025
+sa(dp1026
+Vweek
+p1027
+I0
+sVdescription
+p1028
+VNews/Business. (2010) Passage of the repeal of Don't Ask, Don't Tell; the Dream Act. (CC)
+p1029
+sVtitle
+p1030
+VInside Washington : KQED : December 26, 2010 3:00pm-3:30pm PST
+p1031
+sVdownloads
+p1032
+I94
+sVformat
+p1033
+(lp1034
+VAnimated GIF
+p1035
+aVClosed Caption Text
+p1036
+aVExtended Data Services
+p1037
+aVJSON
+p1038
+aVMP3
+p1039
+aVMPEG2
+p1040
+aVMetadata
+p1041
+aVSubRip
+p1042
+aVThumbnail
+p1043
+aVVideo Index
+p1044
+aVh.264
+p1045
+asVsubject
+p1046
+(lp1047
+VInside Washington
+p1048
+aVTelevision Program
+p1049
+asVmediatype
+p1050
+Vmovies
+p1051
+sVcontributor
+p1052
+(lp1053
+VKQED
+p1054
+asVmonth
+p1055
+I0
+sVsource
+p1056
+VComcast Cable
+p1057
+sVscore
+p1058
+F0.17202696000000001
+sVcollection
+p1059
+(lp1060
+VTV-KQED
+p1061
+aVtvarchive
+p1062
+aVtvnews
+p1063
+asVyear
+p1064
+I2010
+sVdate
+p1065
+V2010-12-26T00:00:00Z
+p1066
+sVidentifier
+p1067
+VKQED_20101226_230000_Inside_Washington
+p1068
+sVpublicdate
+p1069
+V2010-12-27T01:00:07Z
+p1070
+sa(dp1071
+Vweek
+p1072
+I0
+sVdescription
+p1073
+V176th Episode of HimaliSworharu Visit www.nepaliradio.org to listen Nepali Online Radio Himali Sworharu Interview with Bashu Phulara about DREAM ACT Nepali songs write us nepaliradio@gmail.com From NYC to YOU
+p1074
+sVtitle
+p1075
+V176thHimaliSworharu
+p1076
+sVdownloads
+p1077
+I109
+sVformat
+p1078
+(lp1079
+VArchive BitTorrent
+p1080
+aVMetadata
+p1081
+aVOgg Vorbis
+p1082
+aVVBR MP3
+p1083
+asVsubject
+p1084
+(lp1085
+Vhimali sworharu
+p1086
+aVDREAM ACT
+p1087
+aVImmigration
+p1088
+aVinterview
+p1089
+aVNepali songs
+p1090
+aVKabita
+p1091
+aVNew York Nepali
+p1092
+aVinfo
+p1093
+asVmediatype
+p1094
+Vaudio
+p1095
+sVcollection
+p1096
+(lp1097
+Vopensource_audio
+p1098
+asVmonth
+p1099
+I0
+sVscore
+p1100
+F0.12672923999999999
+sVidentifier
+p1101
+V176thHimaliSworharu
+p1102
+sVcreator
+p1103
+(lp1104
+VSahadev
+p1105
+asVpublicdate
+p1106
+V2012-06-28T22:35:12Z
+p1107
+sa(dp1108
+Vweek
+p1109
+I0
+sVdescription
+p1110
+VBindo Rokka is talking about Dream Act and more with Himali Sworharu. Binod Rokka Attorney at Law from New York is now going to host weekly online radio program on the issues of Immigration. Please visit www.nepaliradio.org for more programs. Thank You
+p1111
+sVtitle
+p1112
+VBinod Rokka
+p1113
+sVdownloads
+p1114
+I631
+sVformat
+p1115
+(lp1116
+VArchive BitTorrent
+p1117
+aVMetadata
+p1118
+aVOgg Vorbis
+p1119
+aVVBR MP3
+p1120
+asVsubject
+p1121
+(lp1122
+VBinod Rokka
+p1123
+aVImmigration
+p1124
+aVDream Act
+p1125
+asVmediatype
+p1126
+Vaudio
+p1127
+sVcollection
+p1128
+(lp1129
+Vopensource_audio
+p1130
+asVmonth
+p1131
+I0
+sVscore
+p1132
+F0.10258885
+sVidentifier
+p1133
+VBinodRokka
+p1134
+sVcreator
+p1135
+(lp1136
+VSahadev
+p1137
+asVpublicdate
+p1138
+V2012-08-06T01:49:12Z
+p1139
+sa(dp1140
+Vweek
+p1141
+I0
+sVdescription
+p1142
+VArizona ACLU Board President Roberto Reveles discusses immigration issues with the author of the blog ImmigrationConversation.com. He gives his views on the DREAM Act, SB 1070, anchor babies, border policy and racial profiling. He also describes his history as an American born to Mexican parents.
+p1143
+sVtitle
+p1144
+VRoberto Reveles
+p1145
+sVdownloads
+p1146
+I17
+sVformat
+p1147
+(lp1148
+VArchive BitTorrent
+p1149
+aVMetadata
+p1150
+aVOgg Vorbis
+p1151
+aVVBR MP3
+p1152
+asVsubject
+p1153
+(lp1154
+VArizona
+p1155
+aVACLU
+p1156
+aVRoberto Reveles
+p1157
+aVimmigration
+p1158
+aVthe DREAM Act
+p1159
+aVSB 1070
+p1160
+aVanchor babies
+p1161
+aVborder policy and racial profiling.
+p1162
+asVmediatype
+p1163
+Vaudio
+p1164
+sVcollection
+p1165
+(lp1166
+Vopensource_audio
+p1167
+asVmonth
+p1168
+I0
+sVscore
+p1169
+F0.101727806
+sVyear
+p1170
+I2010
+sVdate
+p1171
+V2010-08-12T00:00:00Z
+p1172
+sVidentifier
+p1173
+VRobertoReveles
+p1174
+sVcreator
+p1175
+(lp1176
+VImmigrationConversation.com
+p1177
+asVpublicdate
+p1178
+V2011-01-03T07:13:46Z
+p1179
+sa(dp1180
+Vweek
+p1181
+I1
+sVpublicdate
+p1182
+V2011-03-22T16:39:34Z
+p1183
+sVtitle
+p1184
+VComing Out of the Shadows Part 1
+p1185
+sVdownloads
+p1186
+I799
+sVformat
+p1187
+(lp1188
+V512Kb MPEG4
+p1189
+aVAnimated GIF
+p1190
+aVMetadata
+p1191
+aVOgg Video
+p1192
+aVQuickTime
+p1193
+aVThumbnail
+p1194
+asVsubject
+p1195
+(lp1196
+VUndocumented
+p1197
+aVStudents
+p1198
+aVyouth
+p1199
+aVDream Act
+p1200
+aVComing Out of the Shadows
+p1201
+aVUnafraid
+p1202
+aVUnapologetic
+p1203
+aVLehman College
+p1204
+asVmediatype
+p1205
+Vmovies
+p1206
+sVcollection
+p1207
+(lp1208
+Vdeepdishtv
+p1209
+aVnewsandpublicaffairs
+p1210
+asVmonth
+p1211
+I6
+sVscore
+p1212
+F0.101727806
+sVlicenseurl
+p1213
+Vhttp://creativecommons.org/licenses/by-nc-nd/3.0/
+p1214
+sVidentifier
+p1215
+VComingOutOfTheShadowsPart1
+p1216
+sVcreator
+p1217
+(lp1218
+VDeep Dish TV
+p1219
+asVdescription
+p1220
+VAs Part of the National Coming Out of the Shadows week of action in support of the Dream Act, Student Dreamers from Lehman College shared their stories on the school quad. As undocumented youth fighting for their rights, the Lehman Dreamers told the world why they are "Undocumented, Unafraid and Unapologetic".
+p1221
+sa(dp1222
+Vweek
+p1223
+I0
+sVpublisher
+p1224
+(lp1225
+VDN Studios
+p1226
+asVdescription
+p1227
+VDemocracy Now! radio program for Thursday, March 25, 2010 <ul class="recent_shows"><li><a href="http://www.democracynow.org/2010/3/25/headlines" rel="nofollow">Headlines for March 25, 2010</a></li> <li><a href="http://www.democracynow.org/2010/3/25/will_proposed_financial_regulatory_overhaul_actually" rel="nofollow">Will Proposed Financial Regulatory Overhaul Actually Reform Wall Street?</a></li> <li><a href="http://www.democracynow.org/2010/3/25/students_rally_for_aid_overhaul_dream" rel="nofollow">Students Rally for Aid Overhaul, <span class="caps">DREAM</span> Act</a></li> <li><a href="http://www.democracynow.org/2010/3/25/international_uproar_over_uganda_anti_gay" rel="nofollow">International Uproar over Uganda Anti-Gay Bill, Study Finds American Evangelicals Encouraging Homophobia</a></li> </ul>
+p1228
+sVlanguage
+p1229
+(lp1230
+Ves
+p1231
+asVtitle
+p1232
+VDemocracy Now! Thursday, March 25, 2010
+p1233
+sVdownloads
+p1234
+I4
+sVformat
+p1235
+(lp1236
+V64Kbps MP3
+p1237
+aVChecksums
+p1238
+aVMetadata
+p1239
+aVOgg Vorbis
+p1240
+asVsubject
+p1241
+(lp1242
+VDemocracy Now
+p1243
+asVmediatype
+p1244
+Vaudio
+p1245
+sVcollection
+p1246
+(lp1247
+Vdemocracy_now
+p1248
+aVaudio_news
+p1249
+asVmonth
+p1250
+I0
+sVsource
+p1251
+VTelevision broadcast
+p1252
+sVscore
+p1253
+F0.100823484
+sVyear
+p1254
+I2010
+sVdate
+p1255
+V2010-03-25T00:00:00Z
+p1256
+sVidentifier
+p1257
+Vdn2010-0325-es
+p1258
+sVpublicdate
+p1259
+V2010-03-25T00:00:00Z
+p1260
+sa(dp1261
+Vweek
+p1262
+I0
+sVpublisher
+p1263
+(lp1264
+VDN Studios
+p1265
+asVdescription
+p1266
+V* Headlines for August 20, 2010 * Obama Admin Claims End to Combat Operations in Iraq, But Iraqis See Same War Under a Different Name * Iraq War Vet Camilo MejAa: US Withdrawal Plan Marks "Privatization of Military Occupation" * Debate: Is DREAM Act a Solution for Millions of Undocumented Youth or a Funnel for Military Recruitment?
+p1267
+sVlanguage
+p1268
+(lp1269
+Ven
+p1270
+asVtitle
+p1271
+VDemocracy Now! Friday, August 20, 2010
+p1272
+sVdownloads
+p1273
+I70
+sVformat
+p1274
+(lp1275
+V512Kb MPEG4
+p1276
+aVAnimated GIF
+p1277
+aVArchive BitTorrent
+p1278
+aVChecksums
+p1279
+aVMPEG2
+p1280
+aVMetadata
+p1281
+aVOgg Video
+p1282
+aVThumbnail
+p1283
+asVmediatype
+p1284
+Vmovies
+p1285
+sVcollection
+p1286
+(lp1287
+Vdemocracy_now_vid
+p1288
+aVnewsandpublicaffairs
+p1289
+asVmonth
+p1290
+I0
+sVsource
+p1291
+VTelevision broadcast
+p1292
+sVscore
+p1293
+F0.10021463999999999
+sVdate
+p1294
+V2010-08-20T00:00:00Z
+p1295
+sVidentifier
+p1296
+Vdn2010-0820_vid
+p1297
+sVpublicdate
+p1298
+V2010-08-20T18:28:34Z
+p1299
+sa(dp1300
+Vweek
+p1301
+I0
+sVpublisher
+p1302
+(lp1303
+VDN Studios
+p1304
+asVdescription
+p1305
+VDemocracy Now! television program for Monday, June 18, 2012 <ul class="recent_shows"><li><a href="http://www.democracynow.org/2012/6/18/headlines" rel="nofollow">Headlines for June 18, 2012</a></li> <li><a href="http://www.democracynow.org/2012/6/18/rep_luis_gutierrez_in_obama_deportation" rel="nofollow">Rep. Luis GutiA(c)rrez: In Obama Deportation Move, Long-Term Immigration Activism "Has Been Rewarded"</a></li> <li><a href="http://www.democracynow.org/2012/6/18/after_years_of_struggle_dream_act" rel="nofollow">After Years of Struggle, <span class="caps">DREAM</span> Act Activists Hail Monumental Victory for Immigrants Living in Fear</a></li> <li><a href="http://www.democracynow.org/2012/6/18/thousands_hold_silent_march_to_mayor" rel="nofollow">Thousands Hold Silent March to Mayor Bloombergas Home in Protest of NYPDas "Stop-and-Frisk"</a></li> </ul>
+p1306
+sVlanguage
+p1307
+(lp1308
+Ven
+p1309
+asVtitle
+p1310
+VDemocracy Now! Monday, June 18, 2012
+p1311
+sVdownloads
+p1312
+I53
+sVformat
+p1313
+(lp1314
+VAnimated GIF
+p1315
+aVArchive BitTorrent
+p1316
+aVMPEG2
+p1317
+aVMetadata
+p1318
+aVOgg Video
+p1319
+aVThumbnail
+p1320
+aVVideo Index
+p1321
+aVh.264
+p1322
+asVsubject
+p1323
+(lp1324
+VDemocracy Now
+p1325
+asVmediatype
+p1326
+Vmovies
+p1327
+sVcollection
+p1328
+(lp1329
+Vdemocracy_now_vid
+p1330
+aVnewsandpublicaffairs
+p1331
+asVmonth
+p1332
+I0
+sVsource
+p1333
+VTelevision broadcast
+p1334
+sVscore
+p1335
+F0.10021463999999999
+sVyear
+p1336
+I2012
+sVdate
+p1337
+V2012-06-18T00:00:00Z
+p1338
+sVidentifier
+p1339
+Vdn2012-0618_vid
+p1340
+sVpublicdate
+p1341
+V2012-06-18T00:00:00Z
+p1342
+sa(dp1343
+Vweek
+p1344
+I0
+sVpublisher
+p1345
+(lp1346
+VDN Studios
+p1347
+asVdescription
+p1348
+V* Headlines for May 20, 2010 * Fmr. EPA Investigator Scott West: US Has Told BP "It Can Do Whatever It Wants and Won't Be Held Accountable" * 3 Undocumented Immigrants Risk Deportation in Protest for Passage of DREAM Act * "Silencing the Whistleblowers": How Will Financial Reform Prevent Another Crash if Banks Subvert Their Warning Systems?
+p1349
+sVlanguage
+p1350
+(lp1351
+Ven
+p1352
+asVtitle
+p1353
+VDemocracy Now! Thursday, May 20, 2010
+p1354
+sVdownloads
+p1355
+I278
+sVformat
+p1356
+(lp1357
+V512Kb MPEG4
+p1358
+aVAnimated GIF
+p1359
+aVArchive BitTorrent
+p1360
+aVChecksums
+p1361
+aVMPEG2
+p1362
+aVMetadata
+p1363
+aVOgg Video
+p1364
+aVThumbnail
+p1365
+asVmediatype
+p1366
+Vmovies
+p1367
+sVcollection
+p1368
+(lp1369
+Vdemocracy_now_vid
+p1370
+aVnewsandpublicaffairs
+p1371
+asVmonth
+p1372
+I0
+sVsource
+p1373
+VTelevision broadcast
+p1374
+sVscore
+p1375
+F0.10021463999999999
+sVdate
+p1376
+V2010-05-20T00:00:00Z
+p1377
+sVidentifier
+p1378
+Vdn2010-0520_vid
+p1379
+sVpublicdate
+p1380
+V2010-05-20T18:33:28Z
+p1381
+sa(dp1382
+Vweek
+p1383
+I0
+sVpublisher
+p1384
+(lp1385
+VDN Studios
+p1386
+asVdescription
+p1387
+V* Headlines for May 20, 2010 * Fmr. EPA Investigator Scott West: U.S. Has Told BP "It Can Do Whatever it Wants, and Won't Be Held Accountable" * 3 Undocumented Immigrants Risk Deportation in Protest for Passage of DREAM Act * "Silencing the Whistleblowers": How Will Financial Reform Prevent Another Crash if Banks Subvert Their Warning Systems?
+p1388
+sVlanguage
+p1389
+(lp1390
+Ven
+p1391
+asVtitle
+p1392
+VDemocracy Now! Thursday, May 20, 2010
+p1393
+sVdownloads
+p1394
+I93
+sVformat
+p1395
+(lp1396
+V64Kbps MP3
+p1397
+aVChecksums
+p1398
+aVFlac
+p1399
+aVFlac FingerPrint
+p1400
+aVMetadata
+p1401
+aVOgg Vorbis
+p1402
+aVVBR MP3
+p1403
+asVmediatype
+p1404
+Vaudio
+p1405
+sVcollection
+p1406
+(lp1407
+Vdemocracy_now
+p1408
+asVmonth
+p1409
+I0
+sVsource
+p1410
+VTelevision broadcast
+p1411
+sVscore
+p1412
+F0.10021463999999999
+sVyear
+p1413
+I2010
+sVdate
+p1414
+V2010-05-20T00:00:00Z
+p1415
+sVidentifier
+p1416
+Vdn2010-0520
+p1417
+sVcreator
+p1418
+(lp1419
+VDemocracy Now!
+p1420
+asVpublicdate
+p1421
+V2010-05-20T13:37:34Z
+p1422
+sa(dp1423
+Vweek
+p1424
+I0
+sVpublisher
+p1425
+(lp1426
+VDN Studios
+p1427
+asVdescription
+p1428
+VDemocracy Now! radio program for Thursday, May 20, 2010 <ul class="recent_shows"><li><a href="http://www.democracynow.org/2010/5/20/headlines" rel="nofollow">Headlines for May 20, 2010</a></li> <li><a href="http://www.democracynow.org/2010/5/20/fmr_epa_investigator_scott_west_us" rel="nofollow">Fmr. <span class="caps">EPA</span> Investigator Scott West: US Has Told BP "It Can Do Whatever It Wants and Wonat Be Held Accountable"</a></li> <li><a href="http://www.democracynow.org/2010/5/20/3_undocumented_immigrants_risk_deportation_to" rel="nofollow">3 Undocumented Immigrants Risk Deportation in Protest for Passage of <span class="caps">DREAM</span> Act</a></li> <li><a href="http://www.democracynow.org/2010/5/20/silencing_the_whistleblowers_how_will_financial" rel="nofollow">"Silencing the Whistleblowers": How Will Financial Reform Prevent Another Crash If Banks Subvert Their Warning Systems?</a></li> </ul>
+p1429
+sVlanguage
+p1430
+(lp1431
+Ves
+p1432
+asVtitle
+p1433
+VDemocracy Now! Thursday, May 20, 2010
+p1434
+sVdownloads
+p1435
+I5
+sVformat
+p1436
+(lp1437
+V64Kbps MP3
+p1438
+aVChecksums
+p1439
+aVMetadata
+p1440
+aVOgg Vorbis
+p1441
+asVsubject
+p1442
+(lp1443
+VDemocracy Now
+p1444
+asVmediatype
+p1445
+Vaudio
+p1446
+sVcollection
+p1447
+(lp1448
+Vdemocracy_now
+p1449
+aVaudio_news
+p1450
+asVmonth
+p1451
+I0
+sVsource
+p1452
+VTelevision broadcast
+p1453
+sVscore
+p1454
+F0.10021463999999999
+sVyear
+p1455
+I2010
+sVdate
+p1456
+V2010-05-20T00:00:00Z
+p1457
+sVidentifier
+p1458
+Vdn2010-0520-es
+p1459
+sVpublicdate
+p1460
+V2010-05-20T00:00:00Z
+p1461
+sa(dp1462
+Vweek
+p1463
+I0
+sVpublicdate
+p1464
+V2014-05-20T18:25:24Z
+p1465
+sVtitle
+p1466
+VAct 2010
+p1467
+sVdownloads
+p1468
+I1
+sVformat
+p1469
+(lp1470
+VArchive BitTorrent
+p1471
+aVMetadata
+p1472
+aVZIP
+p1473
+asVsubject
+p1474
+(lp1475
+VAct 2010
+p1476
+asVmediatype
+p1477
+Vtexts
+p1478
+sVcollection
+p1479
+(lp1480
+Vopensource_media
+p1481
+aVopensource
+p1482
+asVmonth
+p1483
+I0
+sVscore
+p1484
+F0.088793319999999995
+sVidentifier
+p1485
+VAct2010_201405
+p1486
+sVdescription
+p1487
+VACT software product sales, training, customization, and technical support. The Boneyard Slopestyle Course is not used and implementation of continuous x implicitly assumed by the supreme government and adaptability to interpret. On July 29, 2010 Congressman Ron Paul introduced the SEC Transparency Act of 2010 HR 5970, a bill designed to force greater transparency in the Securities and. Dream Act 2010. 100,481 likes 15 talking about this. To keep people updated on the status of the Dream Act and to be a part of the solution 1 Health Care Act of 2010 Main page article 2 Supporting Documents LINKS to the acts and the Technical Explanation 3 Related guidance; 4 Related forms. Dec 20, 2010 Congress has passed a comprehensive set of income tax, estate tax, and unemployment insurance provisions as outlined by the deal previously negotiated.
+p1488
+sa(dp1489
+Vweek
+p1490
+I0
+sVpublicdate
+p1491
+V2010-05-04T18:20:40Z
+p1492
+sVtitle
+p1493
+VA_Dream_Deferred....Does_It_Explode
+p1494
+sVdownloads
+p1495
+I20
+sVformat
+p1496
+(lp1497
+V512Kb MPEG4
+p1498
+aVAnimated GIF
+p1499
+aVArchive BitTorrent
+p1500
+aVMPEG4
+p1501
+aVMetadata
+p1502
+aVOgg Video
+p1503
+aVThumbnail
+p1504
+asVsubject
+p1505
+(lp1506
+Vdream act
+p1507
+aVdreamact
+p1508
+aVimmigration
+p1509
+aVillegal aliens
+p1510
+aVstudents
+p1511
+aVcollege
+p1512
+aVuniversity
+p1513
+aVdocumentary
+p1514
+aVfuture america
+p1515
+aVlatino
+p1516
+aVhispanic
+p1517
+asVmediatype
+p1518
+Vmovies
+p1519
+sVcollection
+p1520
+(lp1521
+Vopensource_movies
+p1522
+asVmonth
+p1523
+I0
+sVscore
+p1524
+F0.088495544999999995
+sVlicenseurl
+p1525
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p1526
+sVidentifier
+p1527
+VA_Dream_Deferred....Does_It_Explode
+p1528
+sVdescription
+p1529
+Vbravenewfoundation - March 26, 2008 - Petition: http://adreamdeferred.org/ Every year, dedicated high-school students are denied the chance to attend college, based solely on their undocumented status. These young patriots are doctors who will never get the chance to heal us, teachers who won't be able to educate our children, police and firefighters who will never be able to protect usAC/all because their dreams have been deferred. All three presidential hopefuls co-sponsored the federal DREAM Act, yet it has never been made law. The DREAM Act would enable states to grant in-state tuition to these hardworking immigrant students, making higher education (and eventually citizenship) a real possibility. We need to put pressure on all three presidential candidates to commit to securing America's future by enacting the federal DREAM Act in their first 100 days of office. Sign the petition so that we can show our elected officials that the dreams of students must not be sacrificed to the anti-immigrant, anti-American status quo.
+p1530
+sa(dp1531
+Vdescription
+p1532
+VThe boys are back... with plenty of fodder! Chris Christie signs & praises New Jerseyas Dream Act, It's So Cold... an inmate escaped prison then turned himself back in because of the weather. Dennis Rodman states he loves Kim Jong-Un, claims he is helping the people of North Korea. Also, TheBlaze Editor-At-Large, Mike Opelka checks in. Plus, It's So Cold & What I Learned Today!
+p1533
+sVlanguage
+p1534
+(lp1535
+Venglish
+p1536
+asVtitle
+p1537
+VThe Morning Blaze with Doc Thompson - 01/08/2014
+p1538
+sVformat
+p1539
+(lp1540
+VArchive BitTorrent
+p1541
+aVMetadata
+p1542
+aVOgg Vorbis
+p1543
+aVVBR MP3
+p1544
+asVsubject
+p1545
+(lp1546
+VTheBlaze Radio Network
+p1547
+aVThe Morning Blaze
+p1548
+aVDoc Thompson
+p1549
+asVmediatype
+p1550
+Vaudio
+p1551
+sVcollection
+p1552
+(lp1553
+Vgodaneinbox
+p1554
+asVscore
+p1555
+F0.088144449999999999
+sVyear
+p1556
+I2014
+sVdate
+p1557
+V2014-01-08T00:00:00Z
+p1558
+sVidentifier
+p1559
+Vthe-morning-blaze-with-doc-thompson-01-08-2014
+p1560
+sVcreator
+p1561
+(lp1562
+VTheBlaze Radio Network
+p1563
+asVpublicdate
+p1564
+V2014-06-06T20:46:18Z
+p1565
+sa(dp1566
+Vweek
+p1567
+I0
+sVpublisher
+p1568
+(lp1569
+VDN Studios
+p1570
+asVdescription
+p1571
+VDemocracy Now! television program for Thursday, March 20, 2014 <ul class="recent_shows"><li><a href="http://www.democracynow.org/2014/3/20/headlines" rel="nofollow">Headlines for March 20, 2014</a></li> <li><a href="http://www.democracynow.org/2014/3/20/fmr_us_ambassador_behind_crimea_crisis" rel="nofollow">Former U.S. Ambassador: Behind Crimea Crisis, Russia Responding to Years of "Hostile" U.S. Policy</a></li> <li><a href="http://www.democracynow.org/2014/3/20/dream_act_narrowly_fails_in_ny" rel="nofollow"><span class="caps">DREAM</span> Act Narrowly Fails in NY Senate After Gov. Andrew Cuomo Failed to Push Passage</a></li> <li><a href="http://www.democracynow.org/2014/3/20/georgia_activists_confront_gop_rejection_of" rel="nofollow">Georgia Activists Confront <span class="caps">GOP</span> Rejection of Medicaid as Moral Mondays Spread Across South</a></li> <li><a href="http://www.democracynow.org/2014/3/20/team_pentobarbital_ok_officials_joked_about" rel="nofollow">"Team Pentobarbital": OK Officials Joked About Seeking Football Tix for Help with Execution Drugs</a></li> </ul>
+p1572
+sVlanguage
+p1573
+(lp1574
+Ven
+p1575
+asVtitle
+p1576
+VDemocracy Now! Thursday, March 20, 2014
+p1577
+sVdownloads
+p1578
+I23
+sVformat
+p1579
+(lp1580
+VAnimated GIF
+p1581
+aVArchive BitTorrent
+p1582
+aVMPEG2
+p1583
+aVMetadata
+p1584
+aVOgg Video
+p1585
+aVThumbnail
+p1586
+aVVideo Index
+p1587
+aVh.264
+p1588
+asVsubject
+p1589
+(lp1590
+VDemocracy Now
+p1591
+asVmediatype
+p1592
+Vmovies
+p1593
+sVcollection
+p1594
+(lp1595
+Vdemocracy_now_vid
+p1596
+aVnewsandpublicaffairs
+p1597
+asVmonth
+p1598
+I0
+sVsource
+p1599
+VTelevision broadcast
+p1600
+sVscore
+p1601
+F0.087535605000000002
+sVyear
+p1602
+I2014
+sVdate
+p1603
+V2014-03-20T00:00:00Z
+p1604
+sVidentifier
+p1605
+Vdn2014-0320_vid
+p1606
+sVpublicdate
+p1607
+V2014-03-20T00:00:00Z
+p1608
+sa(dp1609
+Vweek
+p1610
+I0
+sVpublicdate
+p1611
+V2013-01-03T16:53:00Z
+p1612
+sVtitle
+p1613
+VSojourner Truth Radio 010313
+p1614
+sVdownloads
+p1615
+I10
+sVformat
+p1616
+(lp1617
+VArchive BitTorrent
+p1618
+aVMetadata
+p1619
+aVOgg Vorbis
+p1620
+aVVBR MP3
+p1621
+asVsubject
+p1622
+(lp1623
+VAlex Sanchez
+p1624
+aVLAPD
+p1625
+aVDream Act
+p1626
+aVDACA
+p1627
+aVEast Los Angeles
+p1628
+asVmediatype
+p1629
+Vaudio
+p1630
+sVcollection
+p1631
+(lp1632
+Vopensource_audio
+p1633
+asVmonth
+p1634
+I0
+sVscore
+p1635
+F0.06379514
+sVlicenseurl
+p1636
+Vhttp://creativecommons.org/licenses/by-nc-sa/3.0/us/
+p1637
+sVidentifier
+p1638
+VSojournerTruthRadio010313
+p1639
+sVdescription
+p1640
+VToday, we speak to Alex Sanchez the acclaimed gang intervention worker about his three year legal fight against the federal government and last monthAC/s decision by the US attorneyAC/s office to drop racketeering and conspiracy charges against him. WeAC/ll take a look at the culture and art of East Los Angeles and speak to Marco Amador about cultural awakening going on there, and what it means for the city at large. And last we speak to Bupendra Ram and Anthony Ng, two undocumented young people living in the United States about the impact of the Dream Act, now law in the state of California, will have on them and others living in the country without legal status.
+p1641
+sa(dp1642
+Vweek
+p1643
+I0
+sVpublicdate
+p1644
+V2013-02-07T16:41:45Z
+p1645
+sVtitle
+p1646
+VEpisode 3 AC/AA Shawshank Redundancy
+p1647
+sVdownloads
+p1648
+I211
+sVformat
+p1649
+(lp1650
+VArchive BitTorrent
+p1651
+aVMetadata
+p1652
+aVOgg Vorbis
+p1653
+aVVBR MP3
+p1654
+asVsubject
+p1655
+(lp1656
+Veveryone's a critic
+p1657
+aVshawshank redemption
+p1658
+asVmediatype
+p1659
+Vaudio
+p1660
+sVcollection
+p1661
+(lp1662
+Vopensource_audio
+p1663
+asVmonth
+p1664
+I2
+sVscore
+p1665
+F0.062786359999999999
+sVlicenseurl
+p1666
+Vhttp://creativecommons.org/licenses/by-nc-nd/3.0/
+p1667
+sVidentifier
+p1668
+VEpisode3ShawshankRedundancy
+p1669
+sVcreator
+p1670
+(lp1671
+VEveryone's a Critic
+p1672
+asVdescription
+p1673
+VWe intro by thanking people for feedback and then talk about the Dream Act, a proposed law that would grant illegal immigrants that graduate college or serve in the military citizenship. We discuss Shawshank Redemption, HollywoodAC/s comfort food. Tom rates it 3.8 and Cecil rates it at 3.5. We also talk about what would be a great film for us. Tom mentions Adaptation and Eternal Sunshine of the Spotless Mind, Cecil says Get Shorty and Fight Club are some of his favorites. For Critics on Cons Tom rips apart (mostly) oxygenated water, Cecil takes on PETA. They both lay into Dr. Richard Dawkins during Critics on Critics. The Critical Reinterpretation is Muskrat Love by Captain and Tennille.
+p1674
+sa(dp1675
+Vweek
+p1676
+I0
+sVdescription
+p1677
+VToday's Headlines * GOP Forces New House Vote on Healthcare Bill * Dems Face Threats over Healthcare Bill * Media Barred from Signing of Anti-Abortion Order * US, Russia Reach Arms Pact * US, Israel at Impasse in Settlement Dispute * Report: US Eases Iran Sanctions to Win Russia, China Backing * Afghan Militant Group Submits Peace Offer * US Hosts Pakistani Officials, Pledges Increased Cooperation * El Salvador Offers Apology on 30th Anniversary of Romero Murder * Argentina Marks 34th Anniversary of Military Coup * Island in Bay of Bengal Disappears Under Rising Sea * Pentagon to Announce Curbs on Gay Military Ban * Report: Pope Ignored Molestation of 200 Boys by US Priest * Indonesian Media Reports Nairn Faces Arrest # Will Proposed Financial Regulatory Overhaul Actually Reform Wall Street? With the main healthcare reform bill signed into law, Democrats say congressional efforts to reform Wall Street and the nationas financial regulatory system will soon top the Obama administrationas agenda. A measure put forward by Sen. Christopher Dodd is being described as the biggest overhaul of financial rules since the 1930s, but critics have faulted the proposal for giving additional power to the Federal Reserve while gutting the proposed Consumer Financial Protection Agency and housing it inside the Fed. Students Rally for Aid Overhaul, DREAM Act Hundreds of students rallied on Capitol Hill Tuesday to support a massive overhaul of student loan programs. The measure would end the role of private banks in federally backed student loans and make the government the primary lender. Student protesters have also converged in Washington to call for passage of the Development, Relief and Education for Alien Minors Act. The DREAM Act would grant permanent citizenship to undocumented workersa children if they completed two years of college, trade school or military service. International Uproar over Uganda Anti-Gay Bill, Study Finds American Evangelicals Encouraging Homophobia Proposed anti-gay legislation in Uganda has sparked international uproar. Homosexuality is already illegal in Uganda, but the new bill would impose much harsher punishments including life imprisonment and even the death penalty for some homosexual acts. We speak with a leading Ugandan gay rights organizer and a Zambian priest who has documented the role of American evangelicals in fostering homophobia in Uganda.
+p1678
+sVtitle
+p1679
+VDemocracy Now! Thursday, March 25, 2010
+p1680
+sVdownloads
+p1681
+I63
+sVformat
+p1682
+(lp1683
+V512Kb MPEG4
+p1684
+aVAnimated GIF
+p1685
+aVArchive BitTorrent
+p1686
+aVMPEG2
+p1687
+aVMetadata
+p1688
+aVOgg Video
+p1689
+aVThumbnail
+p1690
+asVmediatype
+p1691
+Vmovies
+p1692
+sVcollection
+p1693
+(lp1694
+Vdemocracy_now_vid
+p1695
+aVnewsandpublicaffairs
+p1696
+asVmonth
+p1697
+I0
+sVscore
+p1698
+F0.053792621999999998
+sVyear
+p1699
+I2010
+sVdate
+p1700
+V2010-03-25T00:00:00Z
+p1701
+sVidentifier
+p1702
+Vdn2010-0325_vid
+p1703
+sVcreator
+p1704
+(lp1705
+VDemocracy Now!
+p1706
+asVpublicdate
+p1707
+V2010-03-25T16:58:17Z
+p1708
+sa(dp1709
+Vweek
+p1710
+I0
+sVdescription
+p1711
+VHeadlines * GOP Forces New House Vote on Healthcare Bill * Dems Face Threats over Healthcare Bill * Media Barred from Signing of Anti-Abortion Order * US, Russia Reach Arms Pact * US, Israel at Impasse in Settlement Dispute * Report: US Eases Iran Sanctions to Win Russia, China Backing * Afghan Militant Group Submits Peace Offer * US Hosts Pakistani Officials, Pledges Increased Cooperation * El Salvador Offers Apology on 30th Anniversary of Romero Murder * Argentina Marks 34th Anniversary of Military Coup * Island in Bay of Bengal Disappears Under Rising Sea * Pentagon to Announce Curbs on Gay Military Ban * Report: Pope Ignored Molestation of 200 Boys by US Priest * Indonesian Media Reports Nairn Faces Arrest * Wallstbull Will Proposed Financial Regulatory Overhaul Actually Reform Wall Street? With the main healthcare reform bill signed into law, Democrats say congressional efforts to reform Wall Street and the nationas financial regulatory system will soon top the Obama administrationas agenda. A measure put forward by Sen. Christopher Dodd is being described as the biggest overhaul of financial rules since the 1930s, but critics have faulted the proposal for giving additional power to the Federal Reserve while gutting the proposed Consumer Financial Protection Agency and housing it inside the Fed. [includes rush transcript] Students Rally for Aid Overhaul, DREAM Act Hundreds of students rallied on Capitol Hill Tuesday to support a massive overhaul of student loan programs. The measure would end the role of private banks in federally backed student loans and make the government the primary lender. Student protesters have also converged in Washington to call for passage of the Development, Relief and Education for Alien Minors Act. The DREAM Act would grant permanent citizenship to undocumented workersa children if they completed two years of college, trade school or military service. [includes rush transcript] International Uproar over Uganda Anti-Gay Bill, Study Finds American Evangelicals Encouraging Homophobia Proposed anti-gay legislation in Uganda has sparked international uproar. Homosexuality is already illegal in Uganda, but the new bill would impose much harsher punishments including life imprisonment and even the death penalty for some homosexual acts. We speak with a leading Ugandan gay rights organizer and a Zambian priest who has documented the role of American evangelicals in fostering homophobia in Uganda. [includes rush transcript]
+p1712
+sVtitle
+p1713
+VDemocracy Now! Thursday, March 25, 2010
+p1714
+sVdownloads
+p1715
+I36
+sVformat
+p1716
+(lp1717
+VArchive BitTorrent
+p1718
+aVChecksums
+p1719
+aVFlac
+p1720
+aVFlac FingerPrint
+p1721
+aVMetadata
+p1722
+aVOgg Vorbis
+p1723
+aVVBR MP3
+p1724
+asVmediatype
+p1725
+Vmovies
+p1726
+sVcollection
+p1727
+(lp1728
+Vdemocracy_now_vid
+p1729
+aVnewsandpublicaffairs
+p1730
+asVmonth
+p1731
+I0
+sVscore
+p1732
+F0.053792621999999998
+sVyear
+p1733
+I2010
+sVdate
+p1734
+V2010-03-24T00:00:00Z
+p1735
+sVidentifier
+p1736
+Vdn2010-0325
+p1737
+sVcreator
+p1738
+(lp1739
+VDemocracy Now!
+p1740
+asVpublicdate
+p1741
+V2010-03-26T16:08:52Z
+p1742
+sa(dp1743
+Vweek
+p1744
+I1
+sVdescription
+p1745
+VDemocracy Now! Thursday, December 23, 2010 Juan Gonzalez: NYC CityTime Fraud Scheme "Biggest Scandal of Entire Bloomberg Era" Four consultants hired to eliminate waste and fraud in New York Cityas municipal payroll were arrested last week on charges of stealing $80 million from city coffers. Democracy Now! co-host and New York Daily News columnist Juan Gonzalez, who covered the story for the past year, calls it "the biggest scandal of the Bloomberg era." As Senate Passes 9/11 Health Bill, Juan Gonzalez Notes Relative Absence of Key Figures Like Bush and Giuliani On the final day of the 111th Congress, the Senate passed a $4.3 billion package to help the 9/11 rescue workers who were sickened by the toxins at Ground Zero. Democracy Now! co-host and New York Daily News columnist Juan Gonzalez, who first exposed what was happening to the Ground Zero workers, notes the "relative absence of some of the key figures who were involved at the time when the attacks happened," like former New York mayor Rudy Giuliani, former New York governor George Pataki and former President George W. Bush. WikiLeaks Cables Reveal U.S. Sought to Retaliate Against Europe over Monsanto GM Crops U.S. diplomatic cables released by WikiLeaks reveal the Bush administration drew up ways to retaliate against Europe for refusing to use genetically modified seeds. In 2007, then-U.S. ambassador to France Craig Stapleton was concerned about Franceas decision to ban cultivation of genetically modified corn produced by biotech giant Monsanto. He also warned that a new French environmental review standard could spread anti-biotech policy across Europe. We speak with Jeffrey Smith of the Institute for Responsible Technology. FBI Expands Probe into Antiwar Activists The FBIas probe into antiwar activists is growing. In September, FBI agents raided the homes and offices of activists in Chicago and Minneapolis. Subpoenas that were withdrawn have been reactivated, and a new subpoena was served to a Palestinian solidarity activist in Chicago. We speak with two of the people targeted and two former FBI agents. After GOP Blocks DREAM Act, Where is Immigration Activism Headed? After Senate Republicans blocked passage of the DREAM Act, a provision that would grant undocumented young people a chance at citizenship, many immigrant rights advocates are openly questioning the Obama administrationas immigration strategy. Over the past two years, the Obama administration has deported a record number of undocumented immigrants but failed to gain support from Republicans on any immigration reform legislation. We speak with writer Roberto Lovato.
+p1746
+sVtitle
+p1747
+VDemocracy Now! Thursday, December 23, 2010
+p1748
+sVdownloads
+p1749
+I51
+sVformat
+p1750
+(lp1751
+V512Kb MPEG4
+p1752
+aVAnimated GIF
+p1753
+aVArchive BitTorrent
+p1754
+aVMPEG2
+p1755
+aVMetadata
+p1756
+aVOgg Video
+p1757
+aVThumbnail
+p1758
+aVVideo Index
+p1759
+asVmediatype
+p1760
+Vmovies
+p1761
+sVcollection
+p1762
+(lp1763
+Vdemocracy_now_vid
+p1764
+aVnewsandpublicaffairs
+p1765
+asVmonth
+p1766
+I3
+sVscore
+p1767
+F0.053362100000000003
+sVyear
+p1768
+I2010
+sVdate
+p1769
+V2010-12-23T00:00:00Z
+p1770
+sVidentifier
+p1771
+Vdn2010-1223_vid
+p1772
+sVcreator
+p1773
+(lp1774
+VDemocracy Now!
+p1775
+asVpublicdate
+p1776
+V2011-01-14T19:20:24Z
+p1777
+sa(dp1778
+Vweek
+p1779
+I0
+sVdescription
+p1780
+VDavis Student Deportation - Mandeep Chahal is a 20-year-old UC Davis pre-med student whose parents brought her to America from India illegally when she was six years old. She was nearly deported last month until friends, family, and a supportive community fought to get her a last-minute temporary reprieve. Now, Mandeep is rallying with others in support of the Dream Act, legislation that will provide a path to citizenship for children who were brought to America by a parent as minors and had no control over entering the country. We'll talk with Mandeep about her ongoing legal case, and newfound activism. Baby Buddies - Marysville's Harmony Health Medical Clinic has just added a new natural childbirth center. The Baby Buddies Birth Center opened earlier this week and offers expecting mothers the opportunity to give birth naturally in a safe, supportive alternative to the typical hospital setting. We'll speak with Rachel Farrell, director of the Harmony Health Medical Clinic. Hapa - Pan-Polynesian musical group Hapa is playing at Harlow's tonight and they've just added a second show because the first one sold out in 24 hours. We'll speak singer, guitarist, and founder of Hapa, Barry Flanagan. Sound Advice: Jazz - It's time for this week's edition of "Sound Advice," our weekly music feature. This week, Devin Yamanaka brings us some new sounds in Jazz.
+p1781
+sVtitle
+p1782
+VInsight: UC Davis Student Deportation / Baby Buddies / Hapa / Sound Advice
+p1783
+sVdownloads
+p1784
+I157
+sVformat
+p1785
+(lp1786
+VChecksums
+p1787
+aVFlac
+p1788
+aVFlac FingerPrint
+p1789
+aVMetadata
+p1790
+aVOgg Vorbis
+p1791
+aVVBR MP3
+p1792
+aVWAVE
+p1793
+asVsubject
+p1794
+(lp1795
+VKXJZ
+p1796
+aVInsight
+p1797
+aVSacramento public radio
+p1798
+aVCapital Public Radio
+p1799
+aVCSU Sacramento
+p1800
+aVimmigration issues
+p1801
+aVMandeep Chahal
+p1802
+aVUC Davis student brought to US illegally at age 6
+p1803
+aVDream Act
+p1804
+aVBaby Buddies Birth Center
+p1805
+aVHarmony Health Medical Clinic, Linda
+p1806
+aVbirthing center for low income clients
+p1807
+aVHapa, Pan-Polynesian musical group
+p1808
+aVBarry Flanagan, founder, singer and guitarist, Hapa
+p1809
+aVSound Advice: Jazz
+p1810
+aVDevin Yamanaka
+p1811
+asVmediatype
+p1812
+Vaudio
+p1813
+sVcollection
+p1814
+(lp1815
+VKXJZinsight
+p1816
+aVaudio_news
+p1817
+asVmonth
+p1818
+I0
+sVscore
+p1819
+F0.051294423999999998
+sVlicenseurl
+p1820
+Vhttp://creativecommons.org/licenses/by-nc-nd/3.0/us/
+p1821
+sVyear
+p1822
+I2011
+sVdate
+p1823
+V2011-07-21T00:00:00Z
+p1824
+sVidentifier
+p1825
+VInsight_110721
+p1826
+sVpublicdate
+p1827
+V2011-07-21T18:22:54Z
+p1828
+sa(dp1829
+Vweek
+p1830
+I0
+sVdescription
+p1831
+VGalleria Fire Gag Order - A judge will evaluate the gag order request from the Placer County District Attorney in the Roseville Galleria arson case. The Sacramento Bee has filed suit opposing it. We'll get an update from the Sac Bee's Ed Fletcher. Illegal or Unauthorized? - The General Commission on Religion and Race of The United Methodist Church joined a national campaign to eliminate the use of the word "illegal" as part of the conversation on immigration reform. The UMC is working for passage of the DREAM Act. Why is the church doing this? And why does it matter? Hall of Fame - The 2010 California Hall of Fame Red Carpet and Induction Ceremony will be broadcast live for the first time tonight with co-hosts Lisa Ling, special Oprah correspondent, and Jason Kennedy, E! News correspondent. The inductees include Betty White, Wayne Thiebaud, Serena Williams, Mark Zuckerberg, Barbara Streisand and many more. The Hall of Fame has been a personal project of First Lady Maria Shriver, so what's going to happen to it now that her husband will no longer be governor of California? We'll talk with California Museum Executive Director Claudia French about it. Dan Hicks - Dan Hicks and the Hot Licks are performing Friday, Dec. 17th at The Center for the Arts in Grass Valley. The band has a new Christmas album, "Crazy for Christmas." We'll hear some music.
+p1832
+sVtitle
+p1833
+VInsight: Galleria Fire Gag Order / Illegal or Unauthorized / Hall of Fame / Dan Hicks
+p1834
+sVdownloads
+p1835
+I98
+sVformat
+p1836
+(lp1837
+VChecksums
+p1838
+aVFlac
+p1839
+aVFlac FingerPrint
+p1840
+aVMetadata
+p1841
+aVOgg Vorbis
+p1842
+aVVBR MP3
+p1843
+aVWAVE
+p1844
+asVsubject
+p1845
+(lp1846
+VCapital Public Radio
+p1847
+aVKXJZ
+p1848
+aVSacramento public radio
+p1849
+aVEd Fletcher
+p1850
+aVRoseville, Galleria fire
+p1851
+aVgag order
+p1852
+aVPlacer County District Attorney
+p1853
+aVSacramento Bee
+p1854
+aVsuit
+p1855
+aVIllegal
+p1856
+aVUnauthorized
+p1857
+aVGeneral Commission on Religion and Race, the
+p1858
+aVUnited Methodist Church, the
+p1859
+aVnational campaign
+p1860
+aVimmigration refrorm
+p1861
+aVUMC
+p1862
+aVDREAM Act
+p1863
+aVHall of Fame
+p1864
+aVCalifornia Hall of Fame Red Carpet
+p1865
+aVInduction Ceremony
+p1866
+aVbroadcast live
+p1867
+aVfirst time
+p1868
+aVLisa Ling
+p1869
+aVspecial Oprah correspondent
+p1870
+aVJason Kennedy
+p1871
+aVE! News correspondent
+p1872
+aVinductees
+p1873
+aVBetty White
+p1874
+aVWayne Thiebaud
+p1875
+aVSerena Williams
+p1876
+aVMark Zuckerberg
+p1877
+aVBarbara Streisand
+p1878
+aVFirst Lady, Maria Shriver
+p1879
+aVCalifornia Museum, the
+p1880
+aVClaudia French
+p1881
+aVDan Hicks
+p1882
+aVHot Licks
+p1883
+aVCenter for the Arts in Grass Valley,the
+p1884
+aVCrazy for Christmas
+p1885
+aVnew Christmas album
+p1886
+asVmediatype
+p1887
+Vaudio
+p1888
+sVcollection
+p1889
+(lp1890
+VKXJZinsight
+p1891
+aVaudio_news
+p1892
+asVmonth
+p1893
+I0
+sVscore
+p1894
+F0.050863903000000002
+sVlicenseurl
+p1895
+Vhttp://creativecommons.org/licenses/by-nc-nd/3.0/
+p1896
+sVyear
+p1897
+I2010
+sVdate
+p1898
+V2010-12-14T00:00:00Z
+p1899
+sVidentifier
+p1900
+VInsight_101214
+p1901
+sVpublicdate
+p1902
+V2010-12-14T21:18:59Z
+p1903
+sa(dp1904
+Vweek
+p1905
+I0
+sVdescription
+p1906
+VMusic Free Static Episode 24 ============================ Originally posted at http://youtu.be/5b7uQ9syT68 Table of Contents ================= 1 Introduction 2 What to expect from the Colorado Legislature 3 Tax me, Amadeus! 4 Copyright 1 Introduction --------------- Welcome to Music Free Static. All the static of those other podcasts but none of the music. This is episode 24 recorded on November 17, 2012. Subscribe to Music Free Static: - [YouTube] - [iTunes] - [Google+] - [Facebook] - Twitter: [@musicfreestatic] [@PerlStalker] - [Podcast RSS feed] - [PerlStalker's Ramblings] [YouTube]: http://www.youtube.com/user/musicfreestatic [iTunes]: http://itunes.apple.com/us/podcast/music-free-static/id533100249 [Google+]: https://plus.google.com/115220059275644367796/posts [Facebook]: http://www.facebook.com/pages/Music-Free-Static/423109961067784 [@musicfreestatic]: http://twitter.com/musicfreestatic [@PerlStalker]: http://twitter.com/PerlStalker [Podcast RSS feed]: http://feeds.feedburner.com/MusicFreeStatic [PerlStalker's Ramblings]: http://perlstalker.blogspot.com/ 2 What to expect from the Colorado Legislature ----------------------------------------------- - Kill TABOR - Dream Act - Gay Marriage - Extreme environmentalist agenda - Tax hikes 3 Tax me, Amadeus! ------------------- Alright, let's raise taxes. - Entertainers tax - Flat tax 4 Copyright ------------ Music Free Static Video Podcast by Randall Smith is licensed under a Creative Commons Attribution-ShareAlike 3.0 United States License.
+p1907
+sVtitle
+p1908
+VMusic Free Static Episode 24
+p1909
+sVdownloads
+p1910
+I122
+sVformat
+p1911
+(lp1912
+VArchive BitTorrent
+p1913
+aVMetadata
+p1914
+aVOgg Vorbis
+p1915
+aVVBR MP3
+p1916
+asVsubject
+p1917
+(lp1918
+Vpolitics
+p1919
+aVColorado
+p1920
+aVlibertarian
+p1921
+aVconservative
+p1922
+aVTABOR
+p1923
+aVtaxes
+p1924
+aVenvironmentalism
+p1925
+aVgay marriage
+p1926
+asVmediatype
+p1927
+Vaudio
+p1928
+sVcollection
+p1929
+(lp1930
+Vopensource_audio
+p1931
+asVmonth
+p1932
+I0
+sVscore
+p1933
+F0.050716169999999998
+sVlicenseurl
+p1934
+Vhttp://creativecommons.org/licenses/by-sa/3.0/us/
+p1935
+sVyear
+p1936
+I2012
+sVdate
+p1937
+V2012-11-17T00:00:00Z
+p1938
+sVidentifier
+p1939
+VMusic_Free_Static_Episode_24
+p1940
+sVcreator
+p1941
+(lp1942
+VRandall Smith
+p1943
+asVpublicdate
+p1944
+V2012-11-17T22:25:31Z
+p1945
+sass.

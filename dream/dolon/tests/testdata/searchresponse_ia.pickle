@@ -1,0 +1,798 @@
+(dp1
+VresponseHeader
+p2
+(dp3
+Vstatus
+p4
+I0
+sVQTime
+p5
+I2938
+sVparams
+p6
+(dp7
+Vqin
+p8
+Vdream act
+p9
+sVindent
+p10
+Vyes
+p11
+sVjson.wrf
+p12
+V
+sVq
+V(title:dream^100 OR description:dream^15 OR collection:dream^10 OR language:dream^10 OR text:dream^1) (title:act^100 OR description:act^15 OR collection:act^10 OR language:act^10 OR text:act^1)
+p13
+sVstart
+p14
+V1
+sVwt
+p15
+Vjson
+p16
+sVrows
+p17
+V10
+p18
+sVfl
+p19
+V
+sssVresponse
+p20
+(dp21
+Vstart
+p22
+I1
+sVmaxScore
+p23
+F4.2918735000000003
+sVnumFound
+p24
+I713
+sVdocs
+p25
+(lp26
+(dp27
+Vweek
+p28
+I2
+sVdescription
+p29
+VImmigration Advocates Target GOP In DREAM Act Ads
+p30
+sVtitle
+p31
+VDream Act Audio
+p32
+sVdownloads
+p33
+I1389
+sVformat
+p34
+(lp35
+VArchive BitTorrent
+p36
+aVMetadata
+p37
+aVOgg Vorbis
+p38
+aVVBR MP3
+p39
+asVsubject
+p40
+(lp41
+VDream
+p42
+aVAct
+p43
+aVAudio
+p44
+aVRecording
+p45
+asVmediatype
+p46
+Vaudio
+p47
+sVcollection
+p48
+(lp49
+Vopensource_audio
+p50
+asVmonth
+p51
+I7
+sVscore
+p52
+F3.5691264
+sVidentifier
+p53
+VDreamActAudio
+p54
+sVpublicdate
+p55
+V2010-12-12T14:44:54Z
+p56
+sa(dp57
+Vweek
+p58
+I1
+sVpublicdate
+p59
+V2010-06-26T20:06:46Z
+p60
+sVtitle
+p61
+VDream Act Supporters
+p62
+sVdownloads
+p63
+I12
+sVformat
+p64
+(lp65
+VArchive BitTorrent
+p66
+aVMetadata
+p67
+aVOgg Vorbis
+p68
+aVVBR MP3
+p69
+asVsubject
+p70
+(lp71
+VThe Lion Star Blog
+p72
+aVJaime Abeytia
+p73
+aVEl Paso
+p74
+aVDream Act
+p75
+asVmediatype
+p76
+Vaudio
+p77
+sVcollection
+p78
+(lp79
+Vopensource_audio
+p80
+asVmonth
+p81
+I1
+sVscore
+p82
+F3.5291983999999998
+sVlicenseurl
+p83
+Vhttp://creativecommons.org/licenses/by-nc-nd/3.0/
+p84
+sVidentifier
+p85
+VDreamActSupporters
+p86
+sVcreator
+p87
+(lp88
+VJaime Abeytia, Author of The Lion Star Blog
+p89
+asVdescription
+p90
+VImpromptu interview with supporters of the Dream Act that were walking from the Providence East Hospital to the Downtown area to raise awareness of the Dream Act.
+p91
+sa(dp92
+Vweek
+p93
+I0
+sVpublicdate
+p94
+V2009-09-23T16:42:09Z
+p95
+sVtitle
+p96
+VThe Dream Act 2
+p97
+sVdownloads
+p98
+I46
+sVformat
+p99
+(lp100
+V512Kb MPEG4
+p101
+aVAnimated GIF
+p102
+aVArchive BitTorrent
+p103
+aVMPEG4
+p104
+aVMetadata
+p105
+aVOgg Video
+p106
+aVThumbnail
+p107
+asVsubject
+p108
+(lp109
+VThe Rapidian
+p110
+aVnews
+p111
+aVGRCMC
+p112
+aVCMC
+p113
+aVGrand Rapids Community Foundation
+p114
+aVGRTV
+p115
+aVWYCE
+p116
+aVcitizen journalism
+p117
+aVThe Dream Act
+p118
+aVEducation
+p119
+asVmediatype
+p120
+Vmovies
+p121
+sVcollection
+p122
+(lp123
+Vopensource_movies
+p124
+asVmonth
+p125
+I0
+sVscore
+p126
+F3.5291047
+sVlicenseurl
+p127
+Vhttp://creativecommons.org/licenses/by/3.0/us/
+p128
+sVidentifier
+p129
+VTheDreamAct2
+p130
+sVcreator
+p131
+(lp132
+VGretchen Vinnedge
+p133
+asVdescription
+p134
+VStudents who are illegal aliens hoping for help from the Dream Act to realize their dream of becoming US citizens.
+p135
+sa(dp136
+Vweek
+p137
+I0
+sVpublicdate
+p138
+V2009-09-12T22:30:47Z
+p139
+sVtitle
+p140
+VThe Dream Act
+p141
+sVdownloads
+p142
+I99
+sVformat
+p143
+(lp144
+VAIFF
+p145
+aVArchive BitTorrent
+p146
+aVMetadata
+p147
+aVVBR M3U
+p148
+aVVBR MP3
+p149
+aVVBR ZIP
+p150
+asVsubject
+p151
+(lp152
+VThe Rapidian
+p153
+aVGrand Rapids MI
+p154
+aVThe Dream Act
+p155
+aVimmigration
+p156
+asVmediatype
+p157
+Vaudio
+p158
+sVcollection
+p159
+(lp160
+Vopensource_audio
+p161
+asVmonth
+p162
+I0
+sVscore
+p163
+F3.4657521
+sVlicenseurl
+p164
+Vhttp://creativecommons.org/licenses/by/3.0/us/
+p165
+sVidentifier
+p166
+VTheDreamAct_390
+p167
+sVcreator
+p168
+(lp169
+VGretchen Vinnedge
+p170
+asVdescription
+p171
+VInterview of several Grand Rapids area students dealing with the issue of being an illegal alien and how the Dream Act could change their lives.
+p172
+sa(dp173
+Vweek
+p174
+I1
+sVpublicdate
+p175
+V2008-08-21T22:07:57Z
+p176
+sVtitle
+p177
+VDream Act - Santa Barbara
+p178
+sVdownloads
+p179
+I45
+sVformat
+p180
+(lp181
+V512Kb MPEG4
+p182
+aVAnimated GIF
+p183
+aVMPEG4
+p184
+aVMetadata
+p185
+aVOgg Video
+p186
+aVThumbnail
+p187
+asVmediatype
+p188
+Vmovies
+p189
+sVcollection
+p190
+(lp191
+Vbliptv
+p192
+asVmonth
+p193
+I1
+sVscore
+p194
+F3.3994775000000002
+sVlicenseurl
+p195
+Vhttp://creativecommons.org/licenses/by-nc-sa/2.0/
+p196
+sVidentifier
+p197
+VDorothyVid-DreamActSantaBarbara636
+p198
+sVdescription
+p199
+VDream Act legislation for Callifornia was discussed in Santa Barbara at an event on the library grounds, downtown. A cheerful group of would be college students and supporters talked about the need for the legislation and what it means to all Californians. This law, if passed, would allow undocumented students who have attended schools here for 3 years or more, to apply for loans and scholarships when they go  on to college.
+p200
+sa(dp201
+Vweek
+p202
+I0
+sVpublicdate
+p203
+V2010-06-02T18:33:42Z
+p204
+sVtitle
+p205
+VShare the Dream! Dream Act Part 4
+p206
+sVdownloads
+p207
+I22
+sVformat
+p208
+(lp209
+V512Kb MPEG4
+p210
+aVAnimated GIF
+p211
+aVArchive BitTorrent
+p212
+aVMetadata
+p213
+aVOgg Video
+p214
+aVQuickTime
+p215
+aVThumbnail
+p216
+asVsubject
+p217
+(lp218
+VShare
+p219
+aVthe
+p220
+aVDream
+p221
+aVAct
+p222
+aVPart 4
+p223
+asVmediatype
+p224
+Vmovies
+p225
+sVcollection
+p226
+(lp227
+Vopensource_movies
+p228
+asVmonth
+p229
+I0
+sVscore
+p230
+F3.2579832
+sVlicenseurl
+p231
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p232
+sVidentifier
+p233
+VShareTheDreamDreamActPart4
+p234
+sVdescription
+p235
+VLMU Professor Herbert Medina discusses the importance of the Dream Act. Share the dream! Re-post this video on your wall. Facebook.com/Cuentame
+p236
+sa(dp237
+Vweek
+p238
+I1
+sVpublicdate
+p239
+V2010-06-02T18:53:41Z
+p240
+sVtitle
+p241
+VShare the DREAM! Dream Act Part 3
+p242
+sVdownloads
+p243
+I24
+sVformat
+p244
+(lp245
+V512Kb MPEG4
+p246
+aVAnimated GIF
+p247
+aVArchive BitTorrent
+p248
+aVMetadata
+p249
+aVOgg Video
+p250
+aVQuickTime
+p251
+aVThumbnail
+p252
+asVsubject
+p253
+(lp254
+VShare
+p255
+aVthe
+p256
+aVDream
+p257
+aVAct
+p258
+aVPart 3
+p259
+asVmediatype
+p260
+Vmovies
+p261
+sVcollection
+p262
+(lp263
+Vopensource_movies
+p264
+asVmonth
+p265
+I1
+sVscore
+p266
+F3.1945944000000002
+sVlicenseurl
+p267
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p268
+sVidentifier
+p269
+VShareTheDreamDreamActPart3
+p270
+sVdescription
+p271
+VIf passed, the DREAM Act would provide financial assistance to hundreds of thousands of undocumented youth who would qualify. Every year, only 5-10% of undocumented high school grads go on to college, many due to lack of funds. Continue sharing the DREAM! Re-post this video on your wall. Facebook.com/Cuentame
+p272
+sa(dp273
+Vweek
+p274
+I0
+sVpublicdate
+p275
+V2010-06-02T18:57:31Z
+p276
+sVtitle
+p277
+VShare the Dream - Dream Act Part 2
+p278
+sVdownloads
+p279
+I18
+sVformat
+p280
+(lp281
+V512Kb MPEG4
+p282
+aVAnimated GIF
+p283
+aVArchive BitTorrent
+p284
+aVMetadata
+p285
+aVOgg Video
+p286
+aVQuickTime
+p287
+aVThumbnail
+p288
+asVsubject
+p289
+(lp290
+VShare
+p291
+aVthe
+p292
+aVDream
+p293
+aVAct
+p294
+aVPart 2
+p295
+asVmediatype
+p296
+Vmovies
+p297
+sVcollection
+p298
+(lp299
+Vopensource_movies
+p300
+asVmonth
+p301
+I0
+sVscore
+p302
+F3.1932659999999999
+sVlicenseurl
+p303
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p304
+sVidentifier
+p305
+VShareTheDream-DreamActPart2
+p306
+sVdescription
+p307
+V'Alonzo' is among the thousands of undocumented college graduates who hit a road block after graduation due to the fact that it becomes difficult to find or keep employment because of their legal status. Over a million young people depend on the Dream Act to continue their education and become legalized. Share the dream. Re-post this video to your wall. Facebook.com/Cuentame
+p308
+sa(dp309
+Vweek
+p310
+I0
+sVpublicdate
+p311
+V2014-04-16T18:06:38Z
+p312
+sVtitle
+p313
+VThe New York Dream Act
+p314
+sVdownloads
+p315
+I7
+sVformat
+p316
+(lp317
+VAnimated GIF
+p318
+aVArchive BitTorrent
+p319
+aVMPEG1
+p320
+aVMetadata
+p321
+aVOgg Video
+p322
+aVThumbnail
+p323
+aVh.264
+p324
+asVsubject
+p325
+(lp326
+VOpen
+p327
+aVBronxnet
+p328
+aVPublic
+p329
+aVAccess
+p330
+aVBronxmedia
+p331
+aVEntertainment
+p332
+aVSports
+p333
+aVMusic
+p334
+aVPerforms
+p335
+aVBronx
+p336
+aVNYC
+p337
+aVNew York
+p338
+aVDaren Jaime
+p339
+aVDream Act
+p340
+aVFarmworkers Fair Labor Practices Act
+p341
+aVLabor
+p342
+aVAssemblyman
+p343
+aVMarcos Crespo
+p344
+aVFrancisco Moya
+p345
+asVmediatype
+p346
+Vmovies
+p347
+sVcollection
+p348
+(lp349
+Vopensource_movies
+p350
+asVmonth
+p351
+I0
+sVscore
+p352
+F3.0523666999999999
+sVlicenseurl
+p353
+Vhttp://creativecommons.org/publicdomain/zero/1.0/
+p354
+sVidentifier
+p355
+VTheNewYorkDreamAct
+p356
+sVcreator
+p357
+(lp358
+VOpen
+p359
+asVdescription
+p360
+VHere, to discuss the New York Dream Act and the Farmworkers Fair Labor Practices Act, is the Assemblyman of the 85th district, Marcos Crespo, and the Assemblyman of the 39th district, Francisco Moya.
+p361
+sa(dp362
+Vweek
+p363
+I0
+sVpublicdate
+p364
+V2010-06-02T18:39:48Z
+p365
+sVtitle
+p366
+VYour Dream Stops Here! Dream Act Part 1
+p367
+sVdownloads
+p368
+I15
+sVformat
+p369
+(lp370
+V512Kb MPEG4
+p371
+aVAnimated GIF
+p372
+aVArchive BitTorrent
+p373
+aVMetadata
+p374
+aVOgg Video
+p375
+aVQuickTime
+p376
+aVThumbnail
+p377
+asVsubject
+p378
+(lp379
+VYour
+p380
+aVDream
+p381
+aVStops
+p382
+aVHere
+p383
+aVAct
+p384
+aVPart 1
+p385
+asVmediatype
+p386
+Vmovies
+p387
+sVcollection
+p388
+(lp389
+Vopensource_movies
+p390
+asVmonth
+p391
+I0
+sVscore
+p392
+F2.7475665
+sVlicenseurl
+p393
+Vhttp://creativecommons.org/licenses/by-nc/3.0/us/
+p394
+sVidentifier
+p395
+VYourDreamStopsHereDreamActPart1
+p396
+sVdescription
+p397
+VActivist/Blogger Kyle De Beausset talks about the importance of the Dream Act for undocumented youth. What is...or was your dream?
+p398
+sass.
