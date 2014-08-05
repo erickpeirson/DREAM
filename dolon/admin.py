@@ -130,7 +130,7 @@ def merge(modeladmin, request, queryset):
     A new :class:`.Item` is created, inheriting all contexts. Old :class:`.Item`
     objects set ``merged_with``.
     """
-    
+
     largest = 0
     image = None
     
@@ -160,9 +160,8 @@ def merge(modeladmin, request, queryset):
         
         # The new Item inherits the largest image, if there are any.
         if hasattr(obj, 'image'):
-            if obj.size > largest:
+            if obj.image.size > largest:
                 newItem.image = obj.image
-                newItem.size = obj.size
                 newItem.height = obj.height
                 newItem.width = obj.width
                 newItem.mime = obj.mime
@@ -188,15 +187,6 @@ def merge(modeladmin, request, queryset):
         obj.save()
     
     newItem.save()
-    
-    # If item is approved, any contexts have not yet loaded, then do so.
-    # ...and get the Image, if it hasn't alread been loaded.
-    if newItem.status == 'AP':
-        ul_contexts = [ c for c in newItem.context.all() if c.title is None ]
-        spawnRetrieveContexts(ul_contexts)
-        
-        if newItem.image.size == 0:
-            spawnRetrieveImages([newItem.image])
         
 merge.short_description = 'Merge selected items'
 

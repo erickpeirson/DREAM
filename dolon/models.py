@@ -318,8 +318,6 @@ class Item(models.Model):
 
     title = models.CharField(max_length=400, blank=True, null=True)
 
-    size = models.IntegerField(default=0, null=True, blank=True)
-
     context = models.ManyToManyField('Context', related_name='items',
                                                           blank=True, null=True)
                                                           
