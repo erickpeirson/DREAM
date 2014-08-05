@@ -131,6 +131,20 @@ def merge(modeladmin, request, queryset):
     objects set ``merged_with``.
     """
 
+    lasttype = None
+    for obj in queryset:
+        if hasattr(obj, 'imageitem'):   thistype = 'image'
+        elif hasattr(obj, 'videoitem'): thistype = 'video'
+        elif hasattr(obj, 'audioitem'): thistype = 'audio'
+        elif hasattr(obj, 'textitem'):  thistype = 'text'
+
+        if lasttype is not None and thistype != lasttype:
+            logger.debug('attempted to merge items of more than one type')
+            # TODO: User should receive an informative error message.
+            return
+
+        lasttype = str(thistype)
+
     largest = 0
     image = None
     
