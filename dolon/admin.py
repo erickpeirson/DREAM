@@ -452,13 +452,22 @@ class ItemAdmin(admin.ModelAdmin):
     contexts.allow_tags = True
     
     def type(self, obj, list=False):
+        """
+        Get Item type.
+        """
+
         if hasattr(obj, 'audioitem'):   return 'Audio'
         elif hasattr(obj, 'videoitem'): return 'Video'
         elif hasattr(obj, 'textitem'):  return 'Text'
         elif hasattr(obj, 'imageitem'): return 'Image'
     
     def icon(self, obj, list=False):
+        """
+        Display a media type icon.
+        """
+        
         return self._format_type_icon(self.type(obj))
+    icon.allow_tags = True
 
     def _format_type_icon(self, type):
         """
