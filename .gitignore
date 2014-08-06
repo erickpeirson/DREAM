@@ -56,7 +56,11 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
-media/*
+media/images/*
+media/thumbnails/*
+media/audio/*
+media/videos/*
+media/texts/*
 
 celeryconfig.py
 config.py
