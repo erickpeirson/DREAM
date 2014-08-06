@@ -358,15 +358,16 @@ class Item(models.Model):
         return unicode(self.title)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            if hasattr(self, 'audioitem'):   self.type = 'Audio'
-            elif hasattr(self, 'videoitem'): self.type = 'Video'
-            elif hasattr(self, 'imageitem'): self.type = 'Image'
-            elif hasattr(self, 'textitem'):  self.type = 'Text'
+        """
+        Set type based on which subclass is instantiated.
+        """
+        
+        if hasattr(self, 'audioitem'):   self.type = 'Audio'
+        elif hasattr(self, 'videoitem'): self.type = 'Video'
+        elif hasattr(self, 'imageitem'): self.type = 'Image'
+        elif hasattr(self, 'textitem'):  self.type = 'Text'
         
         super(Item, self).save(*args, **kwargs)
-
-
         
 class ImageItem(Item):
     """
