@@ -357,7 +357,7 @@ class ItemAdmin(admin.ModelAdmin):
                         'query_events', 'contexts', 'creationDate',  'children',
                         'parent', 'hide',    )
     exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url')
-    list_filter = ('status','events','tags')
+    list_filter = ('status','events','tags', 'type')
     list_editable = ['title',]
     list_select_related = True
     search_fields = ['title',]
