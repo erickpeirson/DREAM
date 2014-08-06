@@ -343,15 +343,15 @@ class Item(models.Model):
     def __unicode__(self):
         return unicode(self.title)
 
-    def type(self, obj, list=False):
+    def type(self):
         """
         Get Item type.
         """
 
-        if hasattr(obj, 'audioitem'):   return 'Audio'
-        elif hasattr(obj, 'videoitem'): return 'Video'
-        elif hasattr(obj, 'textitem'):  return 'Text'
-        elif hasattr(obj, 'imageitem'): return 'Image'
+        if hasattr(self, 'audioitem'):   return 'Audio'
+        elif hasattr(self, 'videoitem'): return 'Video'
+        elif hasattr(self, 'textitem'):  return 'Text'
+        elif hasattr(self, 'imageitem'): return 'Image'
 
         
 class ImageItem(Item):
