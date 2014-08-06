@@ -352,10 +352,10 @@ class QueryEventAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
-    list_display = ('thumb_image','title', 'status','retrieved')
+    list_display = ('icon', 'thumb_image','title', 'status','retrieved', 'type' )
     readonly_fields = ( 'item_image', 'resource', 'status', 'retrieved', 
                         'query_events', 'contexts', 'creationDate',  'children',
-                        'parent', 'hide'    )
+                        'parent', 'hide',    )
     exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url')
     list_filter = ('status','events','tags')
     list_editable = ['title',]
@@ -450,15 +450,24 @@ class ItemAdmin(admin.ModelAdmin):
                             for c in obj.context.all() ])
         return '<ul>{0}</ul>'.format(repr)
     contexts.allow_tags = True
+    
+    def type(self, obj, list=False):
+        if hasattr(obj, 'audioitem'):   return 'Audio'
+        elif hasattr(obj, 'videoitem'): return 'Video'
+        elif hasattr(obj, 'textitem'):  return 'Text'
+        elif hasattr(obj, 'imageitem'): return 'Image'
+    
+    def icon(self, obj, list=False):
+        return self._format_type_icon(self.type(obj))
 
     def _format_type_icon(self, type):
         """
         Get an icon according to file type.
         """
         pattern = '<img src="{0}" height="{1}" />'
-        if type == 'audio':
+        if type == 'Audio':
             iconpath = '/media/static/audio-by-Hopstarter.png'
-        if type == 'video':
+        if type == 'Video':
             iconpath = '/media/static/video-by-Hopstarter.png'
         return pattern.format(iconpath, 50)
 
@@ -533,13 +542,12 @@ class ItemAdmin(admin.ModelAdmin):
         elif hasattr(obj, 'audioitem'):
 #            return self._format_thumb(obj, obj.audioitem.thumbnail, list)
             audios = obj.audioitem.audio_segments.all()
-            icon = self._format_type_icon('audio')
-            return icon + self._format_audio_embed(audios)
+            return self._format_audio_embed(audios)
         elif hasattr(obj, 'videoitem'):
             videos = obj.videoitem.videos.all()
             icon = self._format_type_icon('video')
 
-            return icon + self._format_embed(videos)
+            return self._format_embed(videos)
     item_image.allow_tags = True
     
     def query_events(self, obj):
