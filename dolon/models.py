@@ -237,7 +237,6 @@ class QueryResultItem(models.Model):
             i = ImageItem.objects.get_or_create(url=self.url,
                     defaults = {
                         'title': self.title,
-                        'size': params['size'],
                         'creator': params['creator']  }   )[0]
 
             # Associate thumbnail, image, and context.
@@ -254,7 +253,6 @@ class QueryResultItem(models.Model):
                     defaults = {
                         'title': self.title,
                         'length': length,
-                        'size': size,
                         'creator': creator  }   )[0]
                         
             if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
@@ -273,7 +271,6 @@ class QueryResultItem(models.Model):
                     defaults = {
                         'title': self.title,
                         'length': length,
-                        'size': size,
                         'creator': creator  }   )[0]     
                         
             if i.thumbnail is None and len(params['thumbnailURL']) > 0:
