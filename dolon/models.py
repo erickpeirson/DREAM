@@ -536,6 +536,7 @@ class Video(models.Model):
             'ogv':  'video/ogg',
             'wmv':  'video/x-ms-wmv',
             '3gp':  'video/3gpp',
+            'mov':  'video/quicktime'
         }
         
         if self.mime is not None:

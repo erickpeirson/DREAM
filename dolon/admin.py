@@ -52,7 +52,6 @@ def reset(modeladmin, request, queryset):
             obj.search_task = None
             obj.save()
 reset.short_description = 'Reset selected (failed) query'
-        
 
 def dispatch(modeladmin, request, queryset):
     """
@@ -353,10 +352,11 @@ class QueryEventAdmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
     list_display = ('icon', 'preview','title', 'status','retrieved', 'type' )
-    readonly_fields = ( 'item_image', 'contents',  'resource', 'status', 'retrieved', #'type',
-                        'query_events', 'contexts', 'creationDate',  'children',
-                        'parent',  )
-    exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url', 'hide')
+    readonly_fields = ( 'preview', 'contents', 'creator', 'resource',
+                        'status', 'retrieved', 'type', 'query_events',
+                        'contexts', 'creationDate',  'children', 'parent',  )
+    exclude = ( 'image', 'thumbnail', 'events', 'merged_with', 'url',
+                'hide', 'context'  )
     list_filter = ('status','events','tags', 'type')
     list_editable = ['title',]
     list_select_related = True
@@ -427,7 +427,7 @@ class ItemAdmin(admin.ModelAdmin):
         Generates a thumbnail, or player.
         """
         
-        return self.item_image(obj, list=True)
+        return self._item_image(obj, list=True)
     preview.allow_tags = True
     
     def resource(self, obj):
@@ -463,19 +463,32 @@ class ItemAdmin(admin.ModelAdmin):
         """
         Display the content objects associated with an Item.
         """
-        
+
+        pattern = '<a href="{0}">{1}</a>'
+
         if obj.type == 'Audio':
-            icons = [ self._format_mime_icon(seg.type(), 'audio') for seg
-                        in obj.audioitem.audio_segments.all() ]
-            return ''.join(icons)
+            formatted = []
+            for seg in obj.audioitem.audio_segments.all():
+                icon = self._format_mime_icon(seg.type(), 'audio')
+                url = get_admin_url(seg)
+                formatted.append(pattern.format(url, icon))
+
+            return ''.join(formatted)
         elif obj.type == 'Video':
-            icons = [ self._format_mime_icon(vid.type(), 'video') for vid
-                        in obj.videoitem.videos.all() ]
-            return ''.join(icons)
+            formatted = []
+            for vid in obj.videoitem.videos.all():
+                icon = self._format_mime_icon(vid.type(), 'video')
+                url = get_admin_url(vid)
+                formatted.append(pattern.format(url, icon))
+            return ''.join(formatted)
         elif obj.type == 'Image':
-            return self._format_mime_icon(obj.imageitem.image.type(), 'image')
+            icon = self._format_mime_icon(obj.imageitem.image.type(), 'image')
+            url = get_admin_url(obj.imageitem.image)
+            return pattern.format(url, icon)
         elif obj.type == 'Text':
-            return self._format_mime_icon(obj.textitem.text.type(), 'text')
+            icon = self._format_mime_icon(obj.textitem.text.type(), 'text')
+            url = get_admin_url(obj.textitem.text)
+            return pattern.format(url, icon)
     contents.allow_tags = True
 
     def _format_mime_icon(self, mime, alt=None):
@@ -496,6 +509,7 @@ class ItemAdmin(admin.ModelAdmin):
             'video/avi':        '/media/static/avi-by-Hopstarter.png',
             'video/x-ms-wmv':   '/media/static/wmv-by-Hopstarter.png',
             'video/3gpp':       '/media/static/3gp-by-Hopstarter.png',
+            'video/quicktime':  '/media/static/mov-by-Hopstarter.png',
         }
         
         alt_types = {
@@ -557,14 +571,14 @@ class ItemAdmin(admin.ModelAdmin):
             return None
             
         pattern = '<video width="320" height="240" controls>\n\t{0}\n</video>'
-        spattern = '<source src="{0}" type="{1}" />'
+        spattern = '<source src="{0}" />'
         
         vformatted = []
         for video in videos:
             try:
-                vformatted.append(spattern.format(video.video.url, video.mime))
+                vformatted.append(spattern.format(video.video.url))
             except ValueError:
-                vformatted.append(spattern.format(video.url, ''))
+                vformatted.append(spattern.format(video.url))
         
         return pattern.format('\n'.join(vformatted))
 
@@ -582,7 +596,7 @@ class ItemAdmin(admin.ModelAdmin):
                 aformatted.append(spattern.format(audio.url, ''))
         return pattern.format('\n'.join(aformatted))
 
-    def item_image(self, obj, list=False):
+    def _item_image(self, obj, list=False):
         """
         Generates a thumbnail image element, with a link to the fullsize
         :class:`.Image`\.
@@ -598,7 +612,6 @@ class ItemAdmin(admin.ModelAdmin):
         if hasattr(obj, 'imageitem'):
             return self._format_thumb(obj, obj.imageitem.thumbnail, list)            
         elif hasattr(obj, 'audioitem'):
-#            return self._format_thumb(obj, obj.audioitem.thumbnail, list)
             audios = obj.audioitem.audio_segments.all()
             return self._format_audio_embed(audios)
         elif hasattr(obj, 'videoitem'):
@@ -606,8 +619,8 @@ class ItemAdmin(admin.ModelAdmin):
             icon = self._format_type_icon('video')
 
             return self._format_embed(videos)
-    item_image.allow_tags = True
-    
+    _item_image.allow_tags = True
+
     def query_events(self, obj):
         """
         Generates a list of :class:`QueryEvent` instances associated with this
@@ -778,28 +791,26 @@ class EngineAdmin(admin.ModelAdmin):
         return super(EngineAdmin, self).get_form(request, obj, **kwargs)
         
 class AudioAdmin(admin.ModelAdmin):
-    actions = ['custom_delete_selected']
+    readonly_fields = ['preview', 'url', 'size', 'length', 'mime']
+    exclude = ['audio_file']
 
-    def custom_delete_selected(self, request, queryset):
-        n = queryset.count()
-        for i in queryset:
-            if i.audio_file:
-                if os.path.exists(i.audio_file.path):
-                    os.remove(i.audio_file.path)
-            i.delete()
-        self.message_user(request, _("Successfully deleted %d audio files.") % n)
-    custom_delete_selected.short_description = "Delete selected items"
-
-    def get_actions(self, request):
-        actions = super(AudioFileAdmin, self).get_actions(request)
-        del actions['delete_selected']
-        return actions
-        
     def get_model_perms(self, request):
         """
         Return empty perms dict thus hiding the model from admin index.
         """
-        return {}        
+        return {}
+
+    def preview(self, obj, *args, **kwargs):
+        return self._format_audio_embed(obj)
+    preview.allow_tags = True
+
+    def _format_audio_embed(self, audio):
+        pattern = '<audio controls>{0}</audio>'
+        source = '<source src="{0}" />'.format(audio.url)
+
+        return pattern.format(source)
+
+
         
 class ThumbnailAdmin(admin.ModelAdmin):
     def get_model_perms(self, request):
@@ -809,11 +820,25 @@ class ThumbnailAdmin(admin.ModelAdmin):
         return {}
         
 class VideoAdmin(admin.ModelAdmin):
+    readonly_fields = ['preview', 'url', 'size', 'length', 'mime']
+    exclude = ['video']
+
     def get_model_perms(self, request):
         """
         Return empty perms dict thus hiding the model from admin index.
         """
         return {}
+
+    def preview(self, obj, *args, **kwargs):
+        return self._format_embed(obj)
+    preview.allow_tags = True
+
+    def _format_embed(self, video):
+            
+        pattern = '<video width="320" height="240" controls>{0}</video>'
+        source = '<source src="{0}" />'.format(video.url)#, video.type())
+        return pattern.format(source)
+
             
 ### Registration ###
 
