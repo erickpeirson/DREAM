@@ -478,6 +478,30 @@ class Image(models.Model):
     
     def __unicode__(self):
         return unicode(self.url)
+
+    def type(self):
+        """
+        Return mime-type if available, or try to guess based on filename.
+        """
+        
+        known_types = {
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'gif': 'image/gif',
+            'tif': 'image/tiff',
+            'tiff': 'image/tiff',
+            'bmp': 'image/bmp'
+        }
+        
+        if self.mime is not None:
+            return self.mime
+        else:
+            ext = self.url.split('.')[-1].lower()
+            if ext in known_types:
+                return known_types[ext]
+        return None
+
         
 class Video(models.Model):
     """

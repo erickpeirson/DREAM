@@ -355,8 +355,8 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ('icon', 'preview','title', 'status','retrieved', 'type' )
     readonly_fields = ( 'item_image', 'contents', 'type', 'resource', 'status', 'retrieved',
                         'query_events', 'contexts', 'creationDate',  'children',
-                        'parent', 'hide',    )
-    exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url')
+                        'parent',  )
+    exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url', 'hide')
     list_filter = ('status','events','tags', 'type')
     list_editable = ['title',]
     list_select_related = True
@@ -465,9 +465,29 @@ class ItemAdmin(admin.ModelAdmin):
         """
         
         if obj.type == 'Audio':
-            return [ seg for seg in obj.audioitem.audio_segments.all() ]
+            icons = [ self._format_mime_icon(seg.type()) for seg
+                        in obj.audioitem.audio_segments.all() ]
+            return ''.join(icons)
         elif obj.type == 'Video':
             return [ vid for vid in obj.videoitem.videos.all() ]
+    contents.allow_tags = True
+
+    def _format_mime_icon(self, mime):
+        """
+        Get an icon according to mime type.
+        """
+        known_types = {
+            'image/png':    '/media/static/png-by-Hopstarter.png',
+            'image/jpeg':   '/media/static/jpeg-by-Hopstarter.png',
+            'image/gif':    '/media/static/gif-by-Hopstarter.png',
+            'image/tiff':   '/media/static/tiff-by-Hopstarter.png',
+            'image/bmp':    '/media/static/bmp-by-Hopstarter.png',
+        }
+        
+        pattern = '<img src="{0}" height="{1}" />'
+        if mime in known_types:
+            icon_path = known_types[mime]
+            return pattern.format(icon_path)
 
     def _format_type_icon(self, type):
         """
@@ -485,8 +505,6 @@ class ItemAdmin(admin.ModelAdmin):
         else:
             return None
         return pattern.format(iconpath, 50)
-
-
     
     def _format_thumb(self, obj, thumb, list):
         pattern = '<a href="{0}"><img src="{1}"/></a>'
