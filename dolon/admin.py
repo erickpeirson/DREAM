@@ -469,8 +469,9 @@ class ItemAdmin(admin.ModelAdmin):
                         in obj.audioitem.audio_segments.all() ]
             return ''.join(icons)
         elif obj.type == 'Video':
-            return [ self._format_mime_icon(vid.type(), 'video') for vid
+            icons = [ self._format_mime_icon(vid.type(), 'video') for vid
                         in obj.videoitem.videos.all() ]
+            return ''.join(icons)
         elif obj.type == 'Image':
             return self._format_mime_icon(obj.imageitem.image.type(), 'image')
         elif obj.type == 'Text':
@@ -777,7 +778,6 @@ class EngineAdmin(admin.ModelAdmin):
         return super(EngineAdmin, self).get_form(request, obj, **kwargs)
         
 class AudioAdmin(admin.ModelAdmin):
-#    list_display = ('audio_file_player',)
     actions = ['custom_delete_selected']
 
     def custom_delete_selected(self, request, queryset):
