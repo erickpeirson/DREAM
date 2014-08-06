@@ -467,8 +467,10 @@ class ItemAdmin(admin.ModelAdmin):
         pattern = '<img src="{0}" height="{1}" />'
         if type == 'Audio':
             iconpath = '/media/static/audio-by-Hopstarter.png'
-        if type == 'Video':
+        elif type == 'Video':
             iconpath = '/media/static/video-by-Hopstarter.png'
+        else:
+            return None
         return pattern.format(iconpath, 50)
 
 
