@@ -64,4 +64,3 @@ media/texts/*
 
 celeryconfig.py
 config.py
-celery.py
