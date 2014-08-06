@@ -354,8 +354,8 @@ class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
     list_display = ('thumb_image','title', 'status','retrieved')
     readonly_fields = ( 'item_image', 'resource', 'status', 'retrieved', 
-                        'size', 'query_events', 'contexts',
-                        'creationDate',  'children', 'parent', 'hide')
+                        'query_events', 'contexts', 'creationDate',  'children',
+                        'parent', 'hide'    )
     exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url')
     list_filter = ('status','events','tags')
     list_editable = ['title',]
@@ -450,11 +450,24 @@ class ItemAdmin(admin.ModelAdmin):
                             for c in obj.context.all() ])
         return '<ul>{0}</ul>'.format(repr)
     contexts.allow_tags = True
+
+    def _format_type_icon(self, type):
+        """
+        Get an icon according to file type.
+        """
+        pattern = '<img src="{0}" height="{1}" />'
+        if type == 'audio':
+            iconpath = '/media/static/audio-by-Hopstarter.png'
+        if type == 'video':
+            iconpath = '/media/static/video-by-Hopstarter.png'
+        return pattern.format(iconpath, 50)
+
+
     
     def _format_thumb(self, obj, thumb, list):
-        if thumb is not None and thumb.image is not None:   
+        pattern = '<a href="{0}"><img src="{1}"/></a>'
+        if thumb is not None and thumb.image is not None:
 
-            pattern = '<a href="{0}"><img src="{1}"/></a>'
             if list:
                 fullsize_url = get_admin_url(obj)
             else:   
@@ -466,7 +479,11 @@ class ItemAdmin(admin.ModelAdmin):
                 else:
                     fullsize_url = '#'
             return pattern.format(fullsize_url, thumb.image.url)
-        return None  
+        if list:
+            fullsize_url = get_admin_url(obj)
+        else:
+            fullsize_url = '#'
+        return pattern.format(fullsize_url, '/media/static/file-by-Gurato.png')
         
     def _format_embed(self, videos):
         if len(videos) == 0:
@@ -483,7 +500,21 @@ class ItemAdmin(admin.ModelAdmin):
                 vformatted.append(spattern.format(video.url, ''))
         
         return pattern.format('\n'.join(vformatted))
-    
+
+    def _format_audio_embed(self, audios):
+        if len(audios) == 0:
+            return None
+        pattern = '<audio controls>{0}</audio>'
+        spattern = '<source src="{0}" type="{1}" />'
+
+        aformatted = []
+        for audio in audios:
+            try:
+                aformatted.append(spattern.format(audio.audio_file.url, audio.mime))
+            except ValueError:
+                aformatted.append(spattern.format(audio.url, ''))
+        return pattern.format('\n'.join(aformatted))
+
     def item_image(self, obj, list=False):
         """
         Generates a thumbnail image element, with a link to the fullsize
@@ -500,10 +531,15 @@ class ItemAdmin(admin.ModelAdmin):
         if hasattr(obj, 'imageitem'):
             return self._format_thumb(obj, obj.imageitem.thumbnail, list)            
         elif hasattr(obj, 'audioitem'):
-            return self._format_thumb(obj, obj.audioitem.thumbnail, list)
+#            return self._format_thumb(obj, obj.audioitem.thumbnail, list)
+            audios = obj.audioitem.audio_segments.all()
+            icon = self._format_type_icon('audio')
+            return icon + self._format_audio_embed(audios)
         elif hasattr(obj, 'videoitem'):
             videos = obj.videoitem.videos.all()
-            return self._format_embed(videos)
+            icon = self._format_type_icon('video')
+
+            return icon + self._format_embed(videos)
     item_image.allow_tags = True
     
     def query_events(self, obj):
