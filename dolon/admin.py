@@ -465,31 +465,53 @@ class ItemAdmin(admin.ModelAdmin):
         """
         
         if obj.type == 'Audio':
-            icons = [ self._format_mime_icon(seg.type()) for seg
+            icons = [ self._format_mime_icon(seg.type(), 'audio') for seg
                         in obj.audioitem.audio_segments.all() ]
             return ''.join(icons)
         elif obj.type == 'Video':
-            return [ vid for vid in obj.videoitem.videos.all() ]
+            return [ self._format_mime_icon(vid.type(), 'video') for vid
+                        in obj.videoitem.videos.all() ]
         elif obj.type == 'Image':
-            return self._format_mime_icon(obj.imageitem.image.type())
+            return self._format_mime_icon(obj.imageitem.image.type(), 'image')
+        elif obj.type == 'Text':
+            return self._format_mime_icon(obj.textitem.text.type(), 'text')
     contents.allow_tags = True
 
-    def _format_mime_icon(self, mime):
+    def _format_mime_icon(self, mime, alt=None):
         """
         Get an icon according to mime type.
         """
         known_types = {
-            'image/png':    '/media/static/png-by-Hopstarter.png',
-            'image/jpeg':   '/media/static/jpeg-by-Hopstarter.png',
-            'image/gif':    '/media/static/gif-by-Hopstarter.png',
-            'image/tiff':   '/media/static/tiff-by-Hopstarter.png',
-            'image/bmp':    '/media/static/bmp-by-Hopstarter.png',
+            'image/png':        '/media/static/png-by-Hopstarter.png',
+            'image/jpeg':       '/media/static/jpeg-by-Hopstarter.png',
+            'image/gif':        '/media/static/gif-by-Hopstarter.png',
+            'image/tiff':       '/media/static/tiff-by-Hopstarter.png',
+            'image/bmp':        '/media/static/bmp-by-Hopstarter.png',
+            'audio/flac':       '/media/static/flac-by-Hopstarter.png',
+            'audio/mpeg':       '/media/static/mp3-by-Hopstarter.png',
+            'audio/wav':        '/media/static/wav-by-Hopstarter.png',
+            'audio/aiff':       '/media/static/aiff-by-Hopstarter.png',
+            'video/mpeg':       '/media/static/mpeg-by-Hopstarter.png',
+            'video/avi':        '/media/static/avi-by-Hopstarter.png',
+            'video/x-ms-wmv':   '/media/static/wmv-by-Hopstarter.png',
+            'video/3gpp':       '/media/static/3gp-by-Hopstarter.png',
+        }
+        
+        alt_types = {
+            'image':        '/media/static/jpeg-by-Hopstarter.png',
+            'audio':        '/media/static/audio-by-Hopstarter.png',
+            'video':        '/media/static/video-by-Hopstarter.png',
+            'text':         '/media/static/text-by-Hopstarter.png',
         }
         
         pattern = '<img src="{0}" height="{1}" />'
         if mime in known_types:
             icon_path = known_types[mime]
             return pattern.format(icon_path, 50)
+        elif alt in alt_types:
+            icon_path = alt_types[alt]
+            return pattern.format(icon_path, 50)
+        return None
 
     def _format_type_icon(self, type):
         """

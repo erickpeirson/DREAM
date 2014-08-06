@@ -518,6 +518,33 @@ class Video(models.Model):
     
     def __unicode__(self):
         return unicode(self.url)
+
+    def type(self):
+        """
+        Return mime-type if available, or try to guess based on filename.
+        """
+        
+        known_types = {
+            'm1v':  'video/mpeg',
+            'm2v':  'video/mpeg',
+            'mp2':  'video/mpeg',
+            'mp4':  'video/mpeg',
+            'mpeg': 'video/mpeg',
+            'mpg':  'video/mpeg',
+            'mpa':  'video/mpeg',
+            'avi':  'video/avi',
+            'ogv':  'video/ogg',
+            'wmv':  'video/x-ms-wmv',
+            '3gp':  'video/3gpp','
+        }
+        
+        if self.mime is not None:
+            return self.mime
+        else:
+            ext = self.url.split('.')[-1].lower()
+            if ext in known_types:
+                return known_types[ext]
+        return None
             
 class Audio(models.Model):
     """
@@ -531,22 +558,38 @@ class Audio(models.Model):
     mime = models.CharField(max_length=50, null=True, blank=True)      
 
     audio_file = models.FileField(upload_to='audio', null=True, blank=True)
-#    audio_file = AudioField(    upload_to='audio', blank=True,
-#                                ext_whitelist=(".mp3", ".wav", ".ogg"),
-#                                help_text=("Allowed type - .mp3, .wav, .ogg")  )        
 
     def __unicode__(self):
-        return unicode(self.url) 
-                
-    def audio_file_player(self):
-        """audio player tag for admin"""
-        if self.audio_file:
-            file_url = settings.MEDIA_URL + str(self.audio_file)
-            player_string = '<ul class="playlist"><li style="width:250px;">\
-            <a href="%s">%s</a></li></ul>' % (file_url, os.path.basename(self.audio_file.name))
-            return player_string
-    audio_file_player.allow_tags = True
-    audio_file_player.short_description = ('Audio file player')
+        return unicode(self.url)
+
+    def type(self):
+        """
+        Return mime-type if available, or try to guess based on filename.
+        """
+        
+        known_types = {
+            'oga':  'audio/ogg',
+            'ogg':  'audio/ogg',
+            'spx':  'audio/ogg',
+            'flac': 'audio/flac',
+            'm2a':  'audio/mpeg',
+            'mp2':  'audio/mpeg',
+            'mp3':  'audio/mpeg',
+            'mpa':  'audio/mpeg',
+            'mpg':  'audio/mpeg',
+            'wav':  'audio/wav',
+            'aif':  'audio/aiff',
+            'aifc':  'audio/aiff',
+            'aiff':  'audio/aiff',                      
+        }
+        
+        if self.mime is not None:
+            return self.mime
+        else:
+            ext = self.url.split('.')[-1].lower()
+            if ext in known_types:
+                return known_types[ext]
+        return None
         
 
 class Tag(models.Model):
