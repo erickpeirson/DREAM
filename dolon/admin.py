@@ -470,6 +470,8 @@ class ItemAdmin(admin.ModelAdmin):
             return ''.join(icons)
         elif obj.type == 'Video':
             return [ vid for vid in obj.videoitem.videos.all() ]
+        elif obj.type == 'Image':
+            return self._format_mime_icon(obj.imageitem.image.type())
     contents.allow_tags = True
 
     def _format_mime_icon(self, mime):
