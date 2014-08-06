@@ -353,7 +353,7 @@ class QueryEventAdmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
     list_display = ('icon', 'preview','title', 'status','retrieved', 'type' )
-    readonly_fields = ( 'item_image', 'type', 'resource', 'status', 'retrieved',
+    readonly_fields = ( 'item_image', 'contents', 'type', 'resource', 'status', 'retrieved',
                         'query_events', 'contexts', 'creationDate',  'children',
                         'parent', 'hide',    )
     exclude = ('image', 'context', 'thumbnail', 'events', 'merged_with', 'url')
@@ -460,6 +460,10 @@ class ItemAdmin(admin.ModelAdmin):
     icon.allow_tags = True
     
     def contents(self, obj, list=False):
+        """
+        Display the content objects associated with an Item.
+        """
+        
         if obj.type == 'Audio':
             return [ seg for seg in obj.audioitem.audio_segments.all() ]
         elif obj.type == 'Video':
