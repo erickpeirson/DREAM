@@ -489,7 +489,7 @@ class ItemAdmin(admin.ModelAdmin):
         pattern = '<img src="{0}" height="{1}" />'
         if mime in known_types:
             icon_path = known_types[mime]
-            return pattern.format(icon_path)
+            return pattern.format(icon_path, 50)
 
     def _format_type_icon(self, type):
         """
