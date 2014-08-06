@@ -40,6 +40,7 @@ class InternetArchiveManager(BaseSearchManager):
     
     audio_formats = ['mp3', 'wav', 'flac', 'ogg' ]
     video_formats = ['mp4', 'ogv', 'avi', 'mov']
+    text_formats = ['pdf', 'xml', 'html', 'xhtml', 'txt', 'epub']
     
     def search(self, params, query, start=1, end=10):
         """
@@ -81,6 +82,13 @@ class InternetArchiveManager(BaseSearchManager):
             known = self.video_formats
             alt = self.audio_formats
             alttype = 'audio'
+        elif mtype == 'texts':
+            known = self.text_formats
+            alt = []
+            alttype = None
+        else:
+            raise MediaTypeException(
+                    'Unrecognized content or mtype not provided.'    )
 
         files = []
         thumbs = []
@@ -183,6 +191,9 @@ class InternetArchiveManager(BaseSearchManager):
             elif item['mediatype'] == 'audio': 
                 mtype = 'audio'
                 alttype = 'video'
+            elif item['mediatype'] == 'texts':
+                mtype = 'texts'
+                alttype = None
 
             try:    # Catch cases where declared mtype is incorrect.
                 md = self._getDetails(item['identifier'], mtype)

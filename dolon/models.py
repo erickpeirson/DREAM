@@ -280,7 +280,21 @@ class QueryResultItem(models.Model):
             if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
                 for url in params['files']:
                     seg = Audio.objects.get_or_create(url=url)[0]
-                    i.audio_segments.add(seg)                                    
+                    i.audio_segments.add(seg)
+
+        ### Text ###
+        elif self.type == 'text':
+            i = TextItem.objects.get_or_create(url=self.url,
+                defaults = {
+                    'title': self.title,
+                    'length': length,
+                    'creator': creator
+                })[0]
+
+            if len(i.original_files.all()) == 0 and len(params['files']) > 0:
+                for url in params['files']:
+                    txt = Text.objects.get_or_create(url=url)[0]
+                    i.original_files.add(txt)
 
         context  = Context.objects.get_or_create(url=self.contextURL)[0]
         i.context.add(context)
@@ -420,6 +434,22 @@ class AudioItem(Item):
     
     description = models.TextField( null=True, blank=True   )
 
+class TextItem(Item):
+    """
+    """
+
+    class Meta:
+        verbose_name = 'text'
+        verbose_name_plural = 'texts'
+
+    snippet = models.TextField(blank=True, null=True)
+    length = models.IntegerField(default=0, null=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+
+    original_files = models.ManyToManyField(  'Text', blank=True, null=True   )
+    contents = models.TextField(blank=True, null=True)
+
+
 class GroupTask(models.Model):
     task_id = models.CharField(max_length=1000)
     subtask_ids = ListField()
@@ -448,15 +478,28 @@ class Thumbnail(models.Model):
     """
 
     url = models.URLField(max_length=2000, unique=True)
-    image = models.ImageField(upload_to='thumbnails', height_field='height',
-                                                      width_field='width',
-                                                      null=True, blank=True)
+    image = models.ImageField(  upload_to='thumbnails', height_field='height',
+                                width_field='width', null=True, blank=True  )
     
     mime = models.CharField(max_length=50, null=True, blank=True)
     
     # Should be auto-populated.
     height = models.IntegerField(default=0)
     width = models.IntegerField(default=0)
+
+class Text(models.Model):
+    """
+    A text document.
+    """
+
+    url = models.URLField(max_length=2000, unique=True)
+
+    text_file = models.FileField(upload_to='texts', null=True, blank=True)
+
+    size = models.IntegerField( default=0, null=True, blank=True,
+        help_text='File size in bytes.' )
+
+    mime = models.CharField(max_length=50, null=True, blank=True)
 
 class Image(models.Model):
     """
@@ -465,9 +508,8 @@ class Image(models.Model):
 
     url = models.URLField(max_length=2000, unique=True)
     
-    image = models.ImageField(upload_to='images', height_field='height',
-                                                  width_field='width',
-                                                  null=True, blank=True)
+    image = models.ImageField(  upload_to='images', height_field='height',
+                                width_field='width', null=True, blank=True  )
 
     size = models.IntegerField(default=0)
     mime = models.CharField(max_length=50, null=True, blank=True)
