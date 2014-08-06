@@ -352,7 +352,7 @@ class QueryEventAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
-    list_display = ('icon', 'thumb_image','title', 'status','retrieved', 'type' )
+    list_display = ('icon', 'preview','title', 'status','retrieved', 'type' )
     readonly_fields = ( 'item_image', 'resource', 'status', 'retrieved', 
                         'query_events', 'contexts', 'creationDate',  'children',
                         'parent', 'hide',    )
@@ -422,13 +422,13 @@ class ItemAdmin(admin.ModelAdmin):
         return html
     children.allow_tags = True
     
-    def thumb_image(self, obj):
+    def preview(self, obj):
         """
-        Generates a thumbnail image element, for list display.
+        Generates a thumbnail, or player.
         """
         
         return self.item_image(obj, list=True)
-    thumb_image.allow_tags = True
+    preview.allow_tags = True
     
     def resource(self, obj):
         """
