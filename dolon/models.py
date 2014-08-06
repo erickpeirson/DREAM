@@ -535,7 +535,7 @@ class Video(models.Model):
             'avi':  'video/avi',
             'ogv':  'video/ogg',
             'wmv':  'video/x-ms-wmv',
-            '3gp':  'video/3gpp','
+            '3gp':  'video/3gpp',
         }
         
         if self.mime is not None:
@@ -580,7 +580,7 @@ class Audio(models.Model):
             'wav':  'audio/wav',
             'aif':  'audio/aiff',
             'aifc':  'audio/aiff',
-            'aiff':  'audio/aiff',                      
+            'aiff':  'audio/aiff',
         }
         
         if self.mime is not None:
