@@ -777,7 +777,7 @@ class EngineAdmin(admin.ModelAdmin):
         return super(EngineAdmin, self).get_form(request, obj, **kwargs)
         
 class AudioAdmin(admin.ModelAdmin):
-    list_display = ('audio_file_player',)
+#    list_display = ('audio_file_player',)
     actions = ['custom_delete_selected']
 
     def custom_delete_selected(self, request, queryset):
