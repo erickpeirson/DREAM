@@ -308,6 +308,13 @@ class Item(models.Model):
         (REJECTED, 'Rejected'),
         (APPROVED, 'Approved')
     )
+    
+    types = (
+        ('Audio', 'Audio'),
+        ('Video', 'Video'),
+        ('Text', 'Text'),
+        ('Image', 'Image')
+    )
 
     url = models.URLField(max_length=2000, unique=True)
     
@@ -336,22 +343,29 @@ class Item(models.Model):
     If this has a value, should not appear in any results (see property 
     ``hide``). Allows us to umerge items if necessary.
     """
-    
+
+
+
+    type = models.CharField(max_length=50, choices=types, blank=True, null=True)
+    """
+    Audio, Video,
+    """
+
     hide = models.BooleanField(default=False, verbose_name='hidden')
     retrieved = models.BooleanField(default=False)
 
     def __unicode__(self):
         return unicode(self.title)
 
-    def type(self):
-        """
-        Get Item type.
-        """
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            if hasattr(self, 'audioitem'):   self.type = 'Audio'
+            elif hasattr(self, 'videoitem'): self.type = 'Video'
+            elif hasattr(self, 'imageitem'): self.type = 'Image'
+            elif hasattr(self, 'textitem'):  self.type = 'Text'
+        
+        super(Item, self).save(*args, **kwargs)
 
-        if hasattr(self, 'audioitem'):   return 'Audio'
-        elif hasattr(self, 'videoitem'): return 'Video'
-        elif hasattr(self, 'textitem'):  return 'Text'
-        elif hasattr(self, 'imageitem'): return 'Image'
 
         
 class ImageItem(Item):
