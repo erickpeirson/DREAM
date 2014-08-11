@@ -148,7 +148,7 @@ class QueryEvent(models.Model):
                                         null=True, blank=True, default=1  )
                                         
     rangeEnd = models.IntegerField(     verbose_name='Ending at', 
-                                        null=True, blank=True, default=0   )
+                                        null=True, blank=True, default=10   )
     
     engine = models.ForeignKey(         'Engine',
                                         related_name='engine_events',
@@ -272,6 +272,8 @@ class QueryResultItem(models.Model):
         if 'creator' in params: creator = params['creator']
         else: creator = ''
                     
+        logger.debug('creating an Item based on mtype {0}'.format(self.type))
+        
         ### Images ###
         if self.type == 'image':
             i = ImageItem.objects.get_or_create(url=self.url,
@@ -323,7 +325,7 @@ class QueryResultItem(models.Model):
                     i.audio_segments.add(seg)
 
         ### Text ###
-        elif self.type == 'text':
+        elif self.type == 'texts':
             i = TextItem.objects.get_or_create(url=self.url,
                 defaults = {
                     'title': self.title,

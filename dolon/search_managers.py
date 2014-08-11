@@ -47,6 +47,7 @@ class InternetArchiveManager(BaseSearchManager):
         Perform a search of the Internet Archive.
         """
         rows = (end - start) + 1
+        start = max(start-1,0) # IA starts at 0.
         
         logger.debug('search for {0}, start: {1}, end: {2}, rows: {3}'
                                             .format(query, start, end, rows))
@@ -184,6 +185,7 @@ class InternetArchiveManager(BaseSearchManager):
             
             # Movies and audio are handled differently.
             #   Video files (movies)...
+            logger.debug('item has mediatype {0}'.format(item['mediatype']))
             if item['mediatype'] == 'movies':
                 mtype = 'video'
                 alttype = 'audio'
@@ -197,12 +199,15 @@ class InternetArchiveManager(BaseSearchManager):
 
             try:    # Catch cases where declared mtype is incorrect.
                 md = self._getDetails(item['identifier'], mtype)
+                logger.debug('_getDetails successful')
             except MediaTypeException:
+                logger.debug(
+                   'Caught MediaTypeException for type {0}, trying alttype {1}.'
+                    .format(mtype, alttype) )
+                    
                 md = self._getDetails(item['identifier'], alttype)
                 mtype = alttype
             contextURL, date_pub, creator, desc, files, thumbs = md
-                
-            if item['mediatype'] == 'texts': continue # TODO: handle texts?
 
             items.append({
                 'title': item['title'],
