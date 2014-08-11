@@ -3,28 +3,32 @@
 
 {% block content %}
     <style>
+        table.matrix {
+            width: 100%
+        }
         th {
             vertical-align: bottom;
             border-right: 1px solid #ddd;
         }
         th.rotate {
-            height: 140px;
+            height: 100px;
             white-space: nowrap;
             vertical-align: middle;
             border-left: 0;
             border-right: 0;
+            width: 50px;
         }
         th.extra {
             border-left: 0;
             border-right: 0;        
-            width: 100px;
+            width: 40px;
         }
         th.rotate > div {
           transform: 
             /* Magic Numbers */
-            translate(5px, 51px)
+            translate(10px, 31px)
             /* 45 is really 360 - 45 */
-            rotate(315deg);
+            rotate(325deg);
           width: 40px;          
 
         }   
@@ -32,23 +36,61 @@
           border-bottom: 1px solid #ccc;
 /*           padding: 5px 10px; */
         }             
+        
+        td.value {
+            border-right: 1px solid #ddd;
+        }
+        
+        span.cell_value {
+            padding: 10px;            
+        }
+        img.create {
+            float: right;
+        }
+        p.description {
+            width: 600px;
+            padding-bottom: 0px;
+        }
+        p.paginator {
+            background: white url(/static/admin/img/nav-bg.gif) 0 180% repeat-x;
+            color: #666;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+ 
+            overflow: hidden;   
+            
+            font-size: 11px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            line-height: 22px;
+            margin: 0;               
+        }
     </style>
-    <table>
-        <thead>
-            <th scope="col">Search string</th>
-            {% for g in engines %}
-            <th class="rotate"><div><span>{{g}}</span></div></th>
-            {% endfor %}
-            <th class="extra">&nbsp;</th>
-        </thead>
-        {% for val in values %}
-        <tr>
-            <td>{{val.0}}</td>
-            {% for v in val.1 %}
-            <td>{{ v }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
 
-    </table>
+<p class="help description">This table shows the number of non-hidden media items associated with each search term and search engine. Click on the number of items to see a filtered list of those items. Click the <img src="/static/admin/img/icon_addlink.gif"> icon to create a new search query with values pre-populated for that search term and engine.</p>
+    <div class="module" id="changelist">
+        <div class="results">
+            <table class="matrix" id="result_list">
+                <thead>
+                    <th scope="col">Search string</th>
+                    {% for g in engines %}
+                    <th class="rotate"><div><span>{{g}}</span></div></th>
+                    {% endfor %}
+                    <th class="extra">&nbsp;</th>
+                </thead>
+                {% for val in values %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <td>{{val.0}}</td>
+                    {% for v in val.1 %}
+                    <td class="value">
+                        <span class="cell_value"><a href="{{v.0}}">{{ v.1 }}</a></span><a href="/admin/dolon/queryevent/add/?engine={{ v.2 }}&querystring={{ v.3 }}"><img class="create" src="/static/admin/img/icon_addlink.gif"></a>
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+
+            </table>
+        </div>
+        <p class="paginator">&nbsp;</p>
+    </div>
 {% endblock %}

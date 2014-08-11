@@ -19,6 +19,8 @@ logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname
 logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
 
+iconpath = "/media/static/"
+
 ### Receivers ###
 
 @receiver(pre_delete, sender=Item)
@@ -290,7 +292,7 @@ class QueryStringAdmin(admin.ModelAdmin):
         
         querystrings = { q.id:q.querystring for q in QueryString.objects.all() }
 
-        engines = { e.id:e.manager for e in Engine.objects.all() }
+        engines = { e.id:unicode(e) for e in Engine.objects.all() }
 
         values = { q:{ g:0 for g in engines.keys() } for q in querystrings.keys() }
         events = QueryEvent.objects.all()
@@ -301,12 +303,17 @@ class QueryStringAdmin(admin.ModelAdmin):
 
             values[q][g] += len(items)
         
-        values_ = [ (querystrings[k],[ vals[g] for g in engines.keys() ]) 
-                        for k,vals in values.iteritems() ]
+        pattern = "/admin/dolon/item/?events__engine__id__exact={0}&events__querystring__id__exact={1}"
+        
+        values_ = [ (querystrings[k], [ 
+                          (pattern.format(g,k), vals[g], g, k ) for g in engines
+                    ]) for k,vals in values.iteritems() ]
         
         context = {
+            'title': 'Distribution of items across search terms and search engines',
             'values': values_,
             'engines': engines.values(),
+            'iconpath': iconpath,
         }
         
         return render_to_response('querystring_matrix.html',context)
@@ -419,9 +426,20 @@ class QueryEventAdmin(admin.ModelAdmin):
         print obj, self.exclude
         if obj is None:
             self.exclude = exclude + ['dispatched', 'creator']
+            
         else:
             self.exclude = exclude + ['rangeStart', 'rangeEnd']
-        return super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
+        form = super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
+        
+        # List for initial form values in GET request.
+        if request.method == 'GET':
+            for key in request.GET:
+                try:
+                    form.__dict__[key].initial = request.GET[key]
+                except KeyError:    # Unexpected parameter; ignore.
+                    pass
+
+        return form
     
     def save_model(self, request, obj, form, change):
         
