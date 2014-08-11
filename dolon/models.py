@@ -5,6 +5,9 @@ from django.conf import settings
 from audiofield.fields import AudioField
 import os.path
 
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^dolon\.models\.ListField"])
+
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
