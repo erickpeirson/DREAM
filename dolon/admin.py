@@ -34,6 +34,7 @@ class QueryEventForm(forms.ModelForm):
         if not self.cleaned_data['creator']:
             return User()
         return self.cleaned_data['creator']
+    
 
 ### Actions ###
 
@@ -279,6 +280,24 @@ class QueryEventAdmin(admin.ModelAdmin):
     list_display_links = ('querystring',)
     actions = [dispatch, reset]
     
+    fieldsets = (
+            (None, {
+                'fields': ('search_by','engine')
+            }),
+            ('Search by string', {
+                'classes': ('collapse',),
+                'fields': ('querystring', 'rangeStart', 'rangeEnd'),
+            }),
+            ('Search by user', {
+                'classes': ('collapse',),
+                'fields': ('user',),
+            }),
+            ('Search by tag', {
+                'classes': ('collapse',),
+                'fields': ('tag',),
+            }),            
+        )
+        
     def result_sets(self, obj):
         """
         Generates a list of :class:`.QueryResult` instances associated with this

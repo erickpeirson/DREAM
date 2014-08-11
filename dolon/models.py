@@ -114,6 +114,7 @@ class Engine(models.Model):
     def __unicode__(self):
         return unicode( [ label for value, label in engineManagers 
                             if value == self.manager ][0] + ' ' + str(self.id) )
+# end Engine class.
 
 class QueryEvent(models.Model):
     """
@@ -123,15 +124,53 @@ class QueryEvent(models.Model):
     class Meta:
         verbose_name = 'query'
         verbose_name_plural = 'queries'
+        
+    helptext = {}
     
-    querystring = models.ForeignKey('QueryString', related_name='queryevents',
-                                                verbose_name='search string')
-    rangeStart = models.IntegerField(verbose_name='Starting at')
-    rangeEnd = models.IntegerField(verbose_name='Ending at')
+    search_options = (
+            ('ST','String'),
+            ('UR','User'),
+            ('TG','Tag'),
+        )
+    
+    # Entered by user.
+    search_by = models.CharField(
+                    max_length=2, choices=search_options, default='ST'  )
+    
+    
+    # Search by string.
+    querystring = models.ForeignKey(    'QueryString',
+                                        related_name='queryevents',
+                                        verbose_name='search string',
+                                        null=True, blank=True, default=-1    )
+                                        
+    rangeStart = models.IntegerField(   verbose_name='Starting at', 
+                                        null=True, blank=True, default=1  )
+                                        
+    rangeEnd = models.IntegerField(     verbose_name='Ending at', 
+                                        null=True, blank=True, default=0   )
+    
+    engine = models.ForeignKey(         'Engine',
+                                        related_name='engine_events',
+                                        verbose_name='Search engine'   )    
 
+    # Search by User.
+    user = models.ForeignKey(           'SocialUser', blank=True, null=True   )
+    """Used for social media user searches."""
+    
+    # Search by Tag.
+    tag = models.ForeignKey(            'HashTag', blank=True, null=True  )
+    """e.g. a hastag"""
+    
+    
+    # Temporal options.
+    before = models.DateField(blank=True, null=True)
+    after = models.DateField(blank=True, null=True)
+
+    # Set automatically.
     datetime = models.DateTimeField(auto_now=True)
     
-    # Tasks and dispathing.
+    # Set upon dispatch.
     dispatched = models.BooleanField(default=False)
     state = models.CharField(max_length=50, blank=True, null=True)
     
@@ -147,10 +186,8 @@ class QueryEvent(models.Model):
     queryresults = models.ManyToManyField(
                         'QueryResult', blank=True, null=True,
                         related_name='event_instance'   )
-                        
-                        
-    engine = models.ForeignKey(Engine, related_name='engine_events',
-                                        verbose_name='Search engine'    )
+# end QueryEvent class.
+
 
     def __unicode__(self):
         pattern = '"{0}", items {1}-{2}, created {3}'
@@ -673,3 +710,39 @@ class Context(models.Model):
         if self.title is not None:
             return unicode(self.title)
         return unicode(self.url)
+        
+class SocialPlatform(models.Model):
+    """
+    e.g. Twitter, Facebook, Flickr
+    """
+    
+    name = models.CharField(max_length=500)
+    url = models.CharField(max_length=500)
+        
+class SocialUser(models.Model):
+    """
+    A user on a social media website.
+    """
+    
+    handle = models.CharField(max_length=500)
+    """username, email, whatever is used to identify the user."""
+    
+    platform = models.ForeignKey(SocialPlatform)
+    """e.g. Twitter, Facebook, Flickr."""
+    
+    profile_url = models.CharField(max_length=500, null=True, blank=True)
+    """for quick access"""
+    
+    description = models.TextField(null=True, blank=True)
+    """could be a bio, or entered by a researcher."""
+    
+class HashTag(models.Model):
+    """
+    A tag used on a social media site.
+    """
+    
+    string = models.CharField(max_length=500)
+    description = models.TextField(blank=True, null=True)
+    """Optional, entered by researcher if desired."""
+    
+    
