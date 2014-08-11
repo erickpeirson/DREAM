@@ -304,7 +304,6 @@ class QueryStringAdmin(admin.ModelAdmin):
         values_ = [ (querystrings[k],[ vals[g] for g in engines.keys() ]) 
                         for k,vals in values.iteritems() ]
         
-        
         context = {
             'values': values_,
             'engines': engines.values(),
@@ -438,7 +437,7 @@ class ItemAdmin(admin.ModelAdmin):
                         'contexts', 'creationDate',  'children', 'parent',  )
     exclude = ( 'image', 'thumbnail', 'events', 'merged_with', 'url',
                 'hide', 'context'  )
-    list_filter = ('status','events','tags', 'type')
+    list_filter = ('status','events__querystring', 'events__engine', 'tags', 'type','events')
     list_editable = ['title',]
     list_select_related = True
     search_fields = ['title',]

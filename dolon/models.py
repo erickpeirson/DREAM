@@ -400,8 +400,6 @@ class Item(models.Model):
     ``hide``). Allows us to umerge items if necessary.
     """
 
-
-
     type = models.CharField(max_length=50, choices=types, blank=True, null=True)
     """
     Audio, Video,
