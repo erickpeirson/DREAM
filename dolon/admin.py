@@ -55,6 +55,8 @@ class QueryEventForm(forms.ModelForm):
                 raise forms.ValidationError(
                     'Must select a Tag to perform tag query.'   )
 
+        return cleaned_data
+
 ### Actions ###
 
 def reset(modeladmin, request, queryset):
