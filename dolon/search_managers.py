@@ -6,6 +6,7 @@ import os
 from unidecode import unidecode
 import xml.etree.ElementTree as ET
 import time
+import tweepy
 
 import logging
 logging.basicConfig()
@@ -26,7 +27,19 @@ class BaseSearchManager(object):
     """
     def __init__(self):
         pass
-        
+
+#class TwitterManager(BaseSearchManager):
+#    def __init__(self, **kwargs):
+#        consumer_key = kwargs.get('consumer_key')
+#        consumer_secret = kwargs.get('consumer_secret')
+#        access_token = kwargs.get('access_token')
+#        access_token_secret = kwargs.get('access_token_secret')
+#        
+#        self.auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+#        self.auth.set_access_token(access_token, access_token_secret)
+#
+#        self.api = tweepy.API(auth)
+
 class InternetArchiveManager(BaseSearchManager):
     """
     Search manager for Internet Archive.

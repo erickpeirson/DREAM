@@ -1,5 +1,10 @@
 from django import forms
 from django.contrib import admin
+from django.conf.urls import patterns, url
+from django.http import HttpResponse
+from django.shortcuts import render_to_response
+
+
 import autocomplete_light
 from models import *
 from util import *
@@ -12,7 +17,7 @@ from django.dispatch import receiver
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel('INFO')
+logger.setLevel('DEBUG')
 
 ### Receivers ###
 
@@ -271,6 +276,42 @@ class QueryStringAdmin(admin.ModelAdmin):
     list_display = ('querystring', 'events', 'last_used')#, 'items')
     inlines = (QueryEventInline,)
     
+    def get_urls(self):
+        urls = super(QueryStringAdmin, self).get_urls()
+        my_urls = patterns('',
+            (r'^distribution/$', self.admin_site.admin_view(self.engine_matrix))
+        )
+        return my_urls + urls
+        
+    def engine_matrix(self, request):
+        """
+        should be able to see a matrix of querystrings versus engines.
+        """
+        
+        querystrings = { q.id:q.querystring for q in QueryString.objects.all() }
+
+        engines = { e.id:e.manager for e in Engine.objects.all() }
+
+        values = { q:{ g:0 for g in engines.keys() } for q in querystrings.keys() }
+        events = QueryEvent.objects.all()
+        for e in events:
+            items = Item.objects.filter(events__id=e.id).exclude(hide=True)
+            q = e.querystring.id
+            g = e.engine.id
+
+            values[q][g] += len(items)
+        
+        values_ = [ (querystrings[k],[ vals[g] for g in engines.keys() ]) 
+                        for k,vals in values.iteritems() ]
+        
+        
+        context = {
+            'values': values_,
+            'engines': engines.values(),
+        }
+        
+        return render_to_response('querystring_matrix.html',context)
+    
     def last_used(self, obj):
         print obj.latest()
         return pretty_date(obj.latest())
@@ -318,7 +359,7 @@ class QueryEventAdmin(admin.ModelAdmin):
                 'fields': ('tag',),
             }),            
         )
-        
+    
     def result_sets(self, obj):
         """
         Generates a list of :class:`.QueryResult` instances associated with this

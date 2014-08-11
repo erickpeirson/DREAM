@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+
+
+{% block content %}
+    <style>
+        th {
+            vertical-align: bottom;
+            border-right: 1px solid #ddd;
+        }
+        th.rotate {
+            height: 140px;
+            white-space: nowrap;
+            vertical-align: middle;
+            border-left: 0;
+            border-right: 0;
+        }
+        th.extra {
+            border-left: 0;
+            border-right: 0;        
+            width: 100px;
+        }
+        th.rotate > div {
+          transform: 
+            /* Magic Numbers */
+            translate(5px, 51px)
+            /* 45 is really 360 - 45 */
+            rotate(315deg);
+          width: 40px;          
+
+        }   
+        th.rotate > div > span {
+          border-bottom: 1px solid #ccc;
+/*           padding: 5px 10px; */
+        }             
+    </style>
+    <table>
+        <thead>
+            <th scope="col">Search string</th>
+            {% for g in engines %}
+            <th class="rotate"><div><span>{{g}}</span></div></th>
+            {% endfor %}
+            <th class="extra">&nbsp;</th>
+        </thead>
+        {% for val in values %}
+        <tr>
+            <td>{{val.0}}</td>
+            {% for v in val.1 %}
+            <td>{{ v }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+
+    </table>
+{% endblock %}
