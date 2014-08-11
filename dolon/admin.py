@@ -34,7 +34,26 @@ class QueryEventForm(forms.ModelForm):
         if not self.cleaned_data['creator']:
             return User()
         return self.cleaned_data['creator']
-    
+        
+    def clean(self):
+        cleaned_data = super(QueryEventForm, self).clean()
+        searchtype = cleaned_data.get("search_by")
+        
+        if searchtype == 'ST':
+            querystring = cleaned_data.get("querystring")
+            if querystring is None:
+                raise forms.ValidationError(
+                    'Must select a QueryString to perform a string query.'  )
+        elif searchtype == 'UR':
+            user = cleaned_data.get("user")
+            if user is None:
+                raise forms.ValidationError(
+                    'Must select a User to perform a user query.'   )
+        elif searchtype == 'TG':
+            tag = cleaned_data.get("tag")
+            if tag is None:
+                raise forms.ValidationError(
+                    'Must select a Tag to perform tag query.'   )
 
 ### Actions ###
 
