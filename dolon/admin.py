@@ -251,7 +251,7 @@ class QueryEventInline(admin.TabularInline):
         """
         Prettier representation of the start and end indices.
         """
-        pattern = '{0}-{1}'
+        pattern = u'{0}-{1}'
         return pattern.format(obj.rangeStart, obj.rangeEnd)
     range.allow_tags = True
     
@@ -264,7 +264,7 @@ class QueryEventInline(admin.TabularInline):
 
         items = Item.objects.filter(events__id=obj.id)
         if len(items) > 0:
-            pattern = '<a href="{0}?events__id__exact={1}">{2} items</a>'
+            pattern = u'<a href="{0}?events__id__exact={1}">{2} items</a>'
             baseurl = '/'.join(get_admin_url(items[0]).split('/')[0:-2])
             
             return pattern.format(baseurl, obj.id, len(items))
@@ -373,11 +373,11 @@ class QueryEventAdmin(admin.ModelAdmin):
         pages.
         """
 
-        pattern = '<a href="{0}">{1}, s:{2}, e:{3}</a>'
+        pattern = u'<a href="{0}">{1}, s:{2}, e:{3}</a>'
         R = [ pattern.format(get_admin_url(r), obj.querystring.querystring, 
                  r.rangeStart, r.rangeEnd) for r in obj.queryresults.all() ]
 
-        return '\n'.join(R)
+        return u'\n'.join(R)
     result_sets.allow_tags = True
     
     def results(self, obj):
@@ -389,8 +389,8 @@ class QueryEventAdmin(admin.ModelAdmin):
             
         items = Item.objects.filter(events__id=obj.id).exclude(hide=True)
         if len(items) > 0:
-            pattern = '<a href="{0}?events__id__exact={1}">{2} items</a>'
-            baseurl = '/'.join(get_admin_url(items[0]).split('/')[0:-2])
+            pattern = u'<a href="{0}?events__id__exact={1}">{2} items</a>'
+            baseurl = u'/'.join(get_admin_url(items[0]).split('/')[0:-2])
             
             return pattern.format(baseurl, obj.id, len(items))
         return None
@@ -401,7 +401,7 @@ class QueryEventAdmin(admin.ModelAdmin):
         Prettier representation of the start and end indices.
         """
     
-        pattern = '{0}-{1}'
+        pattern = u'{0}-{1}'
         return pattern.format(obj.rangeStart, obj.rangeEnd)
     range.allow_tags = True
     
@@ -498,7 +498,7 @@ class ItemAdmin(admin.ModelAdmin):
         Display the item into which this item has been merged.
         """
         
-        pattern = '<a href="{0}">{1}</a>'
+        pattern = u'<a href="{0}">{1}</a>'
         if obj.merged_with is not None:
             href = get_admin_url(obj.merged_with)
             title = obj.merged_with.title
@@ -511,12 +511,12 @@ class ItemAdmin(admin.ModelAdmin):
         Display merged items from whence this item originated.
         """
         
-        pattern = '<li><a href="{0}">{1}</a></li>'
+        pattern = u'<li><a href="{0}">{1}</a></li>'
         
-        html = '<ul>'
+        html = u'<ul>'
         for c in obj.merged_from.all():
             html += pattern.format(get_admin_url(c), c.title)
-        html += '</ul>'
+        html += u'</ul>'
         return html
     children.allow_tags = True
     
@@ -533,7 +533,7 @@ class ItemAdmin(admin.ModelAdmin):
         Generates a link to the original image URL, opening in a new tab.
         """
 
-        pattern = '<a href="{0}" target="_blank">{0}</a>'
+        pattern = u'<a href="{0}" target="_blank">{0}</a>'
         return pattern.format(obj.url)
     resource.allow_tags = True
     
@@ -543,10 +543,10 @@ class ItemAdmin(admin.ModelAdmin):
         to their respective admin change pages.
         """
 
-        pattern = '<li><a href="{0}">{1}</a></li>'
-        repr = ''.join([ pattern.format(get_admin_url(c),c.url) 
+        pattern = u'<li><a href="{0}">{1}</a></li>'
+        repr = u''.join([ pattern.format(get_admin_url(c),c.url) 
                             for c in obj.context.all() ])
-        return '<ul>{0}</ul>'.format(repr)
+        return u'<ul>{0}</ul>'.format(repr)
     contexts.allow_tags = True
     
     def icon(self, obj, list=False):
@@ -562,7 +562,7 @@ class ItemAdmin(admin.ModelAdmin):
         Display the content objects associated with an Item.
         """
 
-        pattern = '<a href="{0}">{1}</a>'
+        pattern = u'<a href="{0}">{1}</a>'
 
         if obj.type == 'Audio':
             formatted = []
@@ -571,14 +571,14 @@ class ItemAdmin(admin.ModelAdmin):
                 url = get_admin_url(seg)
                 formatted.append(pattern.format(url, icon))
 
-            return ''.join(formatted)
+            return u''.join(formatted)
         elif obj.type == 'Video':
             formatted = []
             for vid in obj.videoitem.videos.all():
                 icon = self._format_mime_icon(vid.type(), 'video')
                 url = get_admin_url(vid)
                 formatted.append(pattern.format(url, icon))
-            return ''.join(formatted)
+            return u''.join(formatted)
         elif obj.type == 'Image':
             icon = self._format_mime_icon(obj.imageitem.image.type(), 'image')
             url = get_admin_url(obj.imageitem.image)
@@ -617,7 +617,7 @@ class ItemAdmin(admin.ModelAdmin):
             'text':         '/media/static/text-by-Hopstarter.png',
         }
         
-        pattern = '<img src="{0}" height="{1}" />'
+        pattern = u'<img src="{0}" height="{1}" />'
         if mime in known_types:
             icon_path = known_types[mime]
             return pattern.format(icon_path, 50)
@@ -630,21 +630,21 @@ class ItemAdmin(admin.ModelAdmin):
         """
         Get an icon according to file type.
         """
-        pattern = '<img src="{0}" height="{1}" />'
+        pattern = u'<img src="{0}" height="{1}" />'
         if type == 'Audio':
-            iconpath = '/media/static/audio-by-Hopstarter.png'
+            iconpath = u'/media/static/audio-by-Hopstarter.png'
         elif type == 'Video':
-            iconpath = '/media/static/video-by-Hopstarter.png'
+            iconpath = u'/media/static/video-by-Hopstarter.png'
         elif type == 'Image':
-            iconpath = '/media/static/jpeg-by-Hopstarter.png'
+            iconpath = u'/media/static/jpeg-by-Hopstarter.png'
         elif type == 'Text':
-            iconpath = '/media/static/text-by-Hopstarter.png'
+            iconpath = u'/media/static/text-by-Hopstarter.png'
         else:
             return None
         return pattern.format(iconpath, 50)
     
     def _format_thumb(self, obj, thumb, list):
-        pattern = '<a href="{0}"><img src="{1}"/></a>'
+        pattern = u'<a href="{0}"><img src="{1}"/></a>'
         if thumb is not None and thumb.image is not None:
 
             if list:
@@ -662,14 +662,14 @@ class ItemAdmin(admin.ModelAdmin):
             fullsize_url = get_admin_url(obj)
         else:
             fullsize_url = '#'
-        return pattern.format(fullsize_url, '/media/static/file-by-Gurato.png')
+        return pattern.format(fullsize_url, u'/media/static/file-by-Gurato.png')
         
     def _format_embed(self, videos):
         if len(videos) == 0:
             return None
             
-        pattern = '<video width="320" height="240" controls>\n\t{0}\n</video>'
-        spattern = '<source src="{0}" />'
+        pattern = u'<video width="320" height="240" controls>\n\t{0}\n</video>'
+        spattern = u'<source src="{0}" />'
         
         vformatted = []
         for video in videos:
@@ -678,13 +678,13 @@ class ItemAdmin(admin.ModelAdmin):
             except ValueError:
                 vformatted.append(spattern.format(video.url))
         
-        return pattern.format('\n'.join(vformatted))
+        return pattern.format(u'\n'.join(vformatted))
 
     def _format_audio_embed(self, audios):
         if len(audios) == 0:
             return None
-        pattern = '<audio controls>{0}</audio>'
-        spattern = '<source src="{0}" type="{1}" />'
+        pattern = u'<audio controls>{0}</audio>'
+        spattern = u'<source src="{0}" type="{1}" />'
 
         aformatted = []
         for audio in audios:
@@ -692,7 +692,7 @@ class ItemAdmin(admin.ModelAdmin):
                 aformatted.append(spattern.format(audio.audio_file.url, audio.mime))
             except ValueError:
                 aformatted.append(spattern.format(audio.url, ''))
-        return pattern.format('\n'.join(aformatted))
+        return pattern.format(u'\n'.join(aformatted))
 
     def _item_image(self, obj, list=False):
         """
@@ -725,11 +725,11 @@ class ItemAdmin(admin.ModelAdmin):
         :class:`.Item`\, with links to their respective admin change pages.
         """
 
-        pattern = '<li><a href="{0}">{1}</a></li>'
+        pattern = u'<li><a href="{0}">{1}</a></li>'
             
-        repr = ''.join([ pattern.format(get_admin_url(e), e) 
+        repr = u''.join([ pattern.format(get_admin_url(e), e) 
                         for e in obj.events.all() ])
-        return '<ul>{0}</ul>'.format(repr)
+        return u'<ul>{0}</ul>'.format(repr)
     query_events.allow_tags = True
     
 class ContextAdmin(admin.ModelAdmin):
@@ -753,7 +753,7 @@ class ContextAdmin(admin.ModelAdmin):
         """
         Generates a link to the original context URL, opening in a new tab.
         """
-        pattern = '<a href="{0}" target="_blank">{0}</a>'
+        pattern = u'<a href="{0}" target="_blank">{0}</a>'
         return pattern.format(obj.url)
     resource.allow_tags = True
 
@@ -779,17 +779,17 @@ class TagAdmin(admin.ModelAdmin):
 
     
     def items(self, obj):
-        pattern = '<li><a href="{0}">{1}</a></li>'
-        html = ''.join( [ pattern.format(get_admin_url(i),unidecode(i.title)) for i in obj.items() ] )
-        return '<ul>{0}</ul>'.format(html)
+        pattern = u'<li><a href="{0}">{1}</a></li>'
+        html = u''.join( [ pattern.format(get_admin_url(i),unidecode(i.title)) for i in obj.items() ] )
+        return u'<ul>{0}</ul>'.format(html)
     items.allow_tags = True
     
     def contexts(self, obj):
-        pattern = '<li><a href="{0}">{1}</a></li>'
+        pattern = u'<li><a href="{0}">{1}</a></li>'
         for i in obj.contexts():
             print i
-        html = ''.join( [ pattern.format(get_admin_url(i),i) for i in obj.contexts() ] )
-        return '<ul>{0}</ul>'.format(html)
+        html = u''.join( [ pattern.format(get_admin_url(i),i) for i in obj.contexts() ] )
+        return u'<ul>{0}</ul>'.format(html)
     contexts.allow_tags = True
     
         
@@ -822,7 +822,7 @@ class ImageAdmin(admin.ModelAdmin):
         """
         Generates a link to the original image URL, opening in a new tab.
         """
-        pattern = '<a href="{0}" target="_blank">{0}</a>'
+        pattern = u'<a href="{0}" target="_blank">{0}</a>'
         return pattern.format(obj.url)
     resource.allow_tags = True
 
@@ -843,7 +843,7 @@ class ImageAdmin(admin.ModelAdmin):
         """
 
         if obj.image is not None:
-            pattern = '<img src="{0}"/>'
+            pattern = u'<img src="{0}"/>'
             return pattern.format(obj.image.url)
         return None
     fullsize_image.allow_tags = True   
@@ -866,15 +866,15 @@ class EngineAdmin(admin.ModelAdmin):
     
     def daily_usage(self, obj):
         if obj.daylimit is None:
-            return 'Unlimited'
+            return u'Unlimited'
         else:
-            return '{0}%'.format(100*float(obj.dayusage)/float(obj.daylimit))
+            return u'{0}%'.format(100*float(obj.dayusage)/float(obj.daylimit))
     
     def monthly_usage(self, obj):
         if obj.monthlimit is None:
-            return '{0} of unlimited'.format(obj.monthusage)
+            return u'{0} of unlimited'.format(obj.monthusage)
         else:
-            return '{0}%'.format(100*float(obj.monthusage)/float(obj.monthlimit))    
+            return u'{0}%'.format(100*float(obj.monthusage)/float(obj.monthlimit))    
             
             
     def get_form(self, request, obj=None, **kwargs):
@@ -903,8 +903,8 @@ class AudioAdmin(admin.ModelAdmin):
     preview.allow_tags = True
 
     def _format_audio_embed(self, audio):
-        pattern = '<audio controls>{0}</audio>'
-        source = '<source src="{0}" />'.format(audio.url)
+        pattern = u'<audio controls>{0}</audio>'
+        source = u'<source src="{0}" />'.format(audio.url)
 
         return pattern.format(source)
 
@@ -933,8 +933,8 @@ class VideoAdmin(admin.ModelAdmin):
 
     def _format_embed(self, video):
             
-        pattern = '<video width="320" height="240" controls>{0}</video>'
-        source = '<source src="{0}" />'.format(video.url)#, video.type())
+        pattern = u'<video width="320" height="240" controls>{0}</video>'
+        source = u'<source src="{0}" />'.format(video.url)#, video.type())
         return pattern.format(source)
 
             
