@@ -438,7 +438,8 @@ class QueryEventAdmin(admin.ModelAdmin):
             self.exclude = exclude + ['dispatched', 'creator']
             
         else:
-            self.exclude = exclude + ['rangeStart', 'rangeEnd']
+            pass
+#            self.exclude = exclude + ['rangeStart', 'rangeEnd']
         form = super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
         
         # List for initial form values in GET request.
