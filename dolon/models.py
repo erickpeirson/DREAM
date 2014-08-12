@@ -286,8 +286,14 @@ class QueryResultItem(models.Model):
                 print params['thumbnailURL']
                 i.thumbnail = Thumbnail.objects.get_or_create(
                                     url=params['thumbnailURL'][0]   )[0]
-            if i.image is None:
-                i.image = Image.objects.get_or_create(url=self.url)[0]
+
+            if len(i.images.all()) == 0 and len(params['files']) > 0:
+                for url in params['files']:
+                    image = Image.objects.get_or_create(url=url)[0]
+                    i.images.add(image)
+            
+#            if i.image is None:
+#                i.image = Image.objects.get_or_create(url=self.url)[0]
         
         ### Videos ###
         elif self.type == 'video':
@@ -436,9 +442,10 @@ class ImageItem(Item):
         
     thumbnail = models.ForeignKey(  'Thumbnail', blank=True, null=True,
                                     related_name='imageitem_thumbnail'   )
-    image = models.ForeignKey('Image', blank=True, null=True,
-                                    related_name='imageitem_fullsize'   )
+#    image = models.ForeignKey('Image', blank=True, null=True,
+#                                    related_name='imageitem_fullsize'   )
 
+    images = models.ManyToManyField('Image', blank=True, null=True)
 
 class VideoItem(Item):
     """

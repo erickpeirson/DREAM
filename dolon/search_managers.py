@@ -319,7 +319,8 @@ class GoogleImageSearchManager(BaseSearchManager):
                     'mime': item['mime'],
                     'contextURL': item['image']['contextLink'],
                     'creator': '',
-                    'thumbnailURL': [item['image']['thumbnailLink'],]
+                    'thumbnailURL': [item['image']['thumbnailLink'],],
+                    'files': [item['link']],
                 }
             result['items'].append(i)
 

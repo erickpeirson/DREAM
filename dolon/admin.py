@@ -149,7 +149,69 @@ def retrieve_context(modeladmin, request, queryset):
     
     result = spawnRetrieveContexts(queryset)
 retrieve_context.short_description = 'Retrieve content for selected contexts'    
+
+def _mergeImage(queryset):
+    logger.debug('Merging {0} images'.format(len(queryset)))
+    largest = 0
+    image = None
     
+    largestThumb = 0
+    thumbnail = None
+    
+    # Fake URL and title.
+    identifier = str(uuid.uuid1())
+    title = 'Merged item {0}'.format(identifier)
+    url = 'http://roy.fulton.asu.edu/dolon/mergeditem/{0}'.format(identifier)
+
+    newItem = ImageItem( url = url,
+                         title = title,
+                         type = 'Image'   )
+    newItem.save()
+    
+    contexts = set([])
+    for obj in queryset:
+        # If any one Item is approved, they all are.
+        if obj.status == 'AP':  
+            newItem.status = 'AP'
+            newItem.save()
+        
+        # Inherit any thumbnail.
+        if newItem.thumbnail is None and obj.imageitem.thumbnail is not None:
+            newItem.thumbnail = obj.imageitem.thumbnail
+            newItem.save()
+
+        # Pool all images.
+        for i in obj.imageitem.images.all():
+            newItem.images.add(i)
+        
+#        # The new Item inherits the largest image, if there are any.
+#        if hasattr(obj.imageitem, 'image'):
+#            if obj.imageitem.image.size > largest:
+#                newItem.image = obj.imageitem.image
+#                newItem.height = obj.imageitem.height
+#                newItem.width = obj.imageitem.width
+#                
+#                largest = obj.imageitem.image.size
+#                newItem.save()
+                
+        # Pool all of the contexts.
+        for c in obj.context.all():
+            newItem.context.add(c)
+            
+        # Pool all of the tags.
+        for t in obj.tags.all():
+            newItem.tags.add(t)
+            
+        # Link to QueryEvents
+        for e in obj.events.all():
+            newItem.events.add(e)
+        
+        # Set merged_with on old items.
+        obj.merged_with = newItem
+        obj.hide = True
+        obj.save()
+    
+    newItem.save()    
 
 def merge(modeladmin, request, queryset):
     """
@@ -173,62 +235,10 @@ def merge(modeladmin, request, queryset):
 
         lasttype = str(thistype)
 
-    largest = 0
-    image = None
+
+    if thistype == 'image':
+        _mergeImage(queryset)
     
-    largestThumb = 0
-    thumbnail = None
-    
-    # Fake URL and title.
-    identifier = str(uuid.uuid1())
-    title = 'Merged item {0}'.format(identifier)
-    url = 'http://roy.fulton.asu.edu/dolon/mergeditem/{0}'.format(identifier)
-    
-    newItem = Item( url = url,
-                    title = title   )
-    newItem.save()
-    
-    contexts = set([])
-    for obj in queryset:
-        # If any one Item is approved, they all are.
-        if obj.status == 'AP':  
-            newItem.status = 'AP'
-            newItem.save()
-        
-        # Inherit any thumbnail.
-        if newItem.thumbnail is None and obj.thumbnail is not None:
-            newItem.thumbnail = obj.thumbnail
-            newItem.save()
-        
-        # The new Item inherits the largest image, if there are any.
-        if hasattr(obj, 'image'):
-            if obj.image.size > largest:
-                newItem.image = obj.image
-                newItem.height = obj.height
-                newItem.width = obj.width
-                newItem.mime = obj.mime
-                
-                largest = obj.image.size
-                newItem.save()
-                
-        # Pool all of the contexts.
-        for c in obj.context.all():
-            newItem.context.add(c)
-            
-        # Pool all of the tags.
-        for t in obj.tags.all():
-            newItem.tags.add(t)
-            
-        # Link to QueryEvents
-        for e in obj.events.all():
-            newItem.events.add(e)
-        
-        # Set merged_with on old items.
-        obj.merged_with = newItem
-        obj.hide = True
-        obj.save()
-    
-    newItem.save()
         
 merge.short_description = 'Merge selected items'
 
@@ -580,9 +590,16 @@ class ItemAdmin(admin.ModelAdmin):
                 formatted.append(pattern.format(url, icon))
             return u''.join(formatted)
         elif obj.type == 'Image':
-            icon = self._format_mime_icon(obj.imageitem.image.type(), 'image')
-            url = get_admin_url(obj.imageitem.image)
-            return pattern.format(url, icon)
+            formatted = []
+            for img in obj.imageitem.images.all():
+                icon = self._format_mime_icon(img.type(), 'image')
+                url = get_admin_url(img)
+                formatted.append(pattern.format(url, icon))
+            return u''.join(formatted)        
+        
+#            icon = self._format_mime_icon(obj.imageitem.image.type(), 'image')
+#            url = get_admin_url(obj.imageitem.image)
+#            return pattern.format(url, icon)
         elif obj.type == 'Text':
             icon = self._format_mime_icon(obj.textitem.text.type(), 'text')
             url = get_admin_url(obj.textitem.text)
