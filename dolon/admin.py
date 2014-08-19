@@ -423,7 +423,8 @@ class QueryEventAdmin(admin.ModelAdmin):
         if obj:
             read_only = (   
                 'querystring', 'datetime', 'engine', 'range', 'dispatched', 
-                'results', 'search_status', 'creator' ) + self.readonly_fields
+                'results', 'search_status', 'creator', 'rangeStart', 
+                'rangeEnd' ) + self.readonly_fields
             return read_only
         return self.readonly_fields
 
@@ -439,7 +440,6 @@ class QueryEventAdmin(admin.ModelAdmin):
             
         else:
             pass
-#            self.exclude = exclude + ['rangeStart', 'rangeEnd']
         form = super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
         
         # List for initial form values in GET request.
