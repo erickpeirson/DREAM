@@ -33,6 +33,101 @@ engineManagers = {
     'InternetArchiveManager': M.InternetArchiveManager,
 }
 
+def _get_params(resultitem):
+    params = pickle.loads(resultitem.params)
+    if 'length' in params: length = params['length']
+    else: length = 0
+        
+    if 'size' in params: size = params['size']
+    else: size = 0
+    
+    if 'creator' in params: creator = params['creator']
+    else: creator = ''
+    
+    return params, length, size, creator
+# end _get_params
+
+def _create_image_item(resultitem):
+    params, length, size, creator = _get_params(resultitem)
+    
+    i = ImageItem.objects.get_or_create(url=resultitem.url,
+            defaults = {
+                'title': resultitem.title,
+                'creator': params['creator']  }   )[0]
+
+    # Associate thumbnail, image, and context.
+    if i.thumbnail is None and len(params['thumbnailURL']) > 0:
+        print params['thumbnailURL']
+        i.thumbnail = Thumbnail.objects.get_or_create(
+                            url=params['thumbnailURL'][0]   )[0]
+
+    if len(i.images.all()) == 0 and len(params['files']) > 0:
+        for url in params['files']:
+            image = Image.objects.get_or_create(url=url)[0]
+            i.images.add(image)
+
+    return i
+# end _create_image_item
+
+def _create_video_item(resultitem):
+    params, length, size, creator = _get_params(resultitem)
+    
+    i = VideoItem.objects.get_or_create(url=resultitem.url,
+            defaults = {
+                'title': resultitem.title,
+                'length': length,
+                'creator': creator  }   )[0]
+                
+    if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
+        for url in params['thumbnailURL']:
+            thumb = Thumbnail.objects.get_or_create(url=url)[0]                        
+            i.thumbnails.add(thumb)
+            
+    if len(i.videos.all()) == 0 and len(params['files']) > 0:
+        for url in params['files']:
+            video = Video.objects.get_or_create(url=url)[0]
+            i.videos.add(video)
+# end _create_video_item
+
+def _create_audio_item(resultitem):
+    params, length, size, creator = _get_params(resultitem)
+    
+    i = AudioItem.objects.get_or_create(url=resultitem.url,
+            defaults = {
+                'title': resultitem.title,
+                'length': length,
+                'creator': creator  }   )[0]     
+                
+    if i.thumbnail is None and len(params['thumbnailURL']) > 0:
+        i.thumbnail = Thumbnail.objects.get_or_create(
+                            url=params['thumbnailURL'][0]   )[0]                                           
+                            
+    if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
+        for url in params['files']:
+            seg = Audio.objects.get_or_create(url=url)[0]
+            i.audio_segments.add(seg)
+            
+    return i
+# end _create_audio_item
+
+def _create_text_item(resultitem):
+    params, length, size, creator = _get_params(resultitem)
+
+    i = TextItem.objects.get_or_create(url=resultitem.url,
+        defaults = {
+            'title': resultitem.title,
+            'length': length,
+            'creator': creator
+        })[0]
+
+    if len(i.original_files.all()) == 0 and len(params['files']) > 0:
+        for url in params['files']:
+            txt = Text.objects.get_or_create(url=url)[0]
+            i.original_files.add(txt)
+            
+    return i
+# end _create_text_item
+
 def create_item(resultitem):
     """
     Generate an :class:`.Item` from a :class:`.QueryResultItem`\.
@@ -48,86 +143,17 @@ def create_item(resultitem):
     i : :class:`.Item`
     
     """
-    logger.debug('Creating item for {0}'.format(resultitem))
+    logger.debug('Creating item for {0} with mtype {1}'
+                                           .format(resultitem, resultitem.type))
     
-    params = pickle.loads(resultitem.params)
-    if 'length' in params: length = params['length']
-    else: length = 0
-        
-    if 'size' in params: size = params['size']
-    else: size = 0
-    
-    if 'creator' in params: creator = params['creator']
-    else: creator = ''
-                
-    logger.debug('creating an Item based on mtype {0}'.format(resultitem.type))
-    
-    ### Images ###
     if resultitem.type == 'image':
-        i = ImageItem.objects.get_or_create(url=resultitem.url,
-                defaults = {
-                    'title': resultitem.title,
-                    'creator': params['creator']  }   )[0]
-
-        # Associate thumbnail, image, and context.
-        if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-            print params['thumbnailURL']
-            i.thumbnail = Thumbnail.objects.get_or_create(
-                                url=params['thumbnailURL'][0]   )[0]
-
-        if len(i.images.all()) == 0 and len(params['files']) > 0:
-            for url in params['files']:
-                image = Image.objects.get_or_create(url=url)[0]
-                i.images.add(image)
-    
-    ### Videos ###
+        i = _create_image_item(resultitem)
     elif resultitem.type == 'video':
-        i = VideoItem.objects.get_or_create(url=resultitem.url,
-                defaults = {
-                    'title': resultitem.title,
-                    'length': length,
-                    'creator': creator  }   )[0]
-                    
-        if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
-            for url in params['thumbnailURL']:
-                thumb = Thumbnail.objects.get_or_create(url=url)[0]                        
-                i.thumbnails.add(thumb)
-                
-        if len(i.videos.all()) == 0 and len(params['files']) > 0:
-            for url in params['files']:
-                video = Video.objects.get_or_create(url=url)[0]
-                i.videos.add(video)
-                  
-    ### Audio ###
+        i = _create_video_item(resultitem)
     elif resultitem.type == 'audio':
-        i = AudioItem.objects.get_or_create(url=resultitem.url,
-                defaults = {
-                    'title': resultitem.title,
-                    'length': length,
-                    'creator': creator  }   )[0]     
-                    
-        if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-            i.thumbnail = Thumbnail.objects.get_or_create(
-                                url=params['thumbnailURL'][0]   )[0]                                           
-                                
-        if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
-            for url in params['files']:
-                seg = Audio.objects.get_or_create(url=url)[0]
-                i.audio_segments.add(seg)
-
-    ### Text ###
+        i = _create_audio_item(resultitem)
     elif resultitem.type == 'texts':
-        i = TextItem.objects.get_or_create(url=resultitem.url,
-            defaults = {
-                'title': resultitem.title,
-                'length': length,
-                'creator': creator
-            })[0]
-
-        if len(i.original_files.all()) == 0 and len(params['files']) > 0:
-            for url in params['files']:
-                txt = Text.objects.get_or_create(url=url)[0]
-                i.original_files.add(txt)
+        i = _create_text_item(resultitem)
 
     context  = Context.objects.get_or_create(url=resultitem.contextURL)[0]
     i.context.add(context)
