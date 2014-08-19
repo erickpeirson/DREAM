@@ -583,6 +583,7 @@ class ItemAdmin(admin.ModelAdmin):
                 formatted.append(pattern.format(url, icon))
 
             return u''.join(formatted)
+            
         elif obj.type == 'Video':
             formatted = []
             for vid in obj.videoitem.videos.all():
@@ -590,6 +591,7 @@ class ItemAdmin(admin.ModelAdmin):
                 url = get_admin_url(vid)
                 formatted.append(pattern.format(url, icon))
             return u''.join(formatted)
+            
         elif obj.type == 'Image':
             formatted = []
             for img in obj.imageitem.images.all():
@@ -598,9 +600,6 @@ class ItemAdmin(admin.ModelAdmin):
                 formatted.append(pattern.format(url, icon))
             return u''.join(formatted)        
         
-#            icon = self._format_mime_icon(obj.imageitem.image.type(), 'image')
-#            url = get_admin_url(obj.imageitem.image)
-#            return pattern.format(url, icon)
         elif obj.type == 'Text':
             icon = self._format_mime_icon(obj.textitem.text.type(), 'text')
             url = get_admin_url(obj.textitem.text)
@@ -686,17 +685,31 @@ class ItemAdmin(admin.ModelAdmin):
         if len(videos) == 0:
             return None
             
-        pattern = u'<video width="320" height="240" controls>\n\t{0}\n</video>'
+        pattern = u'<video width="320" controls>\t{0}</video>'
         spattern = u'<source src="{0}" />'
         
-        vformatted = []
+        # Sort videos so that .MOV format is last.
+        videos_ = []
+        _mov = None
         for video in videos:
-            try:
-                vformatted.append(spattern.format(video.video.url))
-            except ValueError:
-                vformatted.append(spattern.format(video.url))
+            if hasattr(video.video, 'url'): # May not have downloaded video
+                url = video.video.url       #  content yet.
+            else:   
+                url = video.url
+                
+            fmt = url.split('.')[-1].lower() # Not using MIME type, since we may
+            if fmt == 'mov':                 #  not have that at hand.
+                _mov = url
+                continue    # Wait to add this video until the end.
+            videos_.append(url)
+        if _mov is not None:    # Add the .MOV file, if there was one.
+            videos_.append(_mov)
+                    
+        vformatted = []
+        for url in videos_:
+            vformatted.append(spattern.format(url))
         
-        return pattern.format(u'\n'.join(vformatted))
+        return pattern.format(u''.join(vformatted))
 
     def _format_audio_embed(self, audios):
         if len(audios) == 0:
