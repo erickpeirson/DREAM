@@ -1,71 +1,9 @@
 {% extends "admin/base_site.html" %}
 
-
 {% block content %}
-    <style>
-        table.matrix {
-            width: 100%
-        }
-        th {
-            vertical-align: bottom;
-            border-right: 1px solid #ddd;
-        }
-        th.rotate {
-            height: 100px;
-            white-space: nowrap;
-            vertical-align: middle;
-            border-left: 0;
-            border-right: 0;
-            width: 50px;
-        }
-        th.extra {
-            border-left: 0;
-            border-right: 0;        
-            width: 40px;
-        }
-        th.rotate > div {
-          transform: 
-            /* Magic Numbers */
-            translate(10px, 31px)
-            /* 45 is really 360 - 45 */
-            rotate(325deg);
-          width: 40px;          
 
-        }   
-        th.rotate > div > span {
-          border-bottom: 1px solid #ccc;
-/*           padding: 5px 10px; */
-        }             
-        
-        td.value {
-            border-right: 1px solid #ddd;
-        }
-        
-        span.cell_value {
-            padding: 10px;            
-        }
-        img.create {
-            float: right;
-        }
-        p.description {
-            width: 600px;
-            padding-bottom: 0px;
-        }
-        p.paginator {
-            background: white url(/static/admin/img/nav-bg.gif) 0 180% repeat-x;
-            color: #666;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
- 
-            overflow: hidden;   
-            
-            font-size: 11px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            line-height: 22px;
-            margin: 0;               
-        }
-    </style>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'dolon/querystring_matrix.css' %}" />
 
 <p class="help description">This table shows the number of non-hidden media items associated with each search term and search engine. Click on the number of items to see a filtered list of those items. Click the <img src="/static/admin/img/icon_addlink.gif"> icon to create a new search query with values pre-populated for that search term and engine.</p>
     <div class="module" id="changelist">
