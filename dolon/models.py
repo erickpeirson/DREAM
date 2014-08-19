@@ -256,102 +256,16 @@ class QueryResultItem(models.Model):
     
     type = models.CharField(max_length=50)
     
-    def save(self, *args, **kwargs):
-        """
-        When a :class:`.QueryResultItem` is created, it should get or create
-        a :class:`.Item`\.
-        """
-
-        params = pickle.loads(self.params)
-        if 'length' in params: length = params['length']
-        else: length = 0
-            
-        if 'size' in params: size = params['size']
-        else: size = 0
-        
-        if 'creator' in params: creator = params['creator']
-        else: creator = ''
-                    
-        logger.debug('creating an Item based on mtype {0}'.format(self.type))
-        
-        ### Images ###
-        if self.type == 'image':
-            i = ImageItem.objects.get_or_create(url=self.url,
-                    defaults = {
-                        'title': self.title,
-                        'creator': params['creator']  }   )[0]
-
-            # Associate thumbnail, image, and context.
-            if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-                print params['thumbnailURL']
-                i.thumbnail = Thumbnail.objects.get_or_create(
-                                    url=params['thumbnailURL'][0]   )[0]
-
-            if len(i.images.all()) == 0 and len(params['files']) > 0:
-                for url in params['files']:
-                    image = Image.objects.get_or_create(url=url)[0]
-                    i.images.add(image)
-            
-#            if i.image is None:
-#                i.image = Image.objects.get_or_create(url=self.url)[0]
-        
-        ### Videos ###
-        elif self.type == 'video':
-            i = VideoItem.objects.get_or_create(url=self.url,
-                    defaults = {
-                        'title': self.title,
-                        'length': length,
-                        'creator': creator  }   )[0]
-                        
-            if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
-                for url in params['thumbnailURL']:
-                    thumb = Thumbnail.objects.get_or_create(url=url)[0]                        
-                    i.thumbnails.add(thumb)
-                    
-            if len(i.videos.all()) == 0 and len(params['files']) > 0:
-                for url in params['files']:
-                    video = Video.objects.get_or_create(url=url)[0]
-                    i.videos.add(video)
-                      
-        ### Audio ###
-        elif self.type == 'audio':
-            i = AudioItem.objects.get_or_create(url=self.url,
-                    defaults = {
-                        'title': self.title,
-                        'length': length,
-                        'creator': creator  }   )[0]     
-                        
-            if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-                i.thumbnail = Thumbnail.objects.get_or_create(
-                                    url=params['thumbnailURL'][0]   )[0]                                           
-                                    
-            if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
-                for url in params['files']:
-                    seg = Audio.objects.get_or_create(url=url)[0]
-                    i.audio_segments.add(seg)
-
-        ### Text ###
-        elif self.type == 'texts':
-            i = TextItem.objects.get_or_create(url=self.url,
-                defaults = {
-                    'title': self.title,
-                    'length': length,
-                    'creator': creator
-                })[0]
-
-            if len(i.original_files.all()) == 0 and len(params['files']) > 0:
-                for url in params['files']:
-                    txt = Text.objects.get_or_create(url=url)[0]
-                    i.original_files.add(txt)
-
-        context  = Context.objects.get_or_create(url=self.contextURL)[0]
-        i.context.add(context)
-        i.save()
-
-        self.item = i
-        
-        # Go ahead and save.
-        super(QueryResultItem, self).save(*args, **kwargs)
+#    def save(self, *args, **kwargs):
+#        """
+#        When a :class:`.QueryResultItem` is created, it should get or create
+#        a :class:`.Item`\.
+#        """
+#        
+#        self.item = create_item(self)   # Moved this to tasks module.
+#        
+#        # Go ahead and save.
+#        super(QueryResultItem, self).save(*args, **kwargs)
 
 class Item(models.Model):
     """
