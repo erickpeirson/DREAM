@@ -150,49 +150,35 @@ def retrieve_context(modeladmin, request, queryset):
     result = spawnRetrieveContexts(queryset)
 retrieve_context.short_description = 'Retrieve content for selected contexts'    
 
-def _mergeImage(queryset):
-    logger.debug('Merging {0} images'.format(len(queryset)))
-    largest = 0
-    image = None
-    
-    largestThumb = 0
-    thumbnail = None
-    
-    # Fake URL and title.
+def _generateURI():
     identifier = str(uuid.uuid1())
     title = 'Merged item {0}'.format(identifier)
     url = 'http://roy.fulton.asu.edu/dolon/mergeditem/{0}'.format(identifier)
-
-    newItem = ImageItem( url = url,
-                         title = title,
-                         type = 'Image'   )
-    newItem.save()
     
-    contexts = set([])
+    return identifier, title, url
+# end _generateURI
+
+def _prepMerge(itemclass, type):
+    identifier, title, url = _generateURI() # Fake URL and title.
+    newItem = itemclass(    url = url,
+                            title = title,
+                            type = type )
+    newItem.save()
+    return newItem
+# end _prepMerge
+
+def _mergeItem(queryset, itemclass, type):
+    """
+    Performs merge operations common to all :class:`.Item` subclasses.
+    """
+    
+    newItem = _prepMerge(itemclass, type)
+    
     for obj in queryset:
-        # If any one Item is approved, they all are.
+        # If any one Item is approved, the new Item is approved.
         if obj.status == 'AP':  
             newItem.status = 'AP'
-            newItem.save()
-        
-        # Inherit any thumbnail.
-        if newItem.thumbnail is None and obj.imageitem.thumbnail is not None:
-            newItem.thumbnail = obj.imageitem.thumbnail
-            newItem.save()
-
-        # Pool all images.
-        for i in obj.imageitem.images.all():
-            newItem.images.add(i)
-        
-#        # The new Item inherits the largest image, if there are any.
-#        if hasattr(obj.imageitem, 'image'):
-#            if obj.imageitem.image.size > largest:
-#                newItem.image = obj.imageitem.image
-#                newItem.height = obj.imageitem.height
-#                newItem.width = obj.imageitem.width
-#                
-#                largest = obj.imageitem.image.size
-#                newItem.save()
+            newItem.save()                
                 
         # Pool all of the contexts.
         for c in obj.context.all():
@@ -210,8 +196,100 @@ def _mergeImage(queryset):
         obj.merged_with = newItem
         obj.hide = True
         obj.save()
+        
+    newItem.save()
+    return newItem
+# end _mergeItem
+
+def _mergeImage(queryset):
+    """
+    Merges multiple :class:`.ImageItem` objects into a single 
+    :class:`.ImageItem`\.
+    """
+    logger.debug('Merging {0} ImageItems.'.format(len(queryset)))
+
+    # General Item merge operations.
+    newItem = _mergeItem(queryset, ImageItem, 'Image')
+
+    # Image-specific operations.
+    for obj in queryset:
+        # Inherit any thumbnail.
+        if newItem.thumbnail is None and obj.imageitem.thumbnail is not None:
+            newItem.thumbnail = obj.imageitem.thumbnail
+            newItem.save()
+
+        # Pool all images.
+        for i in obj.imageitem.images.all():
+            newItem.images.add(i)
+                    
+    newItem.save() 
+# end _mergeImage
+
+def _mergeAudio(queryset):
+    """
+    Merges multiple :class:`.AudioItem` objects into a single 
+    :class:`.AudioItem`\.
+    """
+    logger.debug('Merging {0} AudioItems.'.format(len(queryset)))
     
-    newItem.save()    
+    # General Item merge operations.
+    newItem = _mergeItem(queryset, AudioItem, 'Audio')    
+    
+    # Audio-specific operations.
+    for obj in queryset:
+        # Inherit any thumbnail.
+        if newItem.thumbnail is None and obj.audioitem.thumbnail is not None:
+            newItem.thumbnail = obj.audioitem.thumbnail
+            newItem.save()        
+        
+        # Inherit all audio segments.
+        for i in obj.audioitem.audio_segments.all():
+            newItem.audio_segments.add(i)
+            
+    newItem.save()
+# end _mergeAudio
+
+def _mergeVideo(queryset):
+    """
+    Merges multiple :class:`.VideoItem` objects into a single 
+    :class:`.VideoItem`\.
+    """
+    logger.debug('Merging {0} VideoItems.'.format(len(queryset)))    
+    
+    # General Item merge operations.
+    newItem = _mergeItem(queryset, VideoItem, 'Video')
+
+    # Video-specific operations.
+    for obj in queryset:    
+        # Pool all thumbnails.
+        for i in obj.videoitem.thumbnails.all():
+            newItem.thumbnails.add(i)
+    
+        # Pool all videos.
+        for i in obj.videoitem.videos.all():
+            newItem.videos.add(i)
+    
+    newItem.save()
+# end _mergeVideo
+
+def _mergeText(queryset):
+    """
+    Merges multiple :class:`.TextItem` objects into a single 
+    :class:`.TextItem`\.
+    """
+    logger.debug('Merging {0} TextItems.'.format(len(queryset)))    
+    
+    # General Item merge operations.
+    newItem = _mergeItem(queryset, TextItem, 'Text')
+    
+    # Text-specific operations.
+    for obj in queryset:
+        # Pool all original files.
+        for i in obj.textitem.original_files.all():
+            newItem.original_files.add(i)
+            
+    newItem.save()
+# end _mergeText
 
 def merge(modeladmin, request, queryset):
     """
@@ -238,6 +316,12 @@ def merge(modeladmin, request, queryset):
 
     if thistype == 'image':
         _mergeImage(queryset)
+    elif thistype == 'video':
+        _mergeVideo(queryset)
+    elif thistype == 'audio':
+        _mergeAudio(queryset)
+    elif thistype == 'text':
+        _mergeText(queryset)
     
         
 merge.short_description = 'Merge selected items'

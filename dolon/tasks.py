@@ -87,6 +87,8 @@ def _create_video_item(resultitem):
         for url in params['files']:
             video = Video.objects.get_or_create(url=url)[0]
             i.videos.add(video)
+
+    return i
 # end _create_video_item
 
 def _create_audio_item(resultitem):
@@ -155,7 +157,7 @@ def create_item(resultitem):
     elif resultitem.type == 'texts':
         i = _create_text_item(resultitem)
 
-    context  = Context.objects.get_or_create(url=resultitem.contextURL)[0]
+    context = Context.objects.get_or_create(url=resultitem.contextURL)[0]
     i.context.add(context)
     i.save()
     
