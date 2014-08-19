@@ -356,8 +356,6 @@ class ImageItem(Item):
         
     thumbnail = models.ForeignKey(  'Thumbnail', blank=True, null=True,
                                     related_name='imageitem_thumbnail'   )
-#    image = models.ForeignKey('Image', blank=True, null=True,
-#                                    related_name='imageitem_fullsize'   )
 
     images = models.ManyToManyField('Image', blank=True, null=True)
 
