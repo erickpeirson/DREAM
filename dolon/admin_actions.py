@@ -1,5 +1,6 @@
 import uuid
 from models import *
+from tasks import *
 
 def reset(modeladmin, request, queryset):
     """

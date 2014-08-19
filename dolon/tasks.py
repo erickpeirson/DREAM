@@ -5,8 +5,6 @@ logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname
 logger = logging.getLogger(__name__)
 logger.setLevel('DEBUG')
 
-from BeautifulSoup import BeautifulSoup
-
 from django.core.files import File
 from django.http import HttpRequest
 
@@ -15,15 +13,26 @@ import urllib2
 from urllib2 import HTTPError
 import cPickle as pickle
 
-import json
 import os
 import math
-from unidecode import unidecode
 import warnings
+
+# Parsing
 from BeautifulSoup import BeautifulSoup
+from unidecode import unidecode
+import json
+
+# Time and timezones.
+from datetime import datetime
+from pytz import timezone
+import pytz
+import time
 
 import dolon.search_managers as M
 from dolon.models import *
+from dolon.services import DiffBotManager
+from dream.settings import DIFFBOT_TOKEN, TIME_ZONE
+
 
 from celery import shared_task, group, task, chain
 from celery.exceptions import MaxRetriesExceededError
@@ -165,6 +174,26 @@ def create_item(resultitem):
 
     return i
 
+### Scheduled Tasks ###
+
+@shared_task
+def trigger_diffbot_requests(*args, **kwargs):
+    """
+    Try to perform any pending :class:`.DiffBotRequest`\s.
+    """
+
+    requests = DiffBotRequest.objects.filter(completed=None)
+    
+    logger.debug('Found {0} pending DiffBotRequests'.format(len(requests)))
+    
+    for req in requests:
+        performDiffBotRequest(req)
+        time.sleep(0.5)
+
+    logger.debug('Performed {0} DiffBotRequests'.format(len(requests)))
+    
+    return requests
+
 @shared_task    # Scheduled.
 def trigger_dispatchers(*args, **kwargs):
     """
@@ -225,7 +254,7 @@ def try_retrieve(obj, *args, **kwargs):
     audio = []
     contexts = []
     if hasattr(obj, 'imageitem'):
-        images.append(obj.imageitem.image)
+        images += obj.imageitem.images.all()
         contexts += [ c for c in obj.imageitem.context.all() ]
     elif hasattr(obj, 'videoitem'):
         videos += obj.videoitem.videos.all()
@@ -334,6 +363,8 @@ def reset_monthusage(*args, **kwargs):
     for engine in Engine.objects.all():
         engine.monthusage = 0
         engine.save()
+        
+### End Scheduled Tasks ###
 
 @shared_task(rate_limit="1/s", ignore_result=False, max_retries=0)
 def search(qstring, start, end, manager_name, params, **kwargs):
@@ -724,11 +755,74 @@ def spawnRetrieveContexts(queryset):
     Generates a group of tasks to retrieve contexts.
     """
     
+    # Create retrieval tasks.
     job = group( ( getStoreContext.s(i.url, i.id) ) for i in queryset )
-
     result = job.apply_async(link=readResult.s())
 
-    return result.id, [ r.id for r in result.results ]       
+    # Create DiffBotRequests, and update Contexts.
+    for i in queryset:
+        rq = createDiffBotRequest('article', i.url)
+        i.diffbot_requests.add(rq)
+        i.save()
+
+    return result.id, [ r.id for r in result.results ]    
+# end spawnRetrieveContexts
+    
+def createDiffBotRequest(type, url, opt_params=[]):
+    manager = DiffBotManager()
+    params = manager.prep_request(type, url, opt_params)
+    
+    request = DiffBotRequest(
+                type = type,
+                parameters = params
+                )
+    request.save()
+                
+    return request
+# end createDiffBotRequests    
+
+@shared_task
+def performDiffBotRequest(rq):
+    manager = DiffBotManager(DIFFBOT_TOKEN)
+    
+    this_timezone = timezone(TIME_ZONE)
+    this_datetime = this_timezone.localize(datetime.now())
+    
+    # Note performance attempt.
+    rq.attempted = this_datetime
+    rq.save()
+    
+    try:    # Perform the request, and store the result.
+        result = manager.get(rq.parameters)
+        rq.response = pickle.dumps(result)
+        rq.completed = this_datetime
+        rq.save()
+    except Exception as E: # If something goes wrong, completed will not be set.
+        logger.debug('Uh-oh: {0}'.format(E))
+        return
+
+    # Update context.
+    try:
+        context = rq.requesting_context.all()[0]
+    except IndexError:
+        return
+    
+    dtformat = '%a, %d %b %Y %X GMT'
+    date = this_timezone.localize(
+            datetime.strptime(result['objects'][0]['date'], dtformat)   )
+
+    robject = result['objects'][0]
+    context.publicationDate = date
+    if 'text' in robject:
+        context.text_content = result['objects'][0]['text']
+    if 'author' in robject:
+        context.author = result['objects'][0]['author']
+    if 'title' in robject:
+        context.title = result['objects'][0]['title']
+    if 'language' in robject:
+        context.language = result['objects'][0]['humanLanguage']
+    context.save()
+# end performDiffBotRequest    
 
 @shared_task
 def readResult(*args, **kwargs):

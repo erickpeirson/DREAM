@@ -65,8 +65,6 @@ class QueryEventForm(forms.ModelForm):
 
         return cleaned_data
 
-
-
 ### Inlines ###
 
 class QueryEventInline(admin.TabularInline):
@@ -590,11 +588,19 @@ class ItemAdmin(admin.ModelAdmin):
     
 class ContextAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Context)
-    list_display = ('status', 'url')
+    list_display = ('status', 'diffbot', 'url')
     list_display_links = ('status', 'url')
-    readonly_fields = ('resource', 'title', 'content', 'publicationDate')
-    exclude = ('url',)
+    readonly_fields = ( 'resource', 'title', 'diffbot', 'publicationDate', 
+                        'author', 'language', 'text_content',  )
+    exclude = ('url','diffbot_requests', 'content')
     actions = (retrieve_context,)
+    
+    def diffbot(self, obj):
+        request = obj.diffbot_requests.all()[0]
+        if request.completed is not None:
+            return '<img src="/static/admin/img/icon-yes.gif" />'
+        return '<img src="/static/admin/img/icon-no.gif" />'
+    diffbot.allow_tags = True
     
     def queryset(self, request):
         """
@@ -793,8 +799,13 @@ class VideoAdmin(admin.ModelAdmin):
         source = u'<source src="{0}" />'.format(video.url)#, video.type())
         return pattern.format(source)
 
-            
+class DiffBotRequestAdmin(admin.ModelAdmin):
+    list_display = ['id', 'created', 'attempted', 'completed', 'type']
+
 ### Registration ###
+
+admin.site.register(DiffBotRequest, DiffBotRequestAdmin)
+
 
 admin.site.register(QueryEvent, QueryEventAdmin)
 admin.site.register(QueryString, QueryStringAdmin)
@@ -807,3 +818,4 @@ admin.site.register(Image, ImageAdmin)
 admin.site.register(Audio, AudioAdmin)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(Thumbnail, ThumbnailAdmin)
+

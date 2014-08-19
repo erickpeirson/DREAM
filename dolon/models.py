@@ -617,13 +617,32 @@ class Context(models.Model):
     """
 
     url = models.URLField(max_length=2000, unique=True)
+    
     title = models.CharField(max_length=400, null=True, blank=True)
+    """Page title. Default is set by SearchManager, but updated by DiffBot."""
+    
     content = models.TextField(null=True, blank=True)
+    """Full content of the resource, including HTML, etc."""
     
     publicationDate = models.DateTimeField(blank=True, null=True)
+    """If retrievable. We rely on DiffBot for this."""
     
     tags = models.ManyToManyField(  'Tag', blank=True, null=True,
                                     related_name='tagged_contexts' )
+
+    # There should actually only be one of these, but using an M2M gives some
+    # need flexibility in other places.
+    diffbot_requests = models.ManyToManyField(  
+                        'DiffBotRequest', related_name='requesting_context', 
+                        blank=True, null=True   )
+                            
+    text_content = models.TextField(null=True, blank=True)
+    """Main article or page content, stripped of any HTML."""
+    
+    author = models.CharField(max_length=1000, null=True, blank=True)
+    """Freeform, may include names, e-mail addresses, etc."""
+    
+    language = models.CharField(max_length=100, null=True, blank=True)
 
     def __unicode__(self):
         if self.title is not None:
@@ -665,3 +684,18 @@ class HashTag(models.Model):
     """Optional, entered by researcher if desired."""
     
     
+class DiffBotRequest(models.Model):
+    """
+    A job for the DiffBot!
+    """
+    
+    type = models.CharField(max_length=100)
+    created = models.DateTimeField(auto_now_add=True)
+    attempted = models.DateTimeField(blank=True, null=True)
+    completed = models.DateTimeField(blank=True, null=True)
+    
+    parameters = ListField(default=[''])
+    
+    response = models.TextField(blank=True, null=True)
+
+        
