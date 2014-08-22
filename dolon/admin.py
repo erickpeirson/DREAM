@@ -801,6 +801,7 @@ class VideoAdmin(admin.ModelAdmin):
 
 class DiffBotRequestAdmin(admin.ModelAdmin):
     list_display = ['id', 'created', 'attempted', 'completed', 'type']
+    actions = [performDiffBotRequest]
 
 ### Registration ###
 
