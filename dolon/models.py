@@ -256,102 +256,16 @@ class QueryResultItem(models.Model):
     
     type = models.CharField(max_length=50)
     
-    def save(self, *args, **kwargs):
-        """
-        When a :class:`.QueryResultItem` is created, it should get or create
-        a :class:`.Item`\.
-        """
-
-        params = pickle.loads(self.params)
-        if 'length' in params: length = params['length']
-        else: length = 0
-            
-        if 'size' in params: size = params['size']
-        else: size = 0
-        
-        if 'creator' in params: creator = params['creator']
-        else: creator = ''
-                    
-        logger.debug('creating an Item based on mtype {0}'.format(self.type))
-        
-        ### Images ###
-        if self.type == 'image':
-            i = ImageItem.objects.get_or_create(url=self.url,
-                    defaults = {
-                        'title': self.title,
-                        'creator': params['creator']  }   )[0]
-
-            # Associate thumbnail, image, and context.
-            if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-                print params['thumbnailURL']
-                i.thumbnail = Thumbnail.objects.get_or_create(
-                                    url=params['thumbnailURL'][0]   )[0]
-
-            if len(i.images.all()) == 0 and len(params['files']) > 0:
-                for url in params['files']:
-                    image = Image.objects.get_or_create(url=url)[0]
-                    i.images.add(image)
-            
-#            if i.image is None:
-#                i.image = Image.objects.get_or_create(url=self.url)[0]
-        
-        ### Videos ###
-        elif self.type == 'video':
-            i = VideoItem.objects.get_or_create(url=self.url,
-                    defaults = {
-                        'title': self.title,
-                        'length': length,
-                        'creator': creator  }   )[0]
-                        
-            if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
-                for url in params['thumbnailURL']:
-                    thumb = Thumbnail.objects.get_or_create(url=url)[0]                        
-                    i.thumbnails.add(thumb)
-                    
-            if len(i.videos.all()) == 0 and len(params['files']) > 0:
-                for url in params['files']:
-                    video = Video.objects.get_or_create(url=url)[0]
-                    i.videos.add(video)
-                      
-        ### Audio ###
-        elif self.type == 'audio':
-            i = AudioItem.objects.get_or_create(url=self.url,
-                    defaults = {
-                        'title': self.title,
-                        'length': length,
-                        'creator': creator  }   )[0]     
-                        
-            if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-                i.thumbnail = Thumbnail.objects.get_or_create(
-                                    url=params['thumbnailURL'][0]   )[0]                                           
-                                    
-            if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
-                for url in params['files']:
-                    seg = Audio.objects.get_or_create(url=url)[0]
-                    i.audio_segments.add(seg)
-
-        ### Text ###
-        elif self.type == 'texts':
-            i = TextItem.objects.get_or_create(url=self.url,
-                defaults = {
-                    'title': self.title,
-                    'length': length,
-                    'creator': creator
-                })[0]
-
-            if len(i.original_files.all()) == 0 and len(params['files']) > 0:
-                for url in params['files']:
-                    txt = Text.objects.get_or_create(url=url)[0]
-                    i.original_files.add(txt)
-
-        context  = Context.objects.get_or_create(url=self.contextURL)[0]
-        i.context.add(context)
-        i.save()
-
-        self.item = i
-        
-        # Go ahead and save.
-        super(QueryResultItem, self).save(*args, **kwargs)
+#    def save(self, *args, **kwargs):
+#        """
+#        When a :class:`.QueryResultItem` is created, it should get or create
+#        a :class:`.Item`\.
+#        """
+#        
+#        self.item = create_item(self)   # Moved this to tasks module.
+#        
+#        # Go ahead and save.
+#        super(QueryResultItem, self).save(*args, **kwargs)
 
 class Item(models.Model):
     """
@@ -442,8 +356,6 @@ class ImageItem(Item):
         
     thumbnail = models.ForeignKey(  'Thumbnail', blank=True, null=True,
                                     related_name='imageitem_thumbnail'   )
-#    image = models.ForeignKey('Image', blank=True, null=True,
-#                                    related_name='imageitem_fullsize'   )
 
     images = models.ManyToManyField('Image', blank=True, null=True)
 
@@ -705,13 +617,32 @@ class Context(models.Model):
     """
 
     url = models.URLField(max_length=2000, unique=True)
+    
     title = models.CharField(max_length=400, null=True, blank=True)
+    """Page title. Default is set by SearchManager, but updated by DiffBot."""
+    
     content = models.TextField(null=True, blank=True)
+    """Full content of the resource, including HTML, etc."""
     
     publicationDate = models.DateTimeField(blank=True, null=True)
+    """If retrievable. We rely on DiffBot for this."""
     
     tags = models.ManyToManyField(  'Tag', blank=True, null=True,
                                     related_name='tagged_contexts' )
+
+    # There should actually only be one of these, but using an M2M gives some
+    # need flexibility in other places.
+    diffbot_requests = models.ManyToManyField(  
+                        'DiffBotRequest', related_name='requesting_context', 
+                        blank=True, null=True   )
+                            
+    text_content = models.TextField(null=True, blank=True)
+    """Main article or page content, stripped of any HTML."""
+    
+    author = models.CharField(max_length=1000, null=True, blank=True)
+    """Freeform, may include names, e-mail addresses, etc."""
+    
+    language = models.CharField(max_length=100, null=True, blank=True)
 
     def __unicode__(self):
         if self.title is not None:
@@ -753,3 +684,18 @@ class HashTag(models.Model):
     """Optional, entered by researcher if desired."""
     
     
+class DiffBotRequest(models.Model):
+    """
+    A job for the DiffBot!
+    """
+    
+    type = models.CharField(max_length=100)
+    created = models.DateTimeField(auto_now_add=True)
+    attempted = models.DateTimeField(blank=True, null=True)
+    completed = models.DateTimeField(blank=True, null=True)
+    
+    parameters = ListField(default=[''])
+    
+    response = models.TextField(blank=True, null=True)
+
+        
