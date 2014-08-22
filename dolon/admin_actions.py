@@ -259,3 +259,10 @@ def merge(modeladmin, request, queryset):
     elif thistype == 'text':
         _mergeText(queryset)
 merge.short_description = 'Merge selected items'
+# end merge
+
+def doPerformDiffBotRequest(modeladmin, request, queryset):
+    for obj in queryset:
+        if obj.completed is None:
+            performDiffbotRequest(obj)
+doPerformDiffBotRequest.short_description = 'Perform selected requests'
