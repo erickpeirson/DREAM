@@ -1,4 +1,5 @@
 import urllib2
+from unidecode import unidecode
 import json
 
 class DiffBotManager(object):
@@ -31,9 +32,9 @@ class DiffBotManager(object):
         response = urllib2.urlopen(request)
         
         encoding=response.headers['content-type'].split('charset=')[-1]
-        ucontent = unicode(response.read(), encoding)
+        ucontent = unidecode(response.read(), encoding)
         
-        result = json.loads(ucontent, "ISO-8859-1")
+        result = json.loads(ucontent)#, "ISO-8859-1")
         
         return result
         
