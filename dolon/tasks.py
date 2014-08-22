@@ -822,7 +822,6 @@ def performDiffBotRequest(rq):
     if 'language' in robject:
         context.language = result['objects'][0]['humanLanguage']
     context.save()
-performDiffBotRequest.short_description = 'Perform selected requests'
 # end performDiffBotRequest    
 
 @shared_task
