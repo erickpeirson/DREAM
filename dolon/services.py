@@ -32,8 +32,8 @@ class DiffBotManager(object):
         response = urllib2.urlopen(request)
         
         encoding=response.headers['content-type'].split('charset=')[-1]
-        ucontent = unidecode(response.read(), encoding)
-        
+        ucontent = unidecode(response.read())   #, encoding)
+
         result = json.loads(ucontent)#, "ISO-8859-1")
         
         return result
