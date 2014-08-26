@@ -701,7 +701,9 @@ def getStoreContext(url, contextid):
     try:
         response = urllib2.urlopen(url)
         response_content = response.read()
+        print response_content
     except Exception as exc:
+        print exc
         try:
             getStoreContext.retry(exc=exc)
         except (IOError, HTTPError) as exc:

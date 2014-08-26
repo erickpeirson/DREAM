@@ -622,6 +622,19 @@ class ItemAdmin(admin.ModelAdmin):
     query_events.allow_tags = True
     # end ItemAdmin.query_events
 # end ItemAdmin class
+
+class HiddenAdmin(admin.ModelAdmin):
+    """
+    Not accessible from the admin interface, but individual items are 
+    accessible.
+    """
+    def get_model_perms(self, request):
+        """
+        Return empty perms dict thus hiding the model from admin index.
+        """
+        return {}
+    # end HiddenAdmin.get_model_perms
+# end HiddenAdmin class
     
 class ContextAdmin(HiddenAdmin):
     form = autocomplete_light.modelform_factory(Context)
@@ -704,19 +717,6 @@ class TagAdmin(admin.ModelAdmin):
         return self.readonly_fields        
     # end TagAdmin.get_readonly_fields
 # end TagAdmin class       
-
-class HiddenAdmin(admin.ModelAdmin):
-    """
-    Not accessible from the admin interface, but individual items are 
-    accessible.
-    """
-    def get_model_perms(self, request):
-        """
-        Return empty perms dict thus hiding the model from admin index.
-        """
-        return {}
-    # end HiddenAdmin.get_model_perms
-# end HiddenAdmin class
 
 class ImageAdmin(HiddenAdmin):
     list_display = ('status', 'url')
