@@ -1,7 +1,12 @@
-from datetime import datetime
 from django.contrib.contenttypes.models import ContentType
 from django.core import urlresolvers
 
+# Time and timezones.
+from datetime import datetime
+from pytz import timezone
+import pytz
+import time
+from dream.settings import TIME_ZONE
 
 def get_admin_url(obj):
     """
@@ -56,3 +61,15 @@ def pretty_date(time=False):
     if day_diff < 365:
         return str(day_diff/30) + " months ago"
     return str(day_diff/365) + " years ago"
+    
+def localize_date(datestring, dtformat):
+    """
+    Get a properly localized datetime from a timestring.
+    """
+    
+    this_timezone = timezone(TIME_ZONE)
+    this_datetime = this_timezone.localize(datetime.now())
+    
+    date = this_timezone.localize(
+            datetime.strptime(datestring, dtformat)   )   
+    return date

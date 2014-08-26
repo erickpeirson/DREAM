@@ -3,10 +3,12 @@ from __future__ import absolute_import
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
+logger.setLevel('INFO')
 
 from django.core.files import File
 from django.http import HttpRequest
+from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 
 import tempfile
 import urllib2
@@ -43,7 +45,7 @@ engineManagers = {
 }
 
 def _get_params(resultitem):
-    params = pickle.loads(resultitem.params)
+    params = pickle.loads(str(resultitem.params))
     if 'length' in params: length = params['length']
     else: length = 0
         
@@ -53,16 +55,42 @@ def _get_params(resultitem):
     if 'creator' in params: creator = params['creator']
     else: creator = ''
     
-    return params, length, size, creator
+    if 'date' in params: date = params['date']
+    else:   date = None
+    
+    return params, length, size, creator, date
 # end _get_params
 
-def _create_image_item(resultitem):
-    params, length, size, creator = _get_params(resultitem)
+def _get_default(itemclass, resultitem):
+    params, length, size, creator, date = _get_params(resultitem)
+
+    try:
+        i, created = itemclass.objects.get_or_create(url = resultitem.url,
+                        defaults = {
+                                'title': resultitem.title,
+                                'creator': creator,
+                                'creationDate': date
+                            })
+    # An IntegrityError is raised when an Item with resultitem.url exist, but                            
+    # itemclass is the wrong subtype (e.g. matching item is an AudioItem, but
+    # itemclass is ImageItem).
+    except IntegrityError:
+        # We should bail here. We ought to already know what kind of item we're
+        # working with, since the methods that use _get_default are item-type
+        # specific.
+        raise ValueError('An item exists with that URL, but itemclass is the '+\
+                         'wrong Item subclass.')
+            
+    if itemclass is not ImageItem:  # Images don't have lengths.
+        i.length = length
     
-    i = ImageItem.objects.get_or_create(url=resultitem.url,
-            defaults = {
-                'title': resultitem.title,
-                'creator': params['creator']  }   )[0]
+    return i
+# end _get_default
+
+def _create_image_item(resultitem):
+    params, length, size, creator, date = _get_params(resultitem)
+    
+    i = _get_default(ImageItem, resultitem)
 
     # Associate thumbnail, image, and context.
     if i.thumbnail is None and len(params['thumbnailURL']) > 0:
@@ -79,13 +107,9 @@ def _create_image_item(resultitem):
 # end _create_image_item
 
 def _create_video_item(resultitem):
-    params, length, size, creator = _get_params(resultitem)
+    params, length, size, creator, date = _get_params(resultitem)
     
-    i = VideoItem.objects.get_or_create(url=resultitem.url,
-            defaults = {
-                'title': resultitem.title,
-                'length': length,
-                'creator': creator  }   )[0]
+    i = _get_default(VideoItem, resultitem)
                 
     if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
         for url in params['thumbnailURL']:
@@ -101,13 +125,9 @@ def _create_video_item(resultitem):
 # end _create_video_item
 
 def _create_audio_item(resultitem):
-    params, length, size, creator = _get_params(resultitem)
+    params, length, size, creator, date = _get_params(resultitem)
     
-    i = AudioItem.objects.get_or_create(url=resultitem.url,
-            defaults = {
-                'title': resultitem.title,
-                'length': length,
-                'creator': creator  }   )[0]     
+    i = _get_default(AudioItem, resultitem)    
                 
     if i.thumbnail is None and len(params['thumbnailURL']) > 0:
         i.thumbnail = Thumbnail.objects.get_or_create(
@@ -122,14 +142,9 @@ def _create_audio_item(resultitem):
 # end _create_audio_item
 
 def _create_text_item(resultitem):
-    params, length, size, creator = _get_params(resultitem)
+    params, length, size, creator, date = _get_params(resultitem)
 
-    i = TextItem.objects.get_or_create(url=resultitem.url,
-        defaults = {
-            'title': resultitem.title,
-            'length': length,
-            'creator': creator
-        })[0]
+    i = _get_default(TextItem, resultitem)
 
     if len(i.original_files.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
