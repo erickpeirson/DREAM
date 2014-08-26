@@ -53,7 +53,7 @@ def _get_params(resultitem):
     else: size = 0
     
     if 'creator' in params: creator = params['creator']
-    else: creator = ''
+    else: creator = ''  # Case not tested.
     
     if 'date' in params: date = params['date']
     else:   date = None
@@ -130,7 +130,7 @@ def _create_audio_item(resultitem):
     i = _get_default(AudioItem, resultitem)    
                 
     if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-        i.thumbnail = Thumbnail.objects.get_or_create(
+        i.thumbnail = Thumbnail.objects.get_or_create(  # Case not tested.
                             url=params['thumbnailURL'][0]   )[0]                                           
                             
     if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
@@ -178,7 +178,7 @@ def create_item(resultitem):
         i = _create_video_item(resultitem)
     elif resultitem.type == 'audio':
         i = _create_audio_item(resultitem)
-    elif resultitem.type == 'texts':
+    elif resultitem.type == 'texts':        # Case not tested.
         i = _create_text_item(resultitem)
 
     context = Context.objects.get_or_create(url=resultitem.contextURL)[0]
@@ -232,7 +232,7 @@ def trigger_dispatchers(*args, **kwargs):
     return dispatched
     
 @shared_task    # Scheduled.
-def trigger_retrieve(*args, **kwargs):
+def trigger_retrieve(*args, **kwargs):  # Case not tested.
     """
     Try to retrieve content and contexts for all :class:`.Item` objects that
     are approved (but not already retrieved).
@@ -255,7 +255,7 @@ def trigger_retrieve(*args, **kwargs):
         
     return retrieved
     
-def try_retrieve(obj, *args, **kwargs):
+def try_retrieve(obj, *args, **kwargs): # Case not tested.
     """
     Attempt to retrieve content for an :class:`.Item` instance.
     
@@ -309,11 +309,11 @@ def try_dispatch(queryevent):
     # Calculate remaining daily and monthly usage. If there are no limits, then
     #  set remaining values unreasonably high.
     if engine.daylimit is None:
-        remaining_today = 4000000000000
+        remaining_today = 4000000000000     # Case not tested.
     else:
         remaining_today = engine.daylimit - engine.dayusage
     
-    if engine.monthlimit is None:
+    if engine.monthlimit is None:           # Case not tested.
         remaining_month = 4000000000000
     else:
         remaining_month = engine.monthlimit - engine.monthusage
@@ -322,7 +322,7 @@ def try_dispatch(queryevent):
                                       .format(remaining_today, remaining_month))
 
     # Get the page limit for this engine.
-    if engine.pagelimit is not None:
+    if engine.pagelimit is not None:        # Case not tested.
         pagelimit = engine.pagelimit
     else:
         pagelimit = 400000000000    # Is this high enough?
@@ -334,7 +334,7 @@ def try_dispatch(queryevent):
     end = min(queryevent.rangeEnd, pagelimit*pagesize)
 
     if start >= end:    # Search range out of bounds.
-        logger.debug('Search range out of bounds, aborting.')
+        logger.debug('Search range out of bounds, aborting.') # Case not tested.
         return
 
     # Maximum number of requests.
@@ -352,7 +352,7 @@ def try_dispatch(queryevent):
         
         # Success!
         logging.info('Dispatched QueryEvent {0}.'.format(queryevent.id))
-    else:
+    else:   # Case not tested.
         # Over limits. Hold off until next time.
         logger.debug('Search quota for {0} depleted. Aborting.'.format(engine))
         pass
@@ -411,7 +411,7 @@ def search(qstring, start, end, manager_name, params, **kwargs):
         try:
             result, response = manager.search( params, qstring,
                                                     start=start, end=end )
-        except Exception as exc:
+        except Exception as exc:    # Case not tested.
             try:
                 search.retry(exc=exc)
             except (IOError, HTTPError) as exc:
@@ -446,7 +446,7 @@ def processSearch(searchresult, queryeventid, **kwargs):
         A list of IDs for :class:`.` instances.
     """
 
-    if searchresult == 'ERROR':
+    if searchresult == 'ERROR': # Case not tested.
         qe = QueryEvent.objects.get(pk=queryeventid)
         qe.state = 'ERROR'
         qe.save()
@@ -571,7 +571,7 @@ def getFile(url):
     filename = url.split('/')[-1]
     try:
         response = urllib2.urlopen(url)
-    except Exception as exc:
+    except Exception as exc:    # Case not tested.
         try:
             getFile.retry(exc=exc)
         except (IOError, HTTPError) as exc:
@@ -701,8 +701,8 @@ def getStoreContext(url, contextid):
     try:
         response = urllib2.urlopen(url)
         response_content = response.read()
-        print response_content
-    except Exception as exc:
+
+    except Exception as exc:    # Case not tested.
         print exc
         try:
             getStoreContext.retry(exc=exc)
@@ -815,7 +815,7 @@ def performDiffBotRequest(rq):
         rq.completed = this_datetime
         rq.save()
     except Exception as E: # If something goes wrong, completed will not be set.
-        logger.debug('Uh-oh: {0}'.format(E))
+        logger.debug('Uh-oh: {0}'.format(E))    # Case not tested.
         return
 
     # Update context.
@@ -835,14 +835,14 @@ def performDiffBotRequest(rq):
     if 'author' in robject:
         context.author = result['objects'][0]['author']
     if 'title' in robject:
-        context.title = result['objects'][0]['title']
+        context.title = result['objects'][0]['title']   # Case not tested.
     if 'language' in robject:
         context.language = result['objects'][0]['humanLanguage']
     context.save()
 # end performDiffBotRequest    
 
 @shared_task
-def readResult(*args, **kwargs):
+def readResult(*args, **kwargs):    # Case not tested.
     """
     Reads the result of a task, so as to clear the queue.
     """
@@ -850,7 +850,7 @@ def readResult(*args, **kwargs):
     pass
     
 @shared_task
-def completeQueryEvent(result, queryeventid):
+def completeQueryEvent(result, queryeventid):   # Case not tested.
     queryevent = QueryEvent.objects.get(pk=queryeventid)
     queryevent.state = 'DONE'
     queryevent.save()
@@ -872,7 +872,7 @@ def spawnSearch(queryevent, **kwargs):
         UUID for the Celery search task group.
     """
 
-    if queryevent.dispatched:
+    if queryevent.dispatched:   # Case not tested.
         warnings.warn('QueryEvent {0} has already been dispatched.'
                                                             .format(queryevent))
         return queryevent
