@@ -649,10 +649,10 @@ class ContextAdmin(HiddenAdmin):
         try:
             request = obj.diffbot_requests.all()[0]
             if request.completed is not None:
-                return '<img src="/static/admin/img/icon-yes.gif" />'
-            return '<img src="/static/admin/img/icon-no.gif" />'
+                return '<img src="/dolon/static/admin/img/icon-yes.gif" />'
+            return '<img src="/dolon/static/admin/img/icon-no.gif" />'
         except IndexError:
-            return '<img src="/static/admin/img/icon-no.gif" />'
+            return '<img src="/dolon/static/admin/img/icon-no.gif" />'
     diffbot.allow_tags = True
     # end ContextAdmin.diffbot
     
