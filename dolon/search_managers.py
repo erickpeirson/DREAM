@@ -1,5 +1,6 @@
 from django.core.files import File
 from models import *
+from util import localize_date
 import json
 import urllib2
 import os
@@ -11,7 +12,7 @@ import tweepy
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
+logger.setLevel('INFO')
 
 class MediaTypeException(Exception):
     """
@@ -137,8 +138,9 @@ class InternetArchiveManager(BaseSearchManager):
         description = ''
         for child in root:
             if child.tag == 'publicdate':   # TODO: want other dates?
-                date_published = datetime.strptime(
-                                    child.text, '%Y-%m-%d %H:%M:%S' )
+                date_published = localize_date(child.text, '%Y-%m-%d %H:%M:%S')
+#                date_published = datetime.strptime(
+#                                    child.text, '%Y-%m-%d %H:%M:%S' )
             if child.tag == 'uploader':
                 creator = child.text
             if child.tag == 'description':

@@ -2,12 +2,21 @@ import uuid
 from models import *
 from tasks import *
 
+### QueryEvent actions ###
+
 def reset(modeladmin, request, queryset):
     """
     Resets ``state`` of a :class:`.QueryEvent` and removes linked GroupTask.
     
     If :class:`.QueryEvent` instance is not dispatched, or has not failed or
     erred, nothing happens.
+    
+    Parameters
+    ----------
+    modeladmin : class
+    request : :class:`.HttpRequest`
+    queryset : list
+
     """
     
     for obj in queryset:
@@ -17,6 +26,7 @@ def reset(modeladmin, request, queryset):
             obj.search_task = None
             obj.save()
 reset.short_description = 'Reset selected (failed) query'
+# end reset
 
 def dispatch(modeladmin, request, queryset):
     """
@@ -28,6 +38,9 @@ def dispatch(modeladmin, request, queryset):
     for obj in queryset:
         try_dispatch(obj)
 dispatch.short_description = 'Dispatch selected query'    
+# end dispatch
+
+### Item actions ###
 
 def approve(modeladmin, request, queryset):
     """
@@ -39,6 +52,7 @@ def approve(modeladmin, request, queryset):
         obj.status = 'AP'
         obj.save()
 approve.short_description = 'Approve selected items'
+# end approve
 
 def retrieve_content(modeladmin, request, queryset):
     """
@@ -48,7 +62,8 @@ def retrieve_content(modeladmin, request, queryset):
     for obj in queryset:
         if not obj.retrieved:
             try_retrieve(obj)
-retrieve_content.short_description = 'Retrieve content for selected items'        
+retrieve_content.short_description = 'Retrieve content for selected items'   
+# end retrieve_content     
         
 def reject(modeladmin, request, queryset):
     """
@@ -59,6 +74,7 @@ def reject(modeladmin, request, queryset):
         obj.status = 'RJ'
         obj.save()        
 reject.short_description = 'Reject selected items'        
+# end reject
 
 def pend(modeladmin, request, queryset):
     """
@@ -69,22 +85,7 @@ def pend(modeladmin, request, queryset):
         obj.status = 'PG'
         obj.save()        
 pend.short_description = 'Set selected items to Pending' 
-
-def retrieve_image(modeladmin, request, queryset):
-    """
-    Retrieves fullsize images for all selected :class:`.Image`\s.
-    """
-    
-    result = spawnRetrieveImages(queryset)
-retrieve_image.short_description = 'Retrieve content for selected images'
-    
-def retrieve_context(modeladmin, request, queryset):
-    """
-    Retrieves contexts for all selected :class:`.Context`\s.
-    """
-    
-    result = spawnRetrieveContexts(queryset)
-retrieve_context.short_description = 'Retrieve content for selected contexts'    
+# end pend
 
 def _generateURI():
     identifier = str(uuid.uuid1())
@@ -249,7 +250,6 @@ def merge(modeladmin, request, queryset):
 
         lasttype = str(thistype)
 
-
     if thistype == 'image':
         _mergeImage(queryset)
     elif thistype == 'video':
@@ -261,8 +261,31 @@ def merge(modeladmin, request, queryset):
 merge.short_description = 'Merge selected items'
 # end merge
 
+### Image actions ###
+
+def retrieve_image(modeladmin, request, queryset):
+    """
+    Retrieves fullsize images for all selected :class:`.Image`\s.
+    """
+    
+    result = spawnRetrieveImages(queryset)
+retrieve_image.short_description = 'Retrieve content for selected images'
+# end retrieve_images
+
+### Context actions ###
+    
+def retrieve_context(modeladmin, request, queryset):
+    """
+    Retrieves contexts for all selected :class:`.Context`\s.
+    """
+    
+    result = spawnRetrieveContexts(queryset)
+retrieve_context.short_description = 'Retrieve content for selected contexts'    
+# end retrieve_context
+
 def doPerformDiffBotRequest(modeladmin, request, queryset):
     for obj in queryset:
         if obj.completed is None:
-            performDiffbotRequest(obj)
+            performDiffBotRequest(obj)
 doPerformDiffBotRequest.short_description = 'Perform selected requests'
+# end doPerformDiffBotRequest
