@@ -5,7 +5,7 @@
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static 'dolon/querystring_matrix.css' %}" />
 
-<p class="help description">This table shows the number of non-hidden media items associated with each search term and search engine. Click on the number of items to see a filtered list of those items. Click the <img src="/static/admin/img/icon_addlink.gif"> icon to create a new search query with values pre-populated for that search term and engine.</p>
+<p class="help description">This table shows the number of non-hidden media items associated with each search term and search engine. Click on the number of items to see a filtered list of those items. Click the <img src="/dolon/static/admin/img/icon_addlink.gif"> icon to create a new search query with values pre-populated for that search term and engine.</p>
     <div class="module" id="changelist">
         <div class="results">
             <table class="matrix" id="result_list">
@@ -21,7 +21,7 @@
                     <td>{{val.0}}</td>
                     {% for v in val.1 %}
                     <td class="value">
-                        <span class="cell_value"><a href="{{v.0}}">{{ v.1 }}</a></span><a href="/admin/dolon/queryevent/add/?engine={{ v.2 }}&querystring={{ v.3 }}"><img class="create" src="/static/admin/img/icon_addlink.gif"></a>
+                        <span class="cell_value"><a href="/dolon{{v.0}}">{{ v.1 }}</a></span><a href="/dolon/admin/dolon/queryevent/add/?engine={{ v.2 }}&querystring={{ v.3 }}"><img class="create" src="/dolon/static/admin/img/icon_addlink.gif"></a>
                     </td>
                     {% endfor %}
                 </tr>
