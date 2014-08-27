@@ -94,7 +94,6 @@ def _create_image_item(resultitem):
 
     # Associate thumbnail, image, and context.
     if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-        print params['thumbnailURL']
         i.thumbnail = Thumbnail.objects.get_or_create(
                             url=params['thumbnailURL'][0]   )[0]
 
@@ -703,7 +702,6 @@ def getStoreContext(url, contextid):
         response_content = response.read()
 
     except Exception as exc:    # Case not tested.
-        print exc
         try:
             getStoreContext.retry(exc=exc)
         except (IOError, HTTPError) as exc:

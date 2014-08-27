@@ -463,27 +463,27 @@ class ItemAdmin(admin.ModelAdmin):
         Get an icon according to mime type.
         """
         known_types = {
-            'image/png':        '/media/static/png-by-Hopstarter.png',
-            'image/jpeg':       '/media/static/jpeg-by-Hopstarter.png',
-            'image/gif':        '/media/static/gif-by-Hopstarter.png',
-            'image/tiff':       '/media/static/tiff-by-Hopstarter.png',
-            'image/bmp':        '/media/static/bmp-by-Hopstarter.png',
-            'audio/flac':       '/media/static/flac-by-Hopstarter.png',
-            'audio/mpeg':       '/media/static/mp3-by-Hopstarter.png',
-            'audio/wav':        '/media/static/wav-by-Hopstarter.png',
-            'audio/aiff':       '/media/static/aiff-by-Hopstarter.png',
-            'video/mpeg':       '/media/static/mpeg-by-Hopstarter.png',
-            'video/avi':        '/media/static/avi-by-Hopstarter.png',
-            'video/x-ms-wmv':   '/media/static/wmv-by-Hopstarter.png',
-            'video/3gpp':       '/media/static/3gp-by-Hopstarter.png',
-            'video/quicktime':  '/media/static/mov-by-Hopstarter.png',
+            'image/png':        '/dolon/media/static/png-by-Hopstarter.png',
+            'image/jpeg':       '/dolon/media/static/jpeg-by-Hopstarter.png',
+            'image/gif':        '/dolon/media/static/gif-by-Hopstarter.png',
+            'image/tiff':       '/dolon/media/static/tiff-by-Hopstarter.png',
+            'image/bmp':        '/dolon/media/static/bmp-by-Hopstarter.png',
+            'audio/flac':       '/dolon/media/static/flac-by-Hopstarter.png',
+            'audio/mpeg':       '/dolon/media/static/mp3-by-Hopstarter.png',
+            'audio/wav':        '/dolon/media/static/wav-by-Hopstarter.png',
+            'audio/aiff':       '/dolon/media/static/aiff-by-Hopstarter.png',
+            'video/mpeg':       '/dolon/media/static/mpeg-by-Hopstarter.png',
+            'video/avi':        '/dolon/media/static/avi-by-Hopstarter.png',
+            'video/x-ms-wmv':   '/dolon/media/static/wmv-by-Hopstarter.png',
+            'video/3gpp':       '/dolon/media/static/3gp-by-Hopstarter.png',
+            'video/quicktime':  '/dolon/media/static/mov-by-Hopstarter.png',
         }
         
         alt_types = {
-            'image':        '/media/static/jpeg-by-Hopstarter.png',
-            'audio':        '/media/static/audio-by-Hopstarter.png',
-            'video':        '/media/static/video-by-Hopstarter.png',
-            'text':         '/media/static/text-by-Hopstarter.png',
+            'image':        '/dolon/media/static/jpeg-by-Hopstarter.png',
+            'audio':        '/dolon/media/static/audio-by-Hopstarter.png',
+            'video':        '/dolon/media/static/video-by-Hopstarter.png',
+            'text':         '/dolon/media/static/text-by-Hopstarter.png',
         }
         
         pattern = u'<img src="{0}" height="{1}" />'
@@ -502,13 +502,13 @@ class ItemAdmin(admin.ModelAdmin):
         """
         pattern = u'<img src="{0}" height="{1}" />'
         if type == 'Audio':
-            iconpath = u'/media/static/audio-by-Hopstarter.png'
+            iconpath = u'/dolon/media/static/audio-by-Hopstarter.png'
         elif type == 'Video':
-            iconpath = u'/media/static/video-by-Hopstarter.png'
+            iconpath = u'/dolon/media/static/video-by-Hopstarter.png'
         elif type == 'Image':
-            iconpath = u'/media/static/jpeg-by-Hopstarter.png'
+            iconpath = u'/dolon/media/static/jpeg-by-Hopstarter.png'
         elif type == 'Text':
-            iconpath = u'/media/static/text-by-Hopstarter.png'
+            iconpath = u'/dolon/media/static/text-by-Hopstarter.png'
         else:
             return None
         return pattern.format(iconpath, 50)
@@ -533,7 +533,7 @@ class ItemAdmin(admin.ModelAdmin):
             fullsize_url = get_admin_url(obj)
         else:
             fullsize_url = '#'
-        return pattern.format(fullsize_url, u'/media/static/file-by-Gurato.png')
+        return pattern.format(fullsize_url, u'/dolon/media/static/file-by-Gurato.png')
     # end ItemAdmin._format_thumb        
         
     def _format_embed(self, videos):
