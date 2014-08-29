@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.conf.urls import patterns, url
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 
 
 import autocomplete_light
@@ -10,6 +10,9 @@ from models import *
 from util import *
 from tasks import *
 from admin_actions import *
+from oauth_managers import TwitterOAuthManager
+from dream import settings
+
 import uuid
 
 from django.db.models.signals import pre_delete
@@ -18,7 +21,7 @@ from django.dispatch import receiver
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel('INFO')
+logger.setLevel('DEBUG')
 
 iconpath = "/media/static/"
 
@@ -68,6 +71,8 @@ class QueryEventForm(forms.ModelForm):
         return cleaned_data
     # end QueryEventForm.clean
 # end QueryEventForm class
+
+    
 
 ### Inlines ###
 
@@ -189,7 +194,7 @@ class QueryStringAdmin(admin.ModelAdmin):
 class QueryEventAdmin(admin.ModelAdmin):
     form = QueryEventForm
     
-    list_display = ('id', 'querystring', 'datetime', 'range', 
+    list_display = ('id', 'querystring', 'created', 'range', 
                     'dispatched', 'search_status', 'results')
     list_display_links = ('querystring',)
     actions = [dispatch, reset]
@@ -211,6 +216,9 @@ class QueryEventAdmin(admin.ModelAdmin):
                 'fields': ('tag',),
             }),            
         )
+        
+    def created(self, obj):
+        return obj.datetime
     
     def result_sets(self, obj):
         """
@@ -854,6 +862,80 @@ class DiffBotRequestAdmin(admin.ModelAdmin):
     actions = [doPerformDiffBotRequest]
 # end DiffBotRequestAdmin class
 
+
+class OAuthAccessTokenAdmin(admin.ModelAdmin):
+    list_display = [    'screen_name', 'platform', 'user_id', 'access_verified',
+                        'created'   ]
+    
+    def access_verified(self, obj):
+        if obj.oauth_access_token is not None:
+            return '<img src="{0}admin/img/icon-yes.gif" />'.format(settings.STATIC_URL)
+        return '<img src="{0}admin/img/icon-no.gif" />'.format(settings.STATIC_URL)
+    access_verified.allow_tags = True
+    
+    def get_urls(self):
+        urls = super(OAuthAccessTokenAdmin, self).get_urls()
+        my_urls = patterns('',
+            (r'^callback/(?P<platform>[a-zA-Z]+)/$', self.admin_site.admin_view(self.callback)),
+        )
+        return my_urls + urls
+    # end OAuthAccessTokenAdmin.get_urls
+        
+    def callback(self, request, platform):
+        """
+        Receives verifier from OAuth service, and gets an access token.
+        """
+        if platform == 'Twitter':
+            manager = TwitterOAuthManager(
+                        consumer_key=settings.TWITTER_KEY,
+                        consumer_secret=settings.TWITTER_SECRET
+                        )        
+            verifier = request.GET.get('oauth_verifier')
+            token = request.GET.get('oauth_token')
+            _ptoken_id = manager.get_access_token(verifier, token)
+            ptoken = OAuthAccessToken.objects.get(pk=_ptoken_id)
+            logger.debug(ptoken)
+            return redirect(get_admin_url(ptoken))
+    # end OAuthAccessTokenAdmin.callback
+    
+    def save_model(self, request, obj, form, change):
+        pass
+        
+    def response_add(self, request, obj, post_url_continue=None):
+        if obj.platform == 'Twitter':
+            callback_url = 'http://{0}/admin/dolon/oauthaccesstoken/callback/{1}/'.format(request.get_host(), obj.platform)        
+            logger.debug(callback_url)
+            manager = TwitterOAuthManager(
+                        consumer_key=settings.TWITTER_KEY,
+                        consumer_secret=settings.TWITTER_SECRET,
+                        callback_url = callback_url
+                        )
+            redirect_url, ptoken_id = manager.get_access_url(callback_url)
+                        
+            return redirect(redirect_url) 
+                
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        """
+        
+        exclude = [     'oauth_token_secret', 'oauth_access_token_secret', 
+                        'oauth_token', 'oauth_verified', 'oauth_access_token', 
+                        'oauth_verifier'    ]
+        if obj is None:
+            self.exclude = exclude + [ 'user_id', 'screen_name', 
+                                       'access_verified', 'creator', 'created' ]
+            self.readonly_fields = []
+        else: 
+            self.readonly_fields = [ 'platform',  'user_id', 'screen_name', 
+                                     'access_verified', 'creator', 'created', ]
+            self.exclude = exclude
+
+        form = super(OAuthAccessTokenAdmin, self).get_form(request, obj, **kwargs)
+        
+        return form
+# end OAuthAccessTokenAdmin class
+        
+
 ### Registration ###
 
 admin.site.register(DiffBotRequest, DiffBotRequestAdmin)
@@ -869,3 +951,4 @@ admin.site.register(Image, ImageAdmin)
 admin.site.register(Audio, AudioAdmin)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(Thumbnail, ThumbnailAdmin)
+admin.site.register(OAuthAccessToken, OAuthAccessTokenAdmin)

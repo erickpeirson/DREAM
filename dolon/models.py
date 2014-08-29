@@ -213,11 +213,9 @@ class QueryEvent(models.Model):
         
         if self.search_task is not None:
             state = self.search_task.state()
+            self.state = state
+            self.save()
             return state
-            if self.state not in ['ERROR','FAILED','DONE']:
-                self.state = state
-                self.save()
-            return self.state
         return 'PENDING'
 
     def thumbnail_status(self):
@@ -690,4 +688,31 @@ class DiffBotRequest(models.Model):
     
     response = models.TextField(blank=True, null=True)
 
-        
+
+class OAuthAccessToken(models.Model):
+    """
+    
+    """
+    
+    platforms = (
+        ('Twitter', 'Twitter'),
+    )
+    
+    created = models.DateTimeField(auto_now_add=True)
+    
+    oauth_token = models.CharField(max_length=100)
+    oauth_token_secret = models.CharField(max_length=100)
+    
+    oauth_verifier = models.CharField(max_length=100, blank=True, null=True)
+    oauth_access_token = models.CharField(max_length=100, blank=True, null=True)
+    oauth_access_token_secret = models.CharField(max_length=100, blank=True, null=True)
+    
+    
+    user_id = models.CharField(max_length=50, blank=True, null=True)
+    screen_name = models.CharField(max_length=100, blank=True, null=True)
+    
+    creator = models.ForeignKey(User, blank=True, null=True)
+    
+    platform = models.CharField(max_length=100, choices=platforms)
+    
+                    
