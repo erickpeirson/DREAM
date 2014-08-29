@@ -827,7 +827,8 @@ def performDiffBotRequest(rq):
             datetime.strptime(result['objects'][0]['date'], dtformat)   )
 
     robject = result['objects'][0]
-    context.publicationDate = date
+    if context.publicationDate is None:
+        context.publicationDate = date
     if 'text' in robject:
         context.text_content = result['objects'][0]['text']
     if 'author' in robject:
