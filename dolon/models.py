@@ -213,6 +213,7 @@ class QueryEvent(models.Model):
         
         if self.search_task is not None:
             state = self.search_task.state()
+            return state
             if self.state not in ['ERROR','FAILED','DONE']:
                 self.state = state
                 self.save()
@@ -415,21 +416,12 @@ class GroupTask(models.Model):
     dispatched = models.DateTimeField(auto_now_add=True)
     
     def state(self):
-        subtasks = [ AsyncResult(s) for s in self.subtask_ids ]
-        result = TaskSetResult(self.task_id, subtasks)
-
-        if result.ready():
-            r = result.get()[0]
-            if r == 'ERROR':
-                return r
-            elif result.successful():
-                return 'DONE'
-            elif result.failed():
-                return 'FAILED'
-        elif result.waiting():
-            return 'RUNNING'
-        else:
-            return 'PENDING'
+        result = AsyncResult(self.task_id)
+        if not result.ready():
+            return result.state
+        if result.get() == 'ERROR':
+            return 'FAILED'
+        return result.state
 
 class Thumbnail(models.Model):
     """

@@ -381,7 +381,7 @@ def reset_monthusage(*args, **kwargs):
 ### End Scheduled Tasks ###
 
 @shared_task(rate_limit="1/s", ignore_result=False, max_retries=0)
-def search(qstring, start, end, manager_name, params, **kwargs):
+def search(queryevent_id, manager_name, **kwargs):
     """
     Perform a search for ``string`` using a provided ``manager`` instance.
     
@@ -408,8 +408,7 @@ def search(qstring, start, end, manager_name, params, **kwargs):
     if not kwargs.get('testing', False):
         manager = getattr(M, manager_name)()
         try:
-            result, response = manager.search( params, qstring,
-                                                    start=start, end=end )
+            results = manager.search( queryevent_id )
         except Exception as exc:    # Case not tested.
             try:
                 search.retry(exc=exc)
@@ -424,10 +423,10 @@ def search(qstring, start, end, manager_name, params, **kwargs):
         with open('./dolon/testdata/searchresponse.pickle', 'r') as f:
             response = pickle.load(f)
         
-    return result, response
+    return results
     
 @shared_task
-def processSearch(searchresult, queryeventid, **kwargs):
+def processSearch(searchresults, queryeventid, **kwargs):
     """
     Create a :class:`.QueryResult` and a set of :class:`.Item` from a
     search result.
@@ -444,54 +443,57 @@ def processSearch(searchresult, queryeventid, **kwargs):
     queryItems : list
         A list of IDs for :class:`.` instances.
     """
-
-    if searchresult == 'ERROR': # Case not tested.
-        qe = QueryEvent.objects.get(pk=queryeventid)
-        qe.state = 'ERROR'
-        qe.save()
-        return 'ERROR'
-
-    result, response = searchresult
     
-    queryResult = QueryResult(  rangeStart=result['start'],
-                                rangeEnd=result['end'],
-                                result=response )
-    queryResult.save()
+    if searchresults == 'ERROR': # Case not tested.
+        return 'ERROR'
+    
+    results = []
+    for searchresult in searchresults:
 
-    queryItems = []
-    for item in result['items']:
-        queryItem = QueryResultItem(
-                        url = item['url'],
-                        title = unidecode(item['title']),
-                        params = pickle.dumps(item),
-                        contextURL = item['contextURL'],
-                        type = item['type']
-                    )
-        queryItem.save()
-        queryItem.item = create_item(queryItem)
-        queryItem.save()
+
+        result, response = searchresult
         
-        queryResult.resultitems.add(queryItem)
-        queryItems.append(queryItem.id)
+        queryResult = QueryResult(  rangeStart=result['start'],
+                                    rangeEnd=result['end'],
+                                    result=response )
+        queryResult.save()
 
-    queryResult.save()
+        queryItems = []
+        for item in result['items']:
+            queryItem = QueryResultItem(
+                            url = item['url'],
+                            title = unidecode(item['title']),
+                            params = pickle.dumps(item),
+                            contextURL = item['contextURL'],
+                            type = item['type']
+                        )
+            queryItem.save()
+            queryItem.item = create_item(queryItem)
+            queryItem.save()
+            
+            queryResult.resultitems.add(queryItem)
+            queryItems.append(queryItem.id)
 
-    if not kwargs.get('testing', False):
-        queryevent = QueryEvent.objects.get(id=queryeventid)
-        queryevent.queryresults.add(queryResult)
-        queryevent.save()
-        
-    # Attach event to items.
-    for item in queryItems:
-        qi = QueryResultItem.objects.get(id=item)
-        i = Item.objects.get(id=qi.item.id)
-        i.events.add(queryevent)
-        i.save()       
+        queryResult.save()
 
-    return queryResult.id, queryItems   
+        if not kwargs.get('testing', False):
+            queryevent = QueryEvent.objects.get(id=queryeventid)
+            queryevent.queryresults.add(queryResult)
+            queryevent.save()
+            
+        # Attach event to items.
+        for item in queryItems:
+            qi = QueryResultItem.objects.get(id=item)
+            i = Item.objects.get(id=qi.item.id)
+            i.events.add(queryevent)
+            i.save()      
+         
+        results.append((queryResult.id, queryItems))
+
+    return results
     
 @shared_task
-def spawnThumbnails(processresult, queryeventid, **kwargs):
+def spawnThumbnails(processresults, queryeventid, **kwargs):
     """
     Dispatch tasks to retrieve and store thumbnails. Updates the corresponding
     :class:`.QueryEvent` `thumbnail_task` property with task id.
@@ -502,24 +504,28 @@ def spawnThumbnails(processresult, queryeventid, **kwargs):
         Output from :func:`.processSearch`
     """
     
-    if processresult == 'ERROR':
+    if processresults == 'ERROR':
+        qe = QueryEvent.objects.get(pk=queryeventid)
+        qe.state = 'ERROR'
+        qe.save()
         return 'ERROR'
     
-    queryresultid, queryitemsid = processresult
-    logger.debug("{0}, {1}".format(queryresultid, queryitemsid))
-    queryresult = QueryResult.objects.get(id=queryresultid)
-    queryitems = [ QueryResultItem.objects.get(id=id) for id in queryitemsid ]
-    
-    logger.debug('spawnThumbnails: creating jobs')    
-
     thumbs = []
-    for qi in queryitems:
-        if hasattr(qi.item, 'audioitem'):
-            thumbs.append(qi.item.audioitem.thumbnail)            
-        elif hasattr(qi.item, 'imageitem'):
-            thumbs.append(qi.item.imageitem.thumbnail)
-        elif hasattr(qi.item, 'videoitem'):
-            thumbs += qi.item.videoitem.thumbnails.all()
+    for processresult in processresults:
+        queryresultid, queryitemsid = processresult
+        logger.debug("{0}, {1}".format(queryresultid, queryitemsid))
+        queryresult = QueryResult.objects.get(id=queryresultid)
+        queryitems = [ QueryResultItem.objects.get(id=id) for id in queryitemsid ]
+    
+        logger.debug('spawnThumbnails: creating jobs')    
+
+        for qi in queryitems:
+            if hasattr(qi.item, 'audioitem'):
+                thumbs.append(qi.item.audioitem.thumbnail)            
+            elif hasattr(qi.item, 'imageitem'):
+                thumbs.append(qi.item.imageitem.thumbnail)
+            elif hasattr(qi.item, 'videoitem'):
+                thumbs += qi.item.videoitem.thumbnails.all()
 
     job = group( ( getFile.s(thumb.url) 
                     | storeThumbnail.s(thumb.id) 
@@ -722,9 +728,9 @@ def getStoreContext(url, contextid):
 def dispatchQueryEvent(queryevent_id):
     queryevent = QueryEvent.objects.get(pk=queryevent_id)
     
-    task_id, subtask_ids = spawnSearch(queryevent)
+    task_id = spawnSearch(queryevent)
     task = GroupTask(   task_id=task_id,
-                        subtask_ids=subtask_ids )
+                        subtask_ids=[''] )
     task.save()
     queryevent.search_task = task
     queryevent.dispatched = True
@@ -876,15 +882,11 @@ def spawnSearch(queryevent, **kwargs):
                                                             .format(queryevent))
         return queryevent
 
-    qstring = queryevent.querystring.querystring
+    logger.debug('QueryEvent {0}, using Engine {1}'
+                                         .format(queryevent, queryevent.engine))
+                                         
     start = queryevent.rangeStart
-    end = queryevent.rangeEnd
-    engine = engineManagers[queryevent.engine.manager]()
-
-    logger.debug('QueryEvent {0}, term {1}'.format(queryevent.id, qstring)    +\
-        ' {0}-{1}, using Engine: {2}'.format(start, end, engine.name))
-
-    params = [ p for p in queryevent.engine.parameters ]
+    end = queryevent.rangeEnd                                         
     
     # Dispatch a group of search chains to Celery, divided into 10-item pages.
     #
@@ -899,11 +901,12 @@ def spawnSearch(queryevent, **kwargs):
     #  the resulting objects to it.
     logger.debug('creating jobs for QueryEvent {0}'.format(queryevent.id))
 
-    job = group(  ( search.s(qstring, s, min(s+9, end), 
-                        queryevent.engine.manager, params, **kwargs) 
+    job = chain( search.s(   queryevent.id, 
+                                queryevent.engine.manager, 
+                                **kwargs   )
                     | processSearch.s(queryevent.id, **kwargs) 
                     | spawnThumbnails.s(queryevent.id, **kwargs)
-                    ) for s in xrange(start, end+1, 10) )
+                )
                     
 
     logger.debug('dispatching jobs for QueryEvent {0}'.format(queryevent.id))
@@ -911,4 +914,4 @@ def spawnSearch(queryevent, **kwargs):
     
     logger.debug('jobs dispatched for QueryEvent {0}'.format(queryevent.id))
     
-    return result.id, [ r.id for r in result.results ]
+    return result.id

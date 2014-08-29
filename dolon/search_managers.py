@@ -12,7 +12,7 @@ import tweepy
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-logger.setLevel('INFO')
+logger.setLevel('DEBUG')
 
 class MediaTypeException(Exception):
     """
@@ -56,33 +56,52 @@ class InternetArchiveManager(BaseSearchManager):
     video_formats = ['mp4', 'ogv', 'avi', 'mov']
     text_formats = ['pdf', 'xml', 'html', 'xhtml', 'txt', 'epub']
     
-    def search(self, params, query, start=1, end=10):
+    def search(self, queryevent_id):
         """
         Perform a search of the Internet Archive.
         """
-        rows = (end - start) + 1
-        start = max(start-1,0) # IA starts at 0.
         
-        logger.debug('search for {0}, start: {1}, end: {2}, rows: {3}'
-                                            .format(query, start, end, rows))
+        try:
+            queryevent = QueryEvent.objects.get(pk=queryevent_id)
 
-        params += [ "q={0}".format(urllib2.quote(query)),
-                    "rows={0}".format(rows),
-                    "start={0}".format(start),                    
-                    "indent=yes",
-                    "output=json"   ]
-                    
-        request = self.endpoint + "&".join(params)
-        logger.debug('request: {0}'.format(request))
-        
-        response = urllib2.urlopen(request)
-        
-        rcontent = response.read()
-        if type(rcontent) is unicode:
-            rcontent = unidecode(rcontent)
+            query = queryevent.querystring.querystring
+            _params = [ p for p in queryevent.engine.parameters ]
+            _start = queryevent.rangeStart
+            _end = queryevent.rangeEnd
 
+            pagesize = ( queryevent.engine.pagesize or 10 )
+            
+            results = []
+            for i in xrange(_start, _end, pagesize):
+                start = i
+                end = min(start + pagesize - 1, _end)
 
-        return self._handleResponse(rcontent)
+                rows = (end - start) + 1
+                start = max(start-1,0) # IA starts at 0.
+                
+                logger.debug('search for {0}, start: {1}, end: {2}, rows: {3}'
+                                                    .format(query, start, end, rows))
+
+                params = _params + [ "q={0}".format(urllib2.quote(query)),
+                                     "rows={0}".format(rows),
+                                     "start={0}".format(start),                    
+                                     "indent=yes",
+                                     "output=json"   ]
+                            
+                request = self.endpoint + "&".join(params)
+                logger.debug('request: {0}'.format(request))
+                
+                response = urllib2.urlopen(request)
+                
+                rcontent = response.read()
+                if type(rcontent) is unicode:
+                    rcontent = unidecode(rcontent)
+
+                results.append(self._handleResponse(rcontent))
+        except Exception as E:
+            logger.debug(E)
+            return 'ERROR'
+        return results
     
     def _parseFilemeta(self, baseurl, filemeta_content, mtype):
         # e.g. see http://ia600309.us.archive.org/31/items/Insight_101214/Insight_101214_files.xml
@@ -252,7 +271,7 @@ class GoogleImageSearchManager(BaseSearchManager):
     endpoint = "https://www.googleapis.com/customsearch/v1?"
     name = 'Google'
 
-    def search(self, params, query, start=1, end=10):
+    def search(self, queryevent_id): #params, query, start=1, end=10):
         """
         Performs an image search for ``query`` via the Google Custom Search API.
 
@@ -271,19 +290,37 @@ class GoogleImageSearchManager(BaseSearchManager):
             JSON response.
         """
         
-        logger.debug('params: {0}'.format(params))
-        
-        params += [ "q={0}".format(urllib2.quote(query)),
-                    "start={0}".format(start),
-                    "num={0}".format((end - start) + 1),
-                    "searchType=image"  ]
+        try:
+            queryevent = QueryEvent.objects.get(pk=queryevent_id)
+            
+            query = queryevent.querystring.querystring
+            _params = [ p for p in queryevent.engine.parameters ]
+            _start = queryevent.rangeStart
+            _end = queryevent.rangeEnd
+            
+            logger.debug('params: {0}'.format(_params))
+            
+            pagesize = ( queryevent.engine.pagesize or 10 )
+            
+            results = []
+            for i in xrange(_start, _end, pagesize):
+                start = i
+                end = min(start + pagesize - 1, _end)
+                
+                params = _params + [ "q={0}".format(urllib2.quote(query)),
+                                     "start={0}".format(start),
+                                     "num={0}".format((end - start) + 1),
+                                     "searchType=image"  ]
 
-        request = self.endpoint + "&".join(params)
-        logger.debug('request: {0}'.format(request))
-        
-        response = urllib2.urlopen(request)
-        
-        return self._handleResponse(response.read())
+                request = self.endpoint + "&".join(params)
+                logger.debug('request: {0}'.format(request))
+                
+                response = urllib2.urlopen(request)
+                results.append(self._handleResponse(response.read()))
+        except Exception as E:
+            logger.debug(E)
+            return 'ERROR'
+        return results
 
     def _handleResponse(self, response):
         """
