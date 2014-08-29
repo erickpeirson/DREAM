@@ -62,7 +62,7 @@ media/audio/*
 media/videos/*
 media/texts/*
 
-celeryconfig.py
-config.py
-celery.py
-settings.py
+dream/celeryconfig.py
+dream/config.py
+dream/celery.py
+dream/settings.py
