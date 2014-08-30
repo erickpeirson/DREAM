@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel('INFO')
+logger.setLevel('DEBUG')
 
 from django.core.files import File
 from django.http import HttpRequest
@@ -102,7 +102,7 @@ def _create_image_item(resultitem):
             image = Image.objects.get_or_create(url=url)[0]
             i.images.add(image)
 
-    return i
+    return i, params
 # end _create_image_item
 
 def _create_video_item(resultitem):
@@ -120,7 +120,7 @@ def _create_video_item(resultitem):
             video = Video.objects.get_or_create(url=url)[0]
             i.videos.add(video)
 
-    return i
+    return i, params
 # end _create_video_item
 
 def _create_audio_item(resultitem):
@@ -137,7 +137,7 @@ def _create_audio_item(resultitem):
             seg = Audio.objects.get_or_create(url=url)[0]
             i.audio_segments.add(seg)
             
-    return i
+    return i, params
 # end _create_audio_item
 
 def _create_text_item(resultitem):
@@ -147,10 +147,11 @@ def _create_text_item(resultitem):
 
     if len(i.original_files.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
-            txt = Text.objects.get_or_create(url=url)[0]
-            i.original_files.add(txt)
+            txt = Text.objects.get(url=url)
             
-    return i
+            i.original_files.add(txt)
+
+    return i, params
 # end _create_text_item
 
 def create_item(resultitem):
@@ -172,15 +173,27 @@ def create_item(resultitem):
                                            .format(resultitem, resultitem.type))
     
     if resultitem.type == 'image':
-        i = _create_image_item(resultitem)
+        i, params = _create_image_item(resultitem)
     elif resultitem.type == 'video':
-        i = _create_video_item(resultitem)
+        i, params = _create_video_item(resultitem)
     elif resultitem.type == 'audio':
-        i = _create_audio_item(resultitem)
+        i, params = _create_audio_item(resultitem)
     elif resultitem.type == 'texts':        # Case not tested.
-        i = _create_text_item(resultitem)
+        i, params = _create_text_item(resultitem)
 
-    context = Context.objects.get_or_create(url=resultitem.contextURL)[0]
+    if 'retrieved' in params:
+        i.retrieved = params['retrieved']
+    if 'contents' in params:
+        i.contents = params['contents']
+    if 'creationDate' in params:
+        i.creationDate = params['creationDate']
+
+    context, created = Context.objects.get_or_create(url=resultitem.contextURL)
+    if 'context' in params:
+        for key, value in params['context'].iteritems():
+            setattr(context, key, value)
+        context.save()
+
     i.context.add(context)
     i.save()
     
@@ -449,8 +462,6 @@ def processSearch(searchresults, queryeventid, **kwargs):
     
     results = []
     for searchresult in searchresults:
-
-
         result, response = searchresult
         
         queryResult = QueryResult(  rangeStart=result['start'],
@@ -476,7 +487,7 @@ def processSearch(searchresults, queryeventid, **kwargs):
 
         queryResult.save()
 
-        if not kwargs.get('testing', False):
+        if not kwargs.get('testing', False):    # TODO: get rid of this.
             queryevent = QueryEvent.objects.get(id=queryeventid)
             queryevent.queryresults.add(queryResult)
             queryevent.save()
@@ -777,14 +788,15 @@ def spawnRetrieveContexts(queryset):
     """
     
     # Create retrieval tasks.
-    job = group( ( getStoreContext.s(i.url, i.id) ) for i in queryset )
+    job = group( ( getStoreContext.s(i.url, i.id) ) for i in queryset if not i.retrieved )
     result = job.apply_async(link=readResult.s())
 
     # Create DiffBotRequests, and update Contexts.
     for i in queryset:
-        rq = createDiffBotRequest('article', i.url)
-        i.diffbot_requests.add(rq)
-        i.save()
+        if i.use_diffbot:
+            rq = createDiffBotRequest('article', i.url)
+            i.diffbot_requests.add(rq)
+            i.save()
 
     return result.id, [ r.id for r in result.results ]    
 # end spawnRetrieveContexts

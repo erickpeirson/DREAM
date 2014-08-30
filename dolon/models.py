@@ -11,7 +11,7 @@ add_introspection_rules([], ["^dolon\.models\.ListField"])
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel('INFO')
+logger.setLevel('DEBUG')
 
 import ast
 import cPickle as pickle
@@ -23,6 +23,7 @@ from util import *
 engineManagers = (
     ( 'GoogleImageSearchManager', 'Google Image Search'),
     ( 'InternetArchiveManager', 'Internet Archive'),
+    ( 'TwitterManager', 'Twitter'),
 )
 
 # Create your models here.
@@ -79,8 +80,14 @@ class Engine(models.Model):
     A search engine.
     """
     
+    name = models.CharField(max_length=100, null=True, blank=True)
+    
     parameters = ListField()    # GET params.
     manager = models.CharField(max_length=100, choices=engineManagers)
+    
+    oauth_token = models.ForeignKey('OAuthAccessToken', null=True, blank=True,
+                    help_text='Select an OAuth access token if required for ' +\
+                              'this service.')
     
     ## Limits ##
     
@@ -112,8 +119,11 @@ class Engine(models.Model):
         verbose_name = 'Custom search engine'
 
     def __unicode__(self):
-        return unicode( [ label for value, label in engineManagers 
+        if self.name is None:
+            return unicode( [ label for value, label in engineManagers 
                             if value == self.manager ][0] + ' ' + str(self.id) )
+        else:
+            return unicode(self.name)
 # end Engine class.
 
 class QueryEvent(models.Model):
@@ -607,6 +617,8 @@ class Context(models.Model):
     """
 
     url = models.URLField(max_length=2000, unique=True)
+    retrieved = models.BooleanField(default=False)
+    """Should be set True when retrieved."""
     
     title = models.CharField(max_length=400, null=True, blank=True)
     """Page title. Default is set by SearchManager, but updated by DiffBot."""
@@ -625,6 +637,8 @@ class Context(models.Model):
     diffbot_requests = models.ManyToManyField(  
                         'DiffBotRequest', related_name='requesting_context', 
                         blank=True, null=True   )
+    use_diffbot = models.BooleanField(default=True)
+    """Can set this to False to block DiffBotRequest creation."""
                             
     text_content = models.TextField(null=True, blank=True)
     """Main article or page content, stripped of any HTML."""
@@ -646,6 +660,9 @@ class SocialPlatform(models.Model):
     
     name = models.CharField(max_length=500)
     url = models.CharField(max_length=500)
+    
+    def __unicode__(self):
+        return unicode(self.name)
         
 class SocialUser(models.Model):
     """
@@ -663,6 +680,9 @@ class SocialUser(models.Model):
     
     description = models.TextField(null=True, blank=True)
     """could be a bio, or entered by a researcher."""
+    
+    user_id = models.IntegerField(blank=True, null=True)
+    
     
 class HashTag(models.Model):
     """
@@ -694,9 +714,10 @@ class OAuthAccessToken(models.Model):
     
     """
     
-    platforms = (
-        ('Twitter', 'Twitter'),
-    )
+    class Meta:
+        verbose_name = "OAuth access token"
+        verbose_name_plural = "OAuth access tokens"
+
     
     created = models.DateTimeField(auto_now_add=True)
     
@@ -712,7 +733,9 @@ class OAuthAccessToken(models.Model):
     screen_name = models.CharField(max_length=100, blank=True, null=True)
     
     creator = models.ForeignKey(User, blank=True, null=True)
-    
-    platform = models.CharField(max_length=100, choices=platforms)
+
+    platform = models.ForeignKey(SocialPlatform, null=True, blank=True,
+                help_text="If adding a token, you will be directed to this" + \
+                          "platform's website to log in.")
     
                     

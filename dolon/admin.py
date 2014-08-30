@@ -648,7 +648,8 @@ class ContextAdmin(HiddenAdmin):
     form = autocomplete_light.modelform_factory(Context)
     list_display = ('status', 'diffbot', 'url')
     list_display_links = ('status', 'url')
-    readonly_fields = ( 'resource', 'title', 'diffbot', 'publicationDate', 
+    readonly_fields = ( 'resource', 'title', 'retrieved', 'diffbot', 'use_diffbot', 
+                        'publicationDate', 
                         'author', 'language', 'text_content',  )
     exclude = ('url','diffbot_requests', 'content')
     actions = (retrieve_context,)
@@ -783,9 +784,9 @@ class GroupTaskAdmin(admin.ModelAdmin):
     
 class EngineAdmin(admin.ModelAdmin):
     readonly_fields = ['dayusage', 'monthusage']
-    list_display = ['name', 'daily_usage', 'monthly_usage']
+    list_display = ['engine_name', 'daily_usage', 'monthly_usage']
     
-    def name(self, obj):
+    def engine_name(self, obj):
         return obj.__unicode__()
     # end EngineAdmin.name
     
@@ -902,7 +903,7 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
         pass
         
     def response_add(self, request, obj, post_url_continue=None):
-        if obj.platform == 'Twitter':
+        if obj.platform.name == 'Twitter':
             callback_url = 'http://{0}/admin/dolon/oauthaccesstoken/callback/{1}/'.format(request.get_host(), obj.platform)        
             logger.debug(callback_url)
             manager = TwitterOAuthManager(
@@ -951,4 +952,5 @@ admin.site.register(Image, ImageAdmin)
 admin.site.register(Audio, AudioAdmin)
 admin.site.register(Video, VideoAdmin)
 admin.site.register(Thumbnail, ThumbnailAdmin)
+admin.site.register(SocialPlatform)
 admin.site.register(OAuthAccessToken, OAuthAccessTokenAdmin)

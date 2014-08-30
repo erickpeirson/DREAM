@@ -1,6 +1,6 @@
 import tweepy
 
-from models import OAuthAccessToken
+from models import OAuthAccessToken, SocialPlatform
 
 import logging
 logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
@@ -22,11 +22,12 @@ class TwitterOAuthManager(OAuthManager):
     def get_access_url(self, callback):
         redirect_url = self.auth.get_authorization_url()
         logger.debug('Redirect URL: {0}'.format(redirect_url))
+        platform = SocialPlatform.objects.get(name='Twitter')
         
         ptoken = OAuthAccessToken(
                     oauth_token = self.auth.request_token.key,
                     oauth_token_secret = self.auth.request_token.secret,
-                    platform='Twitter',
+                    platform=platform,
                     )
         ptoken.save()
         

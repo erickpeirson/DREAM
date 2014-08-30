@@ -8,25 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'OAuthAccesToken'
-        db.create_table(u'dolon_oauthaccestoken', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('oauth_token', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('oauth_token_secret', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('oauth_verifier', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('oauth_access_token', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('oauth_access_token_secret', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('user_id', self.gf('django.db.models.fields.CharField')(max_length=50, null=True, blank=True)),
-            ('screen_name', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], blank=True)),
-        ))
-        db.send_create_signal(u'dolon', ['OAuthAccesToken'])
+        # Adding field 'Context.retrieved'
+        db.add_column(u'dolon_context', 'retrieved',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Adding field 'Context.use_diffbot'
+        db.add_column(u'dolon_context', 'use_diffbot',
+                      self.gf('django.db.models.fields.BooleanField')(default=True),
+                      keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting model 'OAuthAccesToken'
-        db.delete_table(u'dolon_oauthaccestoken')
+        # Deleting field 'Context.retrieved'
+        db.delete_column(u'dolon_context', 'retrieved')
+
+        # Deleting field 'Context.use_diffbot'
+        db.delete_column(u'dolon_context', 'use_diffbot')
 
 
     models = {
@@ -91,10 +89,12 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'language': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'publicationDate': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'retrieved': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'tags': ('django.db.models.fields.related.ManyToManyField', [], {'blank': 'True', 'related_name': "'tagged_contexts'", 'null': 'True', 'symmetrical': 'False', 'to': u"orm['dolon.Tag']"}),
             'text_content': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '400', 'null': 'True', 'blank': 'True'}),
-            'url': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '2000'})
+            'url': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '2000'}),
+            'use_diffbot': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
         u'dolon.diffbotrequest': {
             'Meta': {'object_name': 'DiffBotRequest'},
@@ -114,6 +114,8 @@ class Migration(SchemaMigration):
             'manager': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'monthlimit': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'monthusage': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'oauth_token': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.OAuthAccessToken']", 'null': 'True', 'blank': 'True'}),
             'pagelimit': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'pagesize': ('django.db.models.fields.IntegerField', [], {'default': '10'}),
             'parameters': ('dolon.models.ListField', [], {}),
@@ -166,16 +168,17 @@ class Migration(SchemaMigration):
             'type': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
             'url': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '2000'})
         },
-        u'dolon.oauthaccestoken': {
-            'Meta': {'object_name': 'OAuthAccesToken'},
+        u'dolon.oauthaccesstoken': {
+            'Meta': {'object_name': 'OAuthAccessToken'},
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'creator': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'blank': 'True'}),
+            'creator': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'oauth_access_token': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'oauth_access_token_secret': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'oauth_token': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'oauth_token_secret': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'oauth_verifier': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'platform': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.SocialPlatform']", 'null': 'True', 'blank': 'True'}),
             'screen_name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'user_id': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'})
         },
@@ -234,7 +237,8 @@ class Migration(SchemaMigration):
             'handle': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'platform': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.SocialPlatform']"}),
-            'profile_url': ('django.db.models.fields.CharField', [], {'max_length': '500', 'null': 'True', 'blank': 'True'})
+            'profile_url': ('django.db.models.fields.CharField', [], {'max_length': '500', 'null': 'True', 'blank': 'True'}),
+            'user_id': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         u'dolon.tag': {
             'Meta': {'object_name': 'Tag'},

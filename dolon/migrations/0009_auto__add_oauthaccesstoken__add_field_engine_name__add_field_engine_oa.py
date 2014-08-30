@@ -8,9 +8,6 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting model 'OAuthAccesToken'
-        db.delete_table(u'dolon_oauthaccestoken')
-
         # Adding model 'OAuthAccessToken'
         db.create_table(u'dolon_oauthaccesstoken', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -22,29 +19,30 @@ class Migration(SchemaMigration):
             ('oauth_access_token_secret', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
             ('user_id', self.gf('django.db.models.fields.CharField')(max_length=50, null=True, blank=True)),
             ('screen_name', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], blank=True)),
+            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True, blank=True)),
         ))
         db.send_create_signal(u'dolon', ['OAuthAccessToken'])
 
+        # Adding field 'Engine.name'
+        db.add_column(u'dolon_engine', 'name',
+                      self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Engine.oauth_token'
+        db.add_column(u'dolon_engine', 'oauth_token',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['dolon.OAuthAccessToken'], null=True, blank=True),
+                      keep_default=False)
+
 
     def backwards(self, orm):
-        # Adding model 'OAuthAccesToken'
-        db.create_table(u'dolon_oauthaccestoken', (
-            ('creator', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], blank=True)),
-            ('oauth_token_secret', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('oauth_verifier', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('oauth_access_token_secret', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('oauth_access_token', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('user_id', self.gf('django.db.models.fields.CharField')(max_length=50, null=True, blank=True)),
-            ('screen_name', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('oauth_token', self.gf('django.db.models.fields.CharField')(max_length=100)),
-        ))
-        db.send_create_signal(u'dolon', ['OAuthAccesToken'])
-
         # Deleting model 'OAuthAccessToken'
         db.delete_table(u'dolon_oauthaccesstoken')
+
+        # Deleting field 'Engine.name'
+        db.delete_column(u'dolon_engine', 'name')
+
+        # Deleting field 'Engine.oauth_token'
+        db.delete_column(u'dolon_engine', 'oauth_token_id')
 
 
     models = {
@@ -132,6 +130,8 @@ class Migration(SchemaMigration):
             'manager': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'monthlimit': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'monthusage': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'oauth_token': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.OAuthAccessToken']", 'null': 'True', 'blank': 'True'}),
             'pagelimit': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'pagesize': ('django.db.models.fields.IntegerField', [], {'default': '10'}),
             'parameters': ('dolon.models.ListField', [], {}),
@@ -187,7 +187,7 @@ class Migration(SchemaMigration):
         u'dolon.oauthaccesstoken': {
             'Meta': {'object_name': 'OAuthAccessToken'},
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'creator': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'blank': 'True'}),
+            'creator': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'oauth_access_token': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'oauth_access_token_secret': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),

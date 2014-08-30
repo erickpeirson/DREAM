@@ -10,13 +10,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'OAuthAccessToken.platform'
         db.add_column(u'dolon_oauthaccesstoken', 'platform',
-                      self.gf('django.db.models.fields.CharField')(default='Twitter', max_length=100),
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['dolon.SocialPlatform'], null=True, blank=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
         # Deleting field 'OAuthAccessToken.platform'
-        db.delete_column(u'dolon_oauthaccesstoken', 'platform')
+        db.delete_column(u'dolon_oauthaccesstoken', 'platform_id')
 
 
     models = {
@@ -104,6 +104,8 @@ class Migration(SchemaMigration):
             'manager': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'monthlimit': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'monthusage': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'oauth_token': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.OAuthAccessToken']", 'null': 'True', 'blank': 'True'}),
             'pagelimit': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'pagesize': ('django.db.models.fields.IntegerField', [], {'default': '10'}),
             'parameters': ('dolon.models.ListField', [], {}),
@@ -166,7 +168,7 @@ class Migration(SchemaMigration):
             'oauth_token': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'oauth_token_secret': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'oauth_verifier': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'platform': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'platform': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.SocialPlatform']", 'null': 'True', 'blank': 'True'}),
             'screen_name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'user_id': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'})
         },

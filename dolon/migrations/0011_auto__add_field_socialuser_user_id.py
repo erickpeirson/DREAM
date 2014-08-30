@@ -8,14 +8,16 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding field 'SocialUser.user_id'
+        db.add_column(u'dolon_socialuser', 'user_id',
+                      self.gf('django.db.models.fields.IntegerField')(null=True, blank=True),
+                      keep_default=False)
 
-        # Changing field 'OAuthAccessToken.creator'
-        db.alter_column(u'dolon_oauthaccesstoken', 'creator_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True))
 
     def backwards(self, orm):
+        # Deleting field 'SocialUser.user_id'
+        db.delete_column(u'dolon_socialuser', 'user_id')
 
-        # Changing field 'OAuthAccessToken.creator'
-        db.alter_column(u'dolon_oauthaccesstoken', 'creator_id', self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['auth.User']))
 
     models = {
         u'auth.group': {
@@ -102,6 +104,8 @@ class Migration(SchemaMigration):
             'manager': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'monthlimit': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'monthusage': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'oauth_token': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.OAuthAccessToken']", 'null': 'True', 'blank': 'True'}),
             'pagelimit': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'pagesize': ('django.db.models.fields.IntegerField', [], {'default': '10'}),
             'parameters': ('dolon.models.ListField', [], {}),
@@ -164,6 +168,7 @@ class Migration(SchemaMigration):
             'oauth_token': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'oauth_token_secret': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'oauth_verifier': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'platform': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.SocialPlatform']", 'null': 'True', 'blank': 'True'}),
             'screen_name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'user_id': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'})
         },
@@ -222,7 +227,8 @@ class Migration(SchemaMigration):
             'handle': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'platform': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['dolon.SocialPlatform']"}),
-            'profile_url': ('django.db.models.fields.CharField', [], {'max_length': '500', 'null': 'True', 'blank': 'True'})
+            'profile_url': ('django.db.models.fields.CharField', [], {'max_length': '500', 'null': 'True', 'blank': 'True'}),
+            'user_id': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         u'dolon.tag': {
             'Meta': {'object_name': 'Tag'},

@@ -8,6 +8,9 @@ from unidecode import unidecode
 import xml.etree.ElementTree as ET
 import time
 import tweepy
+import tempfile
+import cPickle as pickle
+from dream import settings
 
 import logging
 logging.basicConfig()
@@ -29,17 +32,119 @@ class BaseSearchManager(object):
     def __init__(self):
         pass
 
-#class TwitterManager(BaseSearchManager):
-#    def __init__(self, **kwargs):
-#        consumer_key = kwargs.get('consumer_key')
-#        consumer_secret = kwargs.get('consumer_secret')
-#        access_token = kwargs.get('access_token')
-#        access_token_secret = kwargs.get('access_token_secret')
-#        
-#        self.auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-#        self.auth.set_access_token(access_token, access_token_secret)
-#
-#        self.api = tweepy.API(auth)
+class TwitterManager(BaseSearchManager):
+    def __init__(self, *args, **kwargs):        
+        self.auth = tweepy.OAuthHandler(settings.TWITTER_KEY,
+                                        settings.TWITTER_SECRET)
+
+    def search(self, queryevent_id):
+        try:
+            results = []
+            
+            queryevent = QueryEvent.objects.get(pk=queryevent_id)
+            
+            # Initialize Twitter API connection.    
+            access_token = queryevent.engine.oauth_token.oauth_access_token
+            access_secret = queryevent.engine.oauth_token.oauth_access_token_secret
+            self.auth.set_access_token(  access_token, access_secret )
+            self.api = tweepy.API(self.auth)    
+        
+            if queryevent.search_by == 'ST':    # String search.
+                q = queryevent.querystring.querystring
+                tweets = self.api.search(q)
+                start = queryevent.rangeStart
+                end = queryevent.rangeEnd
+                result, response = self._handle_tweets(tweets, start, end)
+                results.append((result,response))
+            elif queryevent.search_by == 'UR':  # User timeline search.
+                pass
+            elif queryevent.search_by == 'TG':  # Tag search.
+                pass
+                
+        except Exception as E:
+            logger.debug(E)
+            return 'ERROR'
+        return results
+        
+    def _handle_tweets(self, tweets, start, end):
+        items = []
+        for tweet in tweets:
+            tweet_id = tweet.id                     # int
+            creationdate = tweet.created_at         # datetime object.
+            screen_name = tweet.user.screen_name    # unicode
+            user_id = tweet.user.id                 # int
+
+            tweet_url = 'http://twitter.com/{0}/status/{1}'.format( screen_name, tweet_id )
+            tweet_title = 'Tweet by {0} at {1} with id {2}'.format(screen_name, creationdate, tweet_id)
+
+            tweet_content = tweet.text.encode('utf-8')              # unicode
+            
+#            # Generate a SocialUser
+#            self._handle_user(user_id, screen_name)
+            
+            # Pickle tweet and store as an original_file Text.
+            text,created = Text.objects.get_or_create(url=tweet_url)
+            if created:
+                filename = 'tweet_{0}_{1}'.format( screen_name, tweet_id    )
+                f_,fpath = tempfile.mkstemp()
+                with open(fpath, 'w') as f:
+                    pickle.dump(tweet, f)
+                with open(fpath, 'r') as f:
+                    file = File(f)
+                    text.text_file.save(filename, file, True)
+                    text.size = f.tell()
+                    text.mime = 'application/octet-stream'
+                    text.save()
+            text_url = text.url
+            tweet_size = text.size
+            
+            item = {
+                'url': tweet_url,
+                'title': tweet_title,
+                'contextURL': tweet_url,
+                'type': 'texts',
+                'files': [ tweet_url ],
+                'length': len(tweet_content),
+                'size': tweet_size,
+                'creator': 'Twitter:{0}:{1}'.format(user_id, screen_name),
+                'retrieved': True,
+                'contents': tweet_content,
+                'creationDate': creationdate,
+                'context': {
+                    'use_diffbot': False,
+                    'content': tweet_content,
+                    'retrieved': True,
+                    'title': tweet_title,
+                    'publicationDate': creationdate,
+                    'author':  'Twitter:{0}:{1}'.format(user_id, screen_name),
+                    'text_content': tweet_content,
+                    'language': tweet.lang,
+                }
+            }
+            items.append(item)
+        result = {  'items': items, 
+                    'start': start, 
+                    'end': end  }
+                        
+        return result, ''
+                
+    def _handle_user(self, user_id, screen_name):
+        platform = SocialPlatform.objects.get(name='Twitter')
+        logger.debug('Platform: {0}'.format(platform))
+        
+        users = SocialUser.objects.filter(handle=screen_name).filter(user_id=user_id)
+        if len(users) > 0:
+            logger.debug('Found user {0}'.format(users[0]))
+            return
+        
+        user = SocialUser(
+                handle=screen_name,
+                user_id=user_id,
+                platform=platform
+                )
+        user.save()
+        logger.debug('Created user {0}'.format(user))
+    
 
 class InternetArchiveManager(BaseSearchManager):
     """
