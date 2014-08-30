@@ -783,33 +783,42 @@ table#change-history tbody th {
 /* HEADER */
 
 #header {
-    background: #FFCC33;
-    color: #ffc;
+    background: #F0F0F0;
+    color: #404040;
     overflow: hidden;
+    border-bottom: 1px solid #B0B0B0;
 }
 
 #header a:link, #header a:visited {
-    color: white;
+    color: orange;
 }
 
 #header a:hover {
     text-decoration: underline;
 }
 
+#branding #logo {
+    margin-right: 8px;
+}
+
 #branding h1 {
-    padding: 0 10px;
-    font-size: 18px;
-    margin: 8px 0;
+    padding-top: 5px;
+    font-size: 30px;
+    margin-top: 0px;
     font-weight: normal;
-    color: #f4f379;
+    color: black;
 }
 
 #branding h2 {
-    padding: 0 10px;
+    padding-left: 100px;
     font-size: 14px;
     margin: -8px 0 8px 0;
     font-weight: normal;
-    color: #ffc;
+    color: #404040;
+}
+
+#branding h2 span.highlight {
+    color: orange;
 }
 
 #user-tools {
