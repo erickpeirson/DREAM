@@ -145,11 +145,17 @@ def _create_text_item(resultitem):
 
     i = _get_default(TextItem, resultitem)
 
+    logger.debug('TextItem.original_files: {0}'.format(i.original_files.all()))
+    logger.debug('params["files"]: {0}'.format(params['files']))
     if len(i.original_files.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
-            txt = Text.objects.get(url=url)
-            
+            txt,created = Text.objects.get_or_create(url=url)
+            logger.debug('Text: {0}'.format(txt))
             i.original_files.add(txt)
+
+    if 'contents' in params:
+        i.contents = params['contents'].decode('utf-8')
+        i.snippet = params['contents'].decode('utf-8')[0:500]
 
     return i, params
 # end _create_text_item
@@ -183,8 +189,6 @@ def create_item(resultitem):
 
     if 'retrieved' in params:
         i.retrieved = params['retrieved']
-    if 'contents' in params:
-        i.contents = params['contents']
     if 'creationDate' in params:
         i.creationDate = params['creationDate']
 

@@ -1,12 +1,13 @@
 from django.core.files import File
 from models import *
-from util import localize_date
+from util import localize_date, localize_datetime
 import json
 import urllib2
 import os
 from unidecode import unidecode
 import xml.etree.ElementTree as ET
 import time
+import math
 import tweepy
 import tempfile
 import cPickle as pickle
@@ -48,10 +49,16 @@ class TwitterManager(BaseSearchManager):
             access_secret = queryevent.engine.oauth_token.oauth_access_token_secret
             self.auth.set_access_token(  access_token, access_secret )
             self.api = tweepy.API(self.auth)    
-        
+
+            _start = queryevent.rangeStart
+            _end = queryevent.rangeEnd
+            Nitems = min(_end - _start + 1, 1500)
+
+
+
             if queryevent.search_by == 'ST':    # String search.
                 q = queryevent.querystring.querystring
-                tweets = self.api.search(q)
+                tweets = [ tweet for tweet in tweepy.Cursor(self.api.search, q, show_user=True).items(Nitems) ]                
                 start = queryevent.rangeStart
                 end = queryevent.rangeEnd
                 result, response = self._handle_tweets(tweets, start, end)
@@ -70,17 +77,17 @@ class TwitterManager(BaseSearchManager):
         items = []
         for tweet in tweets:
             tweet_id = tweet.id                     # int
-            creationdate = tweet.created_at         # datetime object.
+            creationdate = localize_datetime(tweet.created_at, 'UTC')
             screen_name = tweet.user.screen_name    # unicode
             user_id = tweet.user.id                 # int
 
             tweet_url = 'http://twitter.com/{0}/status/{1}'.format( screen_name, tweet_id )
             tweet_title = 'Tweet by {0} at {1} with id {2}'.format(screen_name, creationdate, tweet_id)
 
-            tweet_content = tweet.text.encode('utf-8')              # unicode
+            tweet_content = tweet.text.encode('utf-8')
             
-#            # Generate a SocialUser
-#            self._handle_user(user_id, screen_name)
+            # Generate a SocialUser
+            self._handle_user(user_id, screen_name)
             
             # Pickle tweet and store as an original_file Text.
             text,created = Text.objects.get_or_create(url=tweet_url)
@@ -132,18 +139,33 @@ class TwitterManager(BaseSearchManager):
         platform = SocialPlatform.objects.get(name='Twitter')
         logger.debug('Platform: {0}'.format(platform))
         
-        users = SocialUser.objects.filter(handle=screen_name).filter(user_id=user_id)
-        if len(users) > 0:
-            logger.debug('Found user {0}'.format(users[0]))
-            return
+        try:
+            users = SocialUser.objects.filter(handle=screen_name).filter(user_id=user_id)
+        except Exception as E:
+            logger.debug('Problem filtering SocialUsers.')
+            logger.debug(E)
+            raise E
         
-        user = SocialUser(
-                handle=screen_name,
-                user_id=user_id,
-                platform=platform
-                )
-        user.save()
-        logger.debug('Created user {0}'.format(user))
+        if len(users) > 0:
+            logger.debug(
+                'SocialUser with that screen_name and user_id) already exists.')
+            return
+        else:
+            try:
+                user = SocialUser(
+                        handle=screen_name,
+                        user_id=str(user_id),
+                        platform=platform,
+                        profile_url='http://twitter.com/{0}'.format(screen_name)
+                        )
+                user.save()
+            except Exception as E:
+                logger.debug('Problem creating a SocialUser.')
+                logger.debug('handle: {0}, user_id: {1}, platform: {2}'
+                                        .format(screen_name, user_id, platform))
+                logger.debug(E)
+                raise E
+            logger.debug('Created user {0}'.format(user))
     
 
 class InternetArchiveManager(BaseSearchManager):

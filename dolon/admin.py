@@ -311,8 +311,8 @@ class QueryEventAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
-    list_display = ('icon', 'preview','title', 'status','retrieved', 'type' )
-    readonly_fields = ( 'preview', 'contents', 'creator', 'resource',
+    list_display = ('icon', 'list_preview','title', 'status','retrieved', 'type' )
+    readonly_fields = ( 'item_preview', 'contents', 'creator', 'resource',
                         'status', 'retrieved', 'type', 'query_events',
                         'contexts', 'creationDate',  'children', 'parent',  )
     exclude = ( 'image', 'thumbnail', 'events', 'merged_with', 'url',
@@ -386,14 +386,19 @@ class ItemAdmin(admin.ModelAdmin):
     children.allow_tags = True
     # end ItemAdmin.children    
     
-    def preview(self, obj):
+    def list_preview(self, obj, **kwargs):
         """
         Generates a thumbnail, or player.
         """
         
-        return self._item_image(obj, list=True)
-    preview.allow_tags = True
-    # end ItemAdmin.preview    
+        return self._item_image(obj, True)
+    list_preview.allow_tags = True
+    # end ItemAdmin.list_preview    
+            
+    def item_preview(self, obj, **kwargs):
+        return self._item_image(obj, False)
+    item_preview.allow_tags = True
+    # end ItemAdmin.item_preview    
     
     def resource(self, obj):
         """
@@ -427,14 +432,18 @@ class ItemAdmin(admin.ModelAdmin):
     icon.allow_tags = True
     # end ItemAdmin.icon    
     
-    def contents(self, obj, list=False):
+    def contents(self, obj, list=True):
         """
         Display the content objects associated with an Item.
         """
+        
+        logger.debug(obj.type)
+        logger.debug(obj.type == 'Text')
 
         pattern = u'<a href="{0}">{1}</a>'
 
         if obj.type == 'Audio':
+            logger.debug('Display contents of AudioItem.')
             formatted = []
             for seg in obj.audioitem.audio_segments.all():
                 icon = self._format_mime_icon(seg.type(), 'audio')
@@ -442,8 +451,8 @@ class ItemAdmin(admin.ModelAdmin):
                 formatted.append(pattern.format(_url, icon))
 
             return u''.join(formatted)
-            
         elif obj.type == 'Video':
+            logger.debug('Display contents of VideoItem.')        
             formatted = []
             for vid in obj.videoitem.videos.all():
                 icon = self._format_mime_icon(vid.type(), 'video')
@@ -452,17 +461,21 @@ class ItemAdmin(admin.ModelAdmin):
             return u''.join(formatted)
             
         elif obj.type == 'Image':
+            logger.debug('Display contents of ImageItem.')        
             formatted = []
             for img in obj.imageitem.images.all():
                 icon = self._format_mime_icon(img.type(), 'image')
                 _url = get_admin_url(img)
                 formatted.append(pattern.format(_url, icon))
             return u''.join(formatted)        
-        
         elif obj.type == 'Text':
-            icon = self._format_mime_icon(obj.textitem.text.type(), 'text')
-            _url = get_admin_url(obj.textitem.text)
-            return pattern.format(_url, icon)
+            logger.debug('Display contents of TextItem.')
+            formatted = []
+            for txt in obj.textitem.original_files.all():
+                icon = self._format_mime_icon(txt.mime, 'text')
+                _url = get_admin_url(txt)
+                formatted.append(pattern.format(_url, icon))
+            return u''.join(formatted)        
     contents.allow_tags = True
     # end ItemAdmin.contents    
 
@@ -613,6 +626,13 @@ class ItemAdmin(admin.ModelAdmin):
             icon = self._format_type_icon('video')
 
             return self._format_embed(videos)
+        elif hasattr(obj, 'textitem'):
+            if obj.textitem.snippet is not None:
+                if list:
+                    return obj.textitem.snippet[0:50]
+                    
+            return obj.textitem.snippet
+            
     _item_image.allow_tags = True
     # end ItemAdmin._item_image    
 
@@ -648,9 +668,9 @@ class ContextAdmin(HiddenAdmin):
     form = autocomplete_light.modelform_factory(Context)
     list_display = ('status', 'diffbot', 'url')
     list_display_links = ('status', 'url')
-    readonly_fields = ( 'resource', 'title', 'retrieved', 'diffbot', 'use_diffbot', 
-                        'publicationDate', 
-                        'author', 'language', 'text_content',  )
+    readonly_fields = ( 'resource', 'title', 'retrieved', 'diffbot', 
+                        'use_diffbot', 'publicationDate', 'author', 'language', 
+                        'text_content',  )
     exclude = ('url','diffbot_requests', 'content')
     actions = (retrieve_context,)
     
@@ -838,6 +858,10 @@ class AudioAdmin(HiddenAdmin):
     # end AudioAdmin._format_audio_embed
 # end AudioAdmin class
 
+class TextAdmin(HiddenAdmin):
+    readonly_fields = ['text_file', 'url', 'size', 'mime']
+# end TextAdmin class
+
 class ThumbnailAdmin(HiddenAdmin):
     pass
 # end ThumbnailAdmin class    
@@ -936,6 +960,51 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
         return form
 # end OAuthAccessTokenAdmin class
         
+class SocialUserAdmin(admin.ModelAdmin):
+    list_display = ['handle', 'platform', 'user_id', 'profile']
+    fields = [  'handle', 'platform', 'profile_url', 'user_id', 'description',
+                'content_by_this_user' ]
+
+    
+    def get_form(self, request, obj=None, **kwargs):
+        
+        if obj is not None:
+            self.readonly_fields = [ 'handle', 'platform', 'profile_url', 
+                                     'user_id', 'content_by_this_user' ]
+        form = super(SocialUserAdmin, self).get_form(request, obj, **kwargs)
+        return form        
+        
+    def profile(self, obj):
+        """
+        Generate a link to the user's profile.
+        """
+        
+        if obj.profile_url is None:
+            return None
+        
+        link = '<a href="{0}">Profile</a>'.format(obj.profile_url)
+        return link
+    profile.allow_tags = True
+    
+    def content_by_this_user(self, obj):
+        """
+        Generate a list of :class:`.Item`\s generated by this 
+        :class:`.SocialUser`\.
+        """
+        
+        items = obj.content()
+        
+        pattern = '<li>{0}: <a href="{1}">{2}</a></li>'
+        lpattern = '<ul>{0}</ul>'
+
+        formatted = []
+        for i in items:
+            url = get_admin_url(i)
+            formatted.append(pattern.format(i.type, url, i.title))
+        
+        return lpattern.format(''.join(formatted))
+    content_by_this_user.allow_tags = True
+
 
 ### Registration ###
 
@@ -951,6 +1020,8 @@ admin.site.register(Context, ContextAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Audio, AudioAdmin)
 admin.site.register(Video, VideoAdmin)
+admin.site.register(Text, TextAdmin)
 admin.site.register(Thumbnail, ThumbnailAdmin)
 admin.site.register(SocialPlatform)
+admin.site.register(SocialUser, SocialUserAdmin)
 admin.site.register(OAuthAccessToken, OAuthAccessTokenAdmin)

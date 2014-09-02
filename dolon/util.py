@@ -62,14 +62,19 @@ def pretty_date(time=False):
         return str(day_diff/30) + " months ago"
     return str(day_diff/365) + " years ago"
     
-def localize_date(datestring, dtformat):
+def localize_date(datestring, dtformat, tz=TIME_ZONE):
     """
     Get a properly localized datetime from a timestring.
     """
     
-    this_timezone = timezone(TIME_ZONE)
+    this_timezone = timezone(tz)
     this_datetime = this_timezone.localize(datetime.now())
     
     date = this_timezone.localize(
             datetime.strptime(datestring, dtformat)   )   
     return date
+
+def localize_datetime(dt_obj, tz=TIME_ZONE):
+
+    this_timezone = timezone(tz)
+    return this_timezone.localize(dt_obj) 
