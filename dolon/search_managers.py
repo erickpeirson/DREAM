@@ -54,19 +54,25 @@ class TwitterManager(BaseSearchManager):
             _end = queryevent.rangeEnd
             Nitems = min(_end - _start + 1, 1500)
 
-
-
             if queryevent.search_by == 'ST':    # String search.
                 q = queryevent.querystring.querystring
-                tweets = [ tweet for tweet in tweepy.Cursor(self.api.search, q, show_user=True).items(Nitems) ]                
-                start = queryevent.rangeStart
-                end = queryevent.rangeEnd
-                result, response = self._handle_tweets(tweets, start, end)
-                results.append((result,response))
+                tweets = [ tweet for tweet in tweepy.Cursor( 
+                                                self.api.search, q, 
+                                                show_user=True
+                                                ).items(Nitems) ]                 
             elif queryevent.search_by == 'UR':  # User timeline search.
-                pass
+                user_id = queryevent.user.user_id
+                tweets = [ tweet for tweet in tweepy.Cursor( 
+                                                self.api.user_timeline,
+                                                user_id=user_id
+                                                ).items(Nitems) ]   
             elif queryevent.search_by == 'TG':  # Tag search.
                 pass
+                
+            start = queryevent.rangeStart
+            end = queryevent.rangeEnd
+            result, response = self._handle_tweets(tweets, start, end)
+            results.append((result,response))                
                 
         except Exception as E:
             logger.debug(E)

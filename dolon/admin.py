@@ -194,9 +194,9 @@ class QueryStringAdmin(admin.ModelAdmin):
 class QueryEventAdmin(admin.ModelAdmin):
     form = QueryEventForm
     
-    list_display = ('id', 'querystring', 'created', 'range', 
+    list_display = ('id', 'query', 'engine', 'created', 'range', 
                     'dispatched', 'search_status', 'results')
-    list_display_links = ('querystring',)
+    list_display_links = ('query',)
     actions = [dispatch, reset]
     
     fieldsets = (
@@ -217,8 +217,23 @@ class QueryEventAdmin(admin.ModelAdmin):
             }),            
         )
         
+    
+    def query(self, obj):
+        if obj.search_by == 'ST':
+            param = obj.querystring.querystring
+            method = 'String'
+        elif obj.search_by == 'UR':
+            param = '{0} ({1})'.format(obj.user.handle, obj.user.platform.name)
+            method = 'User'
+        elif obj.search_by == 'TG':
+            param = obj.tag.string
+            method = 'Tag'
+        return '{0}: {1}'.format(method, param)
+    # end QueryEventAdmin.query
+    
     def created(self, obj):
         return obj.datetime
+    # end QueryEventAdmin.created
     
     def result_sets(self, obj):
         """

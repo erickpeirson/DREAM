@@ -225,8 +225,7 @@ class QueryEvent(models.Model):
             state = self.search_task.state()
             self.state = state
             self.save()
-            return state
-        return 'PENDING'
+        return self.state
 
     def thumbnail_status(self):
         alltasks = self.thumbnail_tasks.all()
