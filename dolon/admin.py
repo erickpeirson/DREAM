@@ -937,9 +937,6 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
             logger.debug(ptoken)
             return redirect(get_admin_url(ptoken))
     # end OAuthAccessTokenAdmin.callback
-    
-    def save_model(self, request, obj, form, change):
-        pass
         
     def response_add(self, request, obj, post_url_continue=None):
         if obj.platform.name == 'Twitter':
@@ -1009,14 +1006,36 @@ class SocialUserAdmin(admin.ModelAdmin):
         
         items = obj.content()
         
-        pattern = '<li>{0}: <a href="{1}">{2}</a></li>'
-        lpattern = '<ul>{0}</ul>'
+        pattern = '<tr class="row{0}">' + \     # Alternating row number.
+                        '<td>{1}</td>' + \      # Item type.
+                        '<td>{2}</td>' + \      # Creation date.
+                        '<td><a href="{3}">{4}</a></td>' + \    # Preview/title.
+                    '</tr>'
+        
+        lpattern = '<table id="result_list" width="100%"> ' + \
+                        '<thead>' + \
+                            '<tr>' + \
+                                '<td scope="col">Type</td>' + \
+                                '<td scope="col">Date</td>' + \
+                                '<td scope="col" width="50%">Preview</td>' + \
+                            '</tr>' + \
+                        '</thead>' + \
+                        '<tbody>{0}</tbody>' + \    # <- Insert table rows here.
+                    '</table>'
 
         formatted = []
+        row = 2     # Alternating row number.
         for i in items:
             url = get_admin_url(i)
-            formatted.append(pattern.format(i.type, url, i.title))
-        
+            if i.type == 'Text':
+                content = i.textitem.snippet.encode('utf-8')
+            else:   # TODO: add support for previewing other content types.
+                content = i.title
+            formatted.append(
+                pattern.format(row, i.type, i.creationDate, url, content)   )
+
+            if row == 1: row = 2
+            else: row = 1
         return lpattern.format(''.join(formatted))
     content_by_this_user.allow_tags = True
 
