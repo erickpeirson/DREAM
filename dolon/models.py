@@ -221,7 +221,7 @@ class QueryEvent(models.Model):
         
         if self.search_task is not None:
             state = self.search_task.state()
-            if state != 'PENDING':
+            if state != 'PENDING' and self.state not in ['FAILED', 'ERROR']:
                 self.state = state
                 self.save()
         return self.state
@@ -252,17 +252,6 @@ class QueryResultItem(models.Model):
                     related_name='query_result_item'    )
     
     type = models.CharField(max_length=50)
-    
-#    def save(self, *args, **kwargs):
-#        """
-#        When a :class:`.QueryResultItem` is created, it should get or create
-#        a :class:`.Item`\.
-#        """
-#        
-#        self.item = create_item(self)   # Moved this to tasks module.
-#        
-#        # Go ahead and save.
-#        super(QueryResultItem, self).save(*args, **kwargs)
 
 class Item(models.Model):
     """
@@ -687,6 +676,13 @@ class HashTag(models.Model):
     description = models.TextField(blank=True, null=True)
     """Optional, entered by researcher if desired."""
     
+    def __unicode__(self):
+        return unicode(self.string)
+        
+    def save(self): 
+        # Prepend hash if necessary.
+        if self.string[0] != '#': self.string = '#' + self.string
+        super(HashTag, self).save(self)
     
 class DiffBotRequest(models.Model):
     """

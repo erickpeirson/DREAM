@@ -54,21 +54,24 @@ class TwitterManager(BaseSearchManager):
             _end = queryevent.rangeEnd
             Nitems = min(_end - _start + 1, 1500)
 
-            if queryevent.search_by == 'ST':    # String search.
+            # String search.
+            if queryevent.search_by == 'ST':    
                 q = queryevent.querystring.querystring
-                tweets = [ tweet for tweet in tweepy.Cursor( 
-                                                self.api.search, q, 
-                                                show_user=True
-                                                ).items(Nitems) ]                 
-            elif queryevent.search_by == 'UR':  # User timeline search.
-                user_id = queryevent.user.user_id
-                tweets = [ tweet for tweet in tweepy.Cursor( 
-                                                self.api.user_timeline,
-                                                user_id=user_id
-                                                ).items(Nitems) ]   
-            elif queryevent.search_by == 'TG':  # Tag search.
-                pass
+                cursor = tweepy.Cursor(self.api.search, q, show_user=True)
                 
+            # User timeline search.
+            elif queryevent.search_by == 'UR':  
+                user_id = queryevent.user.user_id
+                cursor = tweepy.Cursor(self.api.user_timeline, user_id=user_id)
+
+            # Tag search.
+            elif queryevent.search_by == 'TG':
+                q = queryevent.tag.string
+                if q[0] != '#': q = '#' + q     # Prepend hash if not present.
+                cursor = tweepy.Cursor(self.api.search, q, show_user=True)
+                
+            tweets = [ tweet for tweet in cursor.items(Nitems) ]
+                               
             start = queryevent.rangeStart
             end = queryevent.rangeEnd
             result, response = self._handle_tweets(tweets, start, end)
@@ -87,8 +90,10 @@ class TwitterManager(BaseSearchManager):
             screen_name = tweet.user.screen_name    # unicode
             user_id = tweet.user.id                 # int
 
-            tweet_url = 'http://twitter.com/{0}/status/{1}'.format( screen_name, tweet_id )
-            tweet_title = 'Tweet by {0} at {1} with id {2}'.format(screen_name, creationdate, tweet_id)
+            tweet_url = 'http://twitter.com/{0}/status/{1}'.format(
+                                                        screen_name, tweet_id )
+            tweet_title = 'Tweet by {0} at {1} with id {2}'.format(
+                                            screen_name, creationdate, tweet_id)
 
             tweet_content = tweet.text.encode('utf-8')
             
@@ -146,7 +151,8 @@ class TwitterManager(BaseSearchManager):
         logger.debug('Platform: {0}'.format(platform))
         
         try:
-            users = SocialUser.objects.filter(handle=screen_name).filter(user_id=user_id)
+            users = SocialUser.objects.filter(handle=screen_name).filter(
+                                                                user_id=user_id)
         except Exception as E:
             logger.debug('Problem filtering SocialUsers.')
             logger.debug(E)
@@ -213,7 +219,7 @@ class InternetArchiveManager(BaseSearchManager):
                 start = max(start-1,0) # IA starts at 0.
                 
                 logger.debug('search for {0}, start: {1}, end: {2}, rows: {3}'
-                                                    .format(query, start, end, rows))
+                                               .format(query, start, end, rows))
 
                 params = _params + [ "q={0}".format(urllib2.quote(query)),
                                      "rows={0}".format(rows),
