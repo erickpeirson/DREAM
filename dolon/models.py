@@ -196,8 +196,6 @@ class QueryEvent(models.Model):
     queryresults = models.ManyToManyField(
                         'QueryResult', blank=True, null=True,
                         related_name='event_instance'   )
-# end QueryEvent class.
-
 
     def __unicode__(self):
         pattern = '"{0}", items {1}-{2}, created {3}'
@@ -223,20 +221,11 @@ class QueryEvent(models.Model):
         
         if self.search_task is not None:
             state = self.search_task.state()
-            self.state = state
-            self.save()
+            if state != 'PENDING':
+                self.state = state
+                self.save()
         return self.state
-
-    def thumbnail_status(self):
-        alltasks = self.thumbnail_tasks.all()
-        Ntasks = len(alltasks)
-        if Ntasks > 0:
-            done = float(len([ t for t in alltasks if t.state() == 'DONE' ]))
-            comp = int(round(done*100/Ntasks, 0))
-            if comp == 100:
-                return 'DONE'
-            return '{0}% COMPLETE'.format(comp)
-        return 'PENDING'
+# end QueryEvent class.        
 
 class QueryResult(models.Model):
     """
