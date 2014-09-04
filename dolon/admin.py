@@ -42,17 +42,17 @@ class QueryEventForm(forms.ModelForm):
     class Meta:
         model = QueryEvent
     # end QueryEventForm.Meta class
-        
+
     def clean_creator(self):
         if not self.cleaned_data['creator']:
             return User()
         return self.cleaned_data['creator']
     # end QueryEventForm.clean_creator
-        
+
     def clean(self):
         cleaned_data = super(QueryEventForm, self).clean()
         searchtype = cleaned_data.get("search_by")
-        
+
         if searchtype == 'ST':
             querystring = cleaned_data.get("querystring")
             if querystring is None:
@@ -72,7 +72,7 @@ class QueryEventForm(forms.ModelForm):
     # end QueryEventForm.clean
 # end QueryEventForm class
 
-    
+
 
 ### Inlines ###
 
@@ -81,7 +81,7 @@ class QueryEventInline(admin.TabularInline):
     readonly_fields = ('dispatched', 'range', 'engine', 'datetime', 'results')
     exclude = ('rangeStart', 'rangeEnd', 'search_task', 'thumbnail_tasks', 'queryresults')
     ordering = ('datetime',)
-    
+
     extra = 0
     def has_delete_permission(self, request, obj=None):
         """
@@ -89,7 +89,7 @@ class QueryEventInline(admin.TabularInline):
         """
         return False
     # end QueryEventInline.has_delete_permission
-        
+
     def range(self, obj):
         """
         Prettier representation of the start and end indices.
@@ -98,10 +98,10 @@ class QueryEventInline(admin.TabularInline):
         return pattern.format(obj.rangeStart, obj.rangeEnd)
     range.allow_tags = True
     # end QueryEventInline.range
-    
+
     def results(self, obj):
         """
-        Yields the number of :class:`.Item` associated with this 
+        Yields the number of :class:`.Item` associated with this
         :class:`.QueryEvent`\, with a link to the filtered admin list view for
         :class:`.Item`\.
         """
@@ -110,7 +110,7 @@ class QueryEventInline(admin.TabularInline):
         if len(items) > 0:
             pattern = u'<a href="{0}?events__id__exact={1}">{2} items</a>'
             baseurl = '/'.join(get_admin_url(items[0]).split('/')[0:-2])
-            
+
             return pattern.format(baseurl, obj.id, len(items))
         return None
     results.allow_tags = True
@@ -122,7 +122,7 @@ class QueryEventInline(admin.TabularInline):
 class QueryStringAdmin(admin.ModelAdmin):
     list_display = ('querystring', 'events', 'last_used')#, 'items')
     inlines = (QueryEventInline,)
-    
+
     def get_urls(self):
         urls = super(QueryStringAdmin, self).get_urls()
         my_urls = patterns('',
@@ -130,12 +130,12 @@ class QueryStringAdmin(admin.ModelAdmin):
         )
         return my_urls + urls
     # end QueryStringAdmin.get_urls
-        
+
     def engine_matrix(self, request):
         """
         should be able to see a matrix of querystrings versus engines.
         """
-        
+
         querystrings = { q.id:q.querystring for q in QueryString.objects.all() }
 
         engines = { e.id:unicode(e) for e in Engine.objects.all() }
@@ -148,28 +148,28 @@ class QueryStringAdmin(admin.ModelAdmin):
             g = e.engine.id
 
             values[q][g] += len(items)
-        
+
         pattern = "/admin/dolon/item/?events__engine__id__exact={0}&events__querystring__id__exact={1}"
-        
-        values_ = [ (querystrings[k], [ 
+
+        values_ = [ (querystrings[k], [
                           (pattern.format(g,k), vals[g], g, k ) for g in engines
                     ]) for k,vals in values.iteritems() ]
-        
+
         context = {
             'title': 'Distribution of items across search terms and search engines',
             'values': values_,
             'engines': engines.values(),
             'iconpath': iconpath,
         }
-        
+
         return render_to_response('querystring_matrix.html',context)
     # end QueryStringAdmin.engine_matrix
-        
+
     def last_used(self, obj):
         print obj.latest()
         return pretty_date(obj.latest())
-    # end QueryStringAdmin.last_used        
-    
+    # end QueryStringAdmin.last_used
+
     def get_readonly_fields(self, request, obj=None):
         """
         Value of ``querystring`` should not be editable after creation.
@@ -178,7 +178,7 @@ class QueryStringAdmin(admin.ModelAdmin):
         if obj:
             return ('querystring',) + self.readonly_fields
         return self.readonly_fields
-    # end QueryStringAdmin.get_readonly_fields        
+    # end QueryStringAdmin.get_readonly_fields
 
     def get_inline_instances(self, request, obj=None):
         """
@@ -193,12 +193,12 @@ class QueryStringAdmin(admin.ModelAdmin):
 
 class QueryEventAdmin(admin.ModelAdmin):
     form = QueryEventForm
-    
-    list_display = ('id', 'query', 'engine', 'created', 'range', 
+
+    list_display = ('id', 'query', 'engine', 'created', 'range',
                     'dispatched', 'search_status', 'results')
     list_display_links = ('query',)
     actions = [dispatch, reset]
-    
+
     fieldsets = (
             (None, {
                 'fields': ('search_by','engine')
@@ -214,10 +214,10 @@ class QueryEventAdmin(admin.ModelAdmin):
             ('Search by tag', {
                 'classes': ('collapse',),
                 'fields': ('tag',),
-            }),            
+            }),
         )
-        
-    
+
+
     def query(self, obj):
         if obj.search_by == 'ST':
             param = obj.querystring.querystring
@@ -230,11 +230,11 @@ class QueryEventAdmin(admin.ModelAdmin):
             method = 'Tag'
         return '{0}: {1}'.format(method, param)
     # end QueryEventAdmin.query
-    
+
     def created(self, obj):
         return obj.datetime
     # end QueryEventAdmin.created
-    
+
     def result_sets(self, obj):
         """
         Generates a list of :class:`.QueryResult` instances associated with this
@@ -243,68 +243,68 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
 
         pattern = u'<a href="{0}">{1}, s:{2}, e:{3}</a>'
-        R = [ pattern.format(get_admin_url(r), obj.querystring.querystring, 
+        R = [ pattern.format(get_admin_url(r), obj.querystring.querystring,
                  r.rangeStart, r.rangeEnd) for r in obj.queryresults.all() ]
 
         return u'\n'.join(R)
     result_sets.allow_tags = True
     # end QueryEventAdmin.result_sets
-    
+
     def results(self, obj):
         """
-        Yields the number of :class:`.Item` associated with this 
+        Yields the number of :class:`.Item` associated with this
         :class:`.QueryEvent`\, with a link to the filtered admin list view for
         :class:`.Item`\.
         """
-            
+
         items = Item.objects.filter(events__id=obj.id).exclude(hide=True)
         if len(items) > 0:
             pattern = u'<a href="{0}?events__id__exact={1}">{2} items</a>'
             baseurl = u'/'.join(get_admin_url(items[0]).split('/')[0:-2])
-            
+
             return pattern.format(baseurl, obj.id, len(items))
         return None
     results.allow_tags = True
-    # end QueryEventAdmin.results    
-    
+    # end QueryEventAdmin.results
+
     def range(self, obj):
         """
         Prettier representation of the start and end indices.
         """
-    
+
         pattern = u'{0}-{1}'
         return pattern.format(obj.rangeStart, obj.rangeEnd)
     range.allow_tags = True
-    # end QueryEventAdmin.range    
-    
+    # end QueryEventAdmin.range
+
     def get_readonly_fields(self, request, obj=None):
         """
         All fields should be readonly after creation.
         """
 
         if obj:
-            read_only = (   
-                'querystring', 'datetime', 'engine', 'range', 'dispatched', 
-                'results', 'search_status', 'creator', 'rangeStart', 
+            read_only = (
+                'querystring', 'datetime', 'engine', 'range', 'dispatched',
+                'results', 'search_status', 'creator', 'rangeStart',
                 'rangeEnd' ) + self.readonly_fields
             return read_only
         return self.readonly_fields
-    # end QueryEventAdmin.get_readonly_fields        
+    # end QueryEventAdmin.get_readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
         """
         Should not display :class:`.QueryResult` when adding.
         """
-        
+
         exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults', 'state' ]
         print obj, self.exclude
         if obj is None:
             self.exclude = exclude + ['dispatched', 'creator']
-            
+
         else:
             pass
         form = super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
-        
+
         # List for initial form values in GET request.
         if request.method == 'GET':
             for key in request.GET:
@@ -314,15 +314,15 @@ class QueryEventAdmin(admin.ModelAdmin):
                     pass
 
         return form
-    # end QueryEventAdmin.get_form        
-    
+    # end QueryEventAdmin.get_form
+
     def save_model(self, request, obj, form, change):
-        
+
         if not hasattr(obj, 'creator'):
             obj.creator = request.user
         obj.save()
     # end QueryEventAdmin.save_model
-# end QueryEventAdmin class    
+# end QueryEventAdmin class
 
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
@@ -337,13 +337,13 @@ class ItemAdmin(admin.ModelAdmin):
     list_select_related = True
     search_fields = ['title',]
     list_per_page = 5
-    
+
     actions = [ approve, reject, pend, merge, retrieve_content ]
-        
+
     def save_model(self, request, obj, form, change):
         """
         On save, should also updated the target of ``merged_with``.
-        
+
         Updates:
         * Contexts
         * Tags
@@ -353,13 +353,13 @@ class ItemAdmin(admin.ModelAdmin):
             'ok'
             for c in request.POST.getlist('context'):
                 obj.merged_with.context.add(Context.objects.get(pk=int(c)))
-        
+
             for t in request.POST.getlist('tags'):
                 obj.merged_with.tags.add(Tag.objects.get(pk=int(t)))
-            
+
             obj.merged_with.save()
     # end ItemAdmin.save_model
-            
+
     def queryset(self, request):
         """
         Filter the queryset to exclude hidden items.
@@ -370,13 +370,13 @@ class ItemAdmin(admin.ModelAdmin):
             return qs.exclude(hide=True)
         return qs
     # end ItemAdmin.queryset
-        
+
     ## Custom fields...
     def parent(self, obj):
         """
         Display the item into which this item has been merged.
         """
-        
+
         pattern = u'<a href="{0}">{1}</a>'
         if obj.merged_with is not None:
             href = get_admin_url(obj.merged_with)
@@ -384,37 +384,37 @@ class ItemAdmin(admin.ModelAdmin):
             return pattern.format(href, title)
         return None
     parent.allow_tags = True
-    # end ItemAdmin.parent    
-    
+    # end ItemAdmin.parent
+
     def children(self, obj):
         """
         Display merged items from whence this item originated.
         """
-        
+
         pattern = u'<li><a href="{0}">{1}</a></li>'
-        
+
         html = u'<ul>'
         for c in obj.merged_from.all():
             html += pattern.format(get_admin_url(c), c.title)
         html += u'</ul>'
         return html
     children.allow_tags = True
-    # end ItemAdmin.children    
-    
+    # end ItemAdmin.children
+
     def list_preview(self, obj, **kwargs):
         """
         Generates a thumbnail, or player.
         """
-        
+
         return self._item_image(obj, True)
     list_preview.allow_tags = True
-    # end ItemAdmin.list_preview    
-            
+    # end ItemAdmin.list_preview
+
     def item_preview(self, obj, **kwargs):
         return self._item_image(obj, False)
     item_preview.allow_tags = True
-    # end ItemAdmin.item_preview    
-    
+    # end ItemAdmin.item_preview
+
     def resource(self, obj):
         """
         Generates a link to the original image URL, opening in a new tab.
@@ -424,7 +424,7 @@ class ItemAdmin(admin.ModelAdmin):
         return pattern.format(obj.url)
     resource.allow_tags = True
     # end ItemAdmin.resource
-    
+
     def contexts(self, obj):
         """
         Generates a list of associated :class:`.Context` instances, with links
@@ -432,26 +432,26 @@ class ItemAdmin(admin.ModelAdmin):
         """
 
         pattern = u'<li><a href="{0}">{1}</a></li>'
-        repr = u''.join([ pattern.format(get_admin_url(c),c.url) 
+        repr = u''.join([ pattern.format(get_admin_url(c),c.url)
                             for c in obj.context.all() ])
         return u'<ul>{0}</ul>'.format(repr)
     contexts.allow_tags = True
-    # end ItemAdmin.contexts    
-    
+    # end ItemAdmin.contexts
+
     def icon(self, obj, list=False):
         """
         Display a media type icon.
         """
-        
+
         return self._format_type_icon(obj.type)
     icon.allow_tags = True
-    # end ItemAdmin.icon    
-    
+    # end ItemAdmin.icon
+
     def contents(self, obj, list=True):
         """
         Display the content objects associated with an Item.
         """
-        
+
         logger.debug(obj.type)
         logger.debug(obj.type == 'Text')
 
@@ -467,22 +467,22 @@ class ItemAdmin(admin.ModelAdmin):
 
             return u''.join(formatted)
         elif obj.type == 'Video':
-            logger.debug('Display contents of VideoItem.')        
+            logger.debug('Display contents of VideoItem.')
             formatted = []
             for vid in obj.videoitem.videos.all():
                 icon = self._format_mime_icon(vid.type(), 'video')
                 _url = get_admin_url(vid)
                 formatted.append(pattern.format(_url, icon))
             return u''.join(formatted)
-            
+
         elif obj.type == 'Image':
-            logger.debug('Display contents of ImageItem.')        
+            logger.debug('Display contents of ImageItem.')
             formatted = []
             for img in obj.imageitem.images.all():
                 icon = self._format_mime_icon(img.type(), 'image')
                 _url = get_admin_url(img)
                 formatted.append(pattern.format(_url, icon))
-            return u''.join(formatted)        
+            return u''.join(formatted)
         elif obj.type == 'Text':
             logger.debug('Display contents of TextItem.')
             formatted = []
@@ -490,9 +490,9 @@ class ItemAdmin(admin.ModelAdmin):
                 icon = self._format_mime_icon(txt.mime, 'text')
                 _url = get_admin_url(txt)
                 formatted.append(pattern.format(_url, icon))
-            return u''.join(formatted)        
+            return u''.join(formatted)
     contents.allow_tags = True
-    # end ItemAdmin.contents    
+    # end ItemAdmin.contents
 
     def _format_mime_icon(self, mime, alt=None):
         """
@@ -514,14 +514,14 @@ class ItemAdmin(admin.ModelAdmin):
             'video/3gpp':       '/dolon/media/static/3gp-by-Hopstarter.png',
             'video/quicktime':  '/dolon/media/static/mov-by-Hopstarter.png',
         }
-        
+
         alt_types = {
             'image':        '/dolon/media/static/jpeg-by-Hopstarter.png',
             'audio':        '/dolon/media/static/audio-by-Hopstarter.png',
             'video':        '/dolon/media/static/video-by-Hopstarter.png',
             'text':         '/dolon/media/static/text-by-Hopstarter.png',
         }
-        
+
         pattern = u'<img src="{0}" height="{1}" />'
         if mime in known_types:
             icon_path = known_types[mime]
@@ -530,7 +530,7 @@ class ItemAdmin(admin.ModelAdmin):
             icon_path = alt_types[alt]
             return pattern.format(icon_path, 50)
         return None
-    # end ItemAdmin._format_mime_icon        
+    # end ItemAdmin._format_mime_icon
 
     def _format_type_icon(self, type):
         """
@@ -548,15 +548,15 @@ class ItemAdmin(admin.ModelAdmin):
         else:
             return None
         return pattern.format(iconpath, 50)
-    # end ItemAdmin._format_type_icon        
-    
+    # end ItemAdmin._format_type_icon
+
     def _format_thumb(self, obj, thumb, list):
         pattern = u'<a href="{0}"><img src="{1}"/></a>'
         if thumb is not None and thumb.image is not None:
 
             if list:
                 fullsize_url = get_admin_url(obj)
-            else:   
+            else:
                 if hasattr(obj, 'imageitem'):
                     if obj.imageitem.image is not None:
                         fullsize_url = get_admin_url(obj.imageitem.image)
@@ -570,38 +570,38 @@ class ItemAdmin(admin.ModelAdmin):
         else:
             fullsize_url = '#'
         return pattern.format(fullsize_url, u'/dolon/media/static/file-by-Gurato.png')
-    # end ItemAdmin._format_thumb        
-        
+    # end ItemAdmin._format_thumb
+
     def _format_embed(self, videos):
         if len(videos) == 0:
             return None
-            
+
         pattern = u'<video width="320" controls>\t{0}</video>'
         spattern = u'<source src="{0}" />'
-        
+
         # Sort videos so that .MOV format is last.
         videos_ = []
         _mov = None
         for video in videos:
             if hasattr(video.video, 'url'): # May not have downloaded video
                 _url = video.video.url       #  content yet.
-            else:   
+            else:
                 _url = video.url
-                
-            fmt = _url.split('.')[-1].lower()   # Not using MIME type, since we 
+
+            fmt = _url.split('.')[-1].lower()   # Not using MIME type, since we
             if fmt == 'mov':                    # may not have that at hand.
                 _mov = _url
                 continue    # Wait to add this video until the end.
             videos_.append(_url)
         if _mov is not None:    # Add the .MOV file, if there was one.
             videos_.append(_mov)
-                    
+
         vformatted = []
         for _url in videos_:
             vformatted.append(spattern.format(_url))
-        
+
         return pattern.format(u''.join(vformatted))
-    # end ItemAdmin._format_embed        
+    # end ItemAdmin._format_embed
 
     def _format_audio_embed(self, audios):
         if len(audios) == 0:
@@ -616,7 +616,7 @@ class ItemAdmin(admin.ModelAdmin):
             except ValueError:
                 aformatted.append(spattern.format(audio.url, ''))
         return pattern.format(u'\n'.join(aformatted))
-    # end ItemAdmin._format_audio_embed        
+    # end ItemAdmin._format_audio_embed
 
     def _item_image(self, obj, list=False):
         """
@@ -624,7 +624,7 @@ class ItemAdmin(admin.ModelAdmin):
         :class:`.Image`\.
         """
 
-        try:    # If something went wrong when downloading a thumbnail, 
+        try:    # If something went wrong when downloading a thumbnail,
                 #  this will raise a ValueError.
             if hasattr(obj, 'imageitem'):
                 obj.imageitem.thumbnail.image.url
@@ -632,7 +632,7 @@ class ItemAdmin(admin.ModelAdmin):
             return None
 
         if hasattr(obj, 'imageitem'):
-            return self._format_thumb(obj, obj.imageitem.thumbnail, list)            
+            return self._format_thumb(obj, obj.imageitem.thumbnail, list)
         elif hasattr(obj, 'audioitem'):
             audios = obj.audioitem.audio_segments.all()
             return self._format_audio_embed(audios)
@@ -645,11 +645,11 @@ class ItemAdmin(admin.ModelAdmin):
             if obj.textitem.snippet is not None:
                 if list:
                     return obj.textitem.snippet[0:50]
-                    
+
             return obj.textitem.snippet
-            
+
     _item_image.allow_tags = True
-    # end ItemAdmin._item_image    
+    # end ItemAdmin._item_image
 
     def query_events(self, obj):
         """
@@ -658,8 +658,8 @@ class ItemAdmin(admin.ModelAdmin):
         """
 
         pattern = u'<li><a href="{0}">{1}</a></li>'
-            
-        repr = u''.join([ pattern.format(get_admin_url(e), e) 
+
+        repr = u''.join([ pattern.format(get_admin_url(e), e)
                         for e in obj.events.all() ])
         return u'<ul>{0}</ul>'.format(repr)
     query_events.allow_tags = True
@@ -668,7 +668,7 @@ class ItemAdmin(admin.ModelAdmin):
 
 class HiddenAdmin(admin.ModelAdmin):
     """
-    Not accessible from the admin interface, but individual items are 
+    Not accessible from the admin interface, but individual items are
     accessible.
     """
     def get_model_perms(self, request):
@@ -678,17 +678,17 @@ class HiddenAdmin(admin.ModelAdmin):
         return {}
     # end HiddenAdmin.get_model_perms
 # end HiddenAdmin class
-    
+
 class ContextAdmin(HiddenAdmin):
     form = autocomplete_light.modelform_factory(Context)
     list_display = ('status', 'diffbot', 'url')
     list_display_links = ('status', 'url')
-    readonly_fields = ( 'resource', 'title', 'retrieved', 'diffbot', 
-                        'use_diffbot', 'publicationDate', 'author', 'language', 
+    readonly_fields = ( 'resource', 'title', 'retrieved', 'diffbot',
+                        'use_diffbot', 'publicationDate', 'author', 'language',
                         'text_content',  )
     exclude = ('url','diffbot_requests', 'content')
     actions = (retrieve_context,)
-    
+
     def diffbot(self, obj):
         try:
             request = obj.diffbot_requests.all()[0]
@@ -699,17 +699,17 @@ class ContextAdmin(HiddenAdmin):
             return '<img src="/dolon/static/admin/img/icon-no.gif" />'
     diffbot.allow_tags = True
     # end ContextAdmin.diffbot
-    
+
     def queryset(self, request):
         """
         Only return Contexts for approved items in changelist.
         """
-        
+
         if request.path.split('/')[-2] == 'context':   # Only filter changelist.
             return Context.objects.filter(items__status='AP')
         return super(ContextAdmin, self).queryset(request)
     # end ContextAdmin.queryset
-        
+
     def resource(self, obj):
         """
         Generates a link to the original context URL, opening in a new tab.
@@ -741,7 +741,7 @@ class TagAdmin(admin.ModelAdmin):
         return u'<ul>{0}</ul>'.format(html)
     items.allow_tags = True
     # end TagAdmin.items
-    
+
     def contexts(self, obj):
         pattern = u'<li><a href="{0}">{1}</a></li>'
         for i in obj.contexts():
@@ -750,7 +750,7 @@ class TagAdmin(admin.ModelAdmin):
         return u'<ul>{0}</ul>'.format(html)
     contexts.allow_tags = True
     # end TagAdmin.contexts
-        
+
     def get_readonly_fields(self, request, obj=None):
         """
         """
@@ -758,13 +758,13 @@ class TagAdmin(admin.ModelAdmin):
         if obj:
             read_only = ('text', 'items', 'contexts') + self.readonly_fields
             return read_only
-        return self.readonly_fields        
+        return self.readonly_fields
     # end TagAdmin.get_readonly_fields
-# end TagAdmin class       
+# end TagAdmin class
 
 class ImageAdmin(HiddenAdmin):
     list_display = ('status', 'url')
-    list_display_links = ('status', 'url')    
+    list_display_links = ('status', 'url')
     readonly_fields = ('fullsize_image', 'resource', 'size', 'mime', 'height', 'width')
     exclude = ('url','image')
     actions = (retrieve_image,)
@@ -773,7 +773,7 @@ class ImageAdmin(HiddenAdmin):
         """
         Only return Images for approved items in changelist.
         """
-        
+
         if request.path.split('/')[-2] == 'image':   # Only filter changelist.
             return Image.objects.filter(queryItems__status='AP')
         return super(ImageAdmin, self).queryset(request)
@@ -797,11 +797,11 @@ class ImageAdmin(HiddenAdmin):
         return True
     status.boolean = True
     # end ImageAdmin.status
-    
+
     def fullsize_image(self, obj):
         """
         Generates a fullsize image element.
-        
+
         TODO: constrain display size.
         """
 
@@ -809,22 +809,22 @@ class ImageAdmin(HiddenAdmin):
             pattern = u'<img src="{0}"/>'
             return pattern.format(obj.image.url)
         return None
-    fullsize_image.allow_tags = True   
+    fullsize_image.allow_tags = True
     # end ImageAdmin.fullsize_image
 # end ImageAdmin class
-    
+
 class GroupTaskAdmin(admin.ModelAdmin):
     list_display = ('task_id', 'state')
 # end GroupTaskAdmin class
-    
+
 class EngineAdmin(admin.ModelAdmin):
     readonly_fields = ['dayusage', 'monthusage']
     list_display = ['engine_name', 'daily_usage', 'monthly_usage']
-    
+
     def engine_name(self, obj):
         return obj.__unicode__()
     # end EngineAdmin.name
-    
+
     def daily_usage(self, obj):
         if obj.daylimit is None:
             usage = obj.dayusage
@@ -833,16 +833,16 @@ class EngineAdmin(admin.ModelAdmin):
             usage = 100*float(obj.dayusage)/float(obj.daylimit)
             return u'{0}%'.format(usage)
     # end EngineAdmin.daily_usage
-    
+
     def monthly_usage(self, obj):
         if obj.monthlimit is None:
             usage = obj.monthusage
             return u'{0} of unlimited'.format(usage)
         else:
             usage = 100*float(obj.monthusage)/float(obj.monthlimit)
-            return u'{0}%'.format(usage)    
+            return u'{0}%'.format(usage)
     # end EngineAdmin.monthly_usage
-            
+
     def get_form(self, request, obj=None, **kwargs):
         """
         manager should be readonly when editing.
@@ -851,11 +851,11 @@ class EngineAdmin(admin.ModelAdmin):
         readonly_fields = ['dayusage', 'monthusage']
         if obj is not None:
             self.readonly_fields = readonly_fields + ['manager']
-            
+
         return super(EngineAdmin, self).get_form(request, obj, **kwargs)
     # end EngineAdmin.get_form
 # end EngineAdmin class
-        
+
 class AudioAdmin(HiddenAdmin):
     readonly_fields = ['preview', 'url', 'size', 'length', 'mime']
     exclude = ['audio_file']
@@ -879,8 +879,8 @@ class TextAdmin(HiddenAdmin):
 
 class ThumbnailAdmin(HiddenAdmin):
     pass
-# end ThumbnailAdmin class    
-        
+# end ThumbnailAdmin class
+
 class VideoAdmin(HiddenAdmin):
     readonly_fields = ['preview', 'url', 'size', 'length', 'mime']
     exclude = ['video']
@@ -895,7 +895,7 @@ class VideoAdmin(HiddenAdmin):
         source = u'<source src="{0}" />'.format(video.url)#, video.type())
         return pattern.format(source)
     # end VideoAdmin._format_embed
-# end VideoAdmin class            
+# end VideoAdmin class
 
 class DiffBotRequestAdmin(admin.ModelAdmin):
     list_display = ['id', 'created', 'attempted', 'completed', 'type']
@@ -906,21 +906,30 @@ class DiffBotRequestAdmin(admin.ModelAdmin):
 class OAuthAccessTokenAdmin(admin.ModelAdmin):
     list_display = [    'screen_name', 'platform', 'user_id', 'access_verified',
                         'created'   ]
-    
+
     def access_verified(self, obj):
+        """
+        Indicate whether OAuth authentication was successful.
+        """
         if obj.oauth_access_token is not None:
-            return '<img src="{0}admin/img/icon-yes.gif" />'.format(settings.STATIC_URL)
-        return '<img src="{0}admin/img/icon-no.gif" />'.format(settings.STATIC_URL)
+            return '<img src="{0}admin/img/icon-yes.gif" />'.format(
+                                                        settings.STATIC_URL )
+        return '<img src="{0}admin/img/icon-no.gif" />'.format(
+                                                        settings.STATIC_URL )
     access_verified.allow_tags = True
-    
+
     def get_urls(self):
+        """
+        Adds the callback view for the OAuth authentication process.
+        """
         urls = super(OAuthAccessTokenAdmin, self).get_urls()
         my_urls = patterns('',
-            (r'^callback/(?P<platform>[a-zA-Z]+)/$', self.admin_site.admin_view(self.callback)),
+            (   r'^callback/(?P<platform>[a-zA-Z]+)/$',
+                    self.admin_site.admin_view(self.callback)   ),
         )
         return my_urls + urls
     # end OAuthAccessTokenAdmin.get_urls
-        
+
     def callback(self, request, platform):
         """
         Receives verifier from OAuth service, and gets an access token.
@@ -929,7 +938,7 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
             manager = TwitterOAuthManager(
                         consumer_key=settings.TWITTER_KEY,
                         consumer_secret=settings.TWITTER_SECRET
-                        )        
+                        )
             verifier = request.GET.get('oauth_verifier')
             token = request.GET.get('oauth_token')
             _ptoken_id = manager.get_access_token(verifier, token)
@@ -937,10 +946,11 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
             logger.debug(ptoken)
             return redirect(get_admin_url(ptoken))
     # end OAuthAccessTokenAdmin.callback
-        
+
     def response_add(self, request, obj, post_url_continue=None):
         if obj.platform.name == 'Twitter':
-            callback_url = 'http://{0}/admin/dolon/oauthaccesstoken/callback/{1}/'.format(request.get_host(), obj.platform)        
+            callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(),settings.APP_DIR)   +\
+                           'oauthaccesstoken/callback/{0}/'.format(obj.platform)
             logger.debug(callback_url)
             manager = TwitterOAuthManager(
                         consumer_key=settings.TWITTER_KEY,
@@ -948,70 +958,72 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
                         callback_url = callback_url
                         )
             redirect_url, ptoken_id = manager.get_access_url(callback_url)
-                        
-            return redirect(redirect_url) 
-                
+
+            return redirect(redirect_url)
+
     def get_form(self, request, obj=None, **kwargs):
         """
+        When creating an OAuthAccessToken,
         """
-        
-        exclude = [     'oauth_token_secret', 'oauth_access_token_secret', 
-                        'oauth_token', 'oauth_verified', 'oauth_access_token', 
+
+        exclude = [     'oauth_token_secret', 'oauth_access_token_secret',
+                        'oauth_token', 'oauth_verified', 'oauth_access_token',
                         'oauth_verifier'    ]
         if obj is None:
-            self.exclude = exclude + [ 'user_id', 'screen_name', 
+            self.exclude = exclude + [ 'user_id', 'screen_name',
                                        'access_verified', 'creator', 'created' ]
             self.readonly_fields = []
-        else: 
-            self.readonly_fields = [ 'platform',  'user_id', 'screen_name', 
+        else:
+            self.readonly_fields = [ 'platform',  'user_id', 'screen_name',
                                      'access_verified', 'creator', 'created', ]
             self.exclude = exclude
 
-        form = super(OAuthAccessTokenAdmin, self).get_form(request, obj, **kwargs)
-        
+        form = super(OAuthAccessTokenAdmin, self).get_form( request, obj,
+                                                            **kwargs    )
+
         return form
 # end OAuthAccessTokenAdmin class
-        
+
 class SocialUserAdmin(admin.ModelAdmin):
     list_display = ['handle', 'platform', 'user_id', 'profile']
     fields = [  'handle', 'platform', 'profile_url', 'user_id', 'description',
                 'content_by_this_user' ]
 
-    
+
     def get_form(self, request, obj=None, **kwargs):
-        
+
         if obj is not None:
-            self.readonly_fields = [ 'handle', 'platform', 'profile_url', 
+            self.readonly_fields = [ 'handle', 'platform', 'profile_url',
                                      'user_id', 'content_by_this_user' ]
         form = super(SocialUserAdmin, self).get_form(request, obj, **kwargs)
-        return form        
-        
+        return form
+
     def profile(self, obj):
         """
         Generate a link to the user's profile.
         """
-        
+
         if obj.profile_url is None:
             return None
-        
+
         link = '<a href="{0}">Profile</a>'.format(obj.profile_url)
         return link
     profile.allow_tags = True
-    
+
     def content_by_this_user(self, obj):
         """
-        Generate a list of :class:`.Item`\s generated by this 
+        Generate a list of :class:`.Item`\s generated by this
         :class:`.SocialUser`\.
         """
-        
+
         items = obj.content()
-        
-        pattern = '<tr class="row{0}">' + \     # Alternating row number.
-                        '<td>{1}</td>' + \      # Item type.
-                        '<td>{2}</td>' + \      # Creation date.
-                        '<td><a href="{3}">{4}</a></td>' + \    # Preview/title.
+
+        pattern = '<tr class="row{0}">' + \
+                        '<td>{1}</td>' + \
+                        '<td>{2}</td>' + \
+                        '<td><a href="{3}">{4}</a></td>' + \
                     '</tr>'
-        
+
         lpattern = '<table id="result_list" width="100%"> ' + \
                         '<thead>' + \
                             '<tr>' + \
@@ -1020,7 +1032,7 @@ class SocialUserAdmin(admin.ModelAdmin):
                                 '<td scope="col" width="50%">Preview</td>' + \
                             '</tr>' + \
                         '</thead>' + \
-                        '<tbody>{0}</tbody>' + \    # <- Insert table rows here.
+                        '<tbody>{0}</tbody>' + \
                     '</table>'
 
         formatted = []
