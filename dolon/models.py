@@ -198,10 +198,18 @@ class QueryEvent(models.Model):
                         related_name='event_instance'   )
 
     def __unicode__(self):
-        pattern = '"{0}", items {1}-{2}, created {3}'
-        date = pretty_date(self.datetime)
-        repr = pattern.format(  self.querystring, self.rangeStart, 
-                                self.rangeEnd, date )
+        if self.search_by == 'ST':
+            pattern = 'String "{0}" in {1}, items {2}-{3}'
+            value = self.querystring.querystring
+        elif self.search_by == 'UR':
+            pattern = 'User {0} in {1}, items {2}-{3}'
+            value = self.user.handle
+        elif self.search_by == 'TG':
+            pattern = 'Tag {0} in {1}, items {2}-{3}'
+            value = self.tag.string
+            
+        repr = pattern.format(  value, self.engine, 
+                                self.rangeStart, self.rangeEnd  )
         return unicode(repr)
 
     def items(self):
