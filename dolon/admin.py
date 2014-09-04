@@ -79,7 +79,8 @@ class QueryEventForm(forms.ModelForm):
 class QueryEventInline(admin.TabularInline):
     model = QueryEvent
     readonly_fields = ('dispatched', 'range', 'engine', 'datetime', 'results')
-    exclude = ('rangeStart', 'rangeEnd', 'search_task', 'thumbnail_tasks', 'queryresults')
+    exclude = ( 'rangeStart', 'rangeEnd', 'search_task', 'thumbnail_tasks', 
+                'queryresults'  )
     ordering = ('datetime',)
 
     extra = 0
@@ -140,19 +141,22 @@ class QueryStringAdmin(admin.ModelAdmin):
 
         engines = { e.id:unicode(e) for e in Engine.objects.all() }
 
-        values = { q:{ g:0 for g in engines.keys() } for q in querystrings.keys() }
+        values = { q:{ g:0 for g in engines.keys() } 
+                        for q in querystrings.keys() }
         events = QueryEvent.objects.all()
         for e in events:
-            items = Item.objects.filter(events__id=e.id).exclude(hide=True)
-            q = e.querystring.id
-            g = e.engine.id
+            if e.search_by == 'ST':
+                items = Item.objects.filter(events__id=e.id).exclude(hide=True)
+                q = e.querystring.id
+                g = e.engine.id
 
-            values[q][g] += len(items)
+                values[q][g] += len(items)
 
-        pattern = "/admin/dolon/item/?events__engine__id__exact={0}&events__querystring__id__exact={1}"
-
+        pattern = "{0}admin/dolon/item/?events__engine__id__exact={1}&events__querystring__id__exact={2}"
+        
         values_ = [ (querystrings[k], [
-                          (pattern.format(g,k), vals[g], g, k ) for g in engines
+                        (pattern.format(settings.APP_DIR, g,k), vals[g], g, k ) 
+                            for g in engines
                     ]) for k,vals in values.iteritems() ]
 
         context = {
@@ -949,7 +953,7 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
 
     def response_add(self, request, obj, post_url_continue=None):
         if obj.platform.name == 'Twitter':
-            callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(),settings.APP_DIR)   +\
+            callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(), settings.APP_DIR)   +\
                            'oauthaccesstoken/callback/{0}/'.format(obj.platform)
             logger.debug(callback_url)
             manager = TwitterOAuthManager(
