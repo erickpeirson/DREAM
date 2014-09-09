@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 import time
 import math
 import tweepy
+import facebook
 import tempfile
 import cPickle as pickle
 from dream import settings
@@ -30,8 +31,33 @@ class BaseSearchManager(object):
     """
     Base class for search managers.
     """
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         pass
+        
+class FacebookManager(BaseSearchManager):
+    base = "https://graph.facebook.com"
+    
+    def search(self, queryevent_id):
+        try:
+            results = []
+            
+            queryevent = QueryEvent.objects.get(pk=queryevent_id)
+            access_token = queryevent.engine.oauth_token.oauth_access_token
+            
+            self.api = facebook.GraphAPI(access_token)
+            
+            _start = queryevent.rangeStart
+            _end = queryevent.rangeEnd
+            Nitems = min(_end - _start + 1, 1500)
+            
+            if queryevent.search_by == 'UR':  
+                user_id = queryevent.user.user_id
+                feed = self.api.get_connections(str(user_id), "home")
+                logger.debug(feed)
+        except Exception as E:
+            logger.debug(E)
+            return 'ERROR'
+        return results                
 
 class TwitterManager(BaseSearchManager):
     def __init__(self, *args, **kwargs):        

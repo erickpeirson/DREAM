@@ -24,6 +24,7 @@ engineManagers = (
     ( 'GoogleImageSearchManager', 'Google Image Search'),
     ( 'InternetArchiveManager', 'Internet Archive'),
     ( 'TwitterManager', 'Twitter'),
+    ( 'FacebookManager', 'Facebook'),
 )
 
 # Create your models here.
@@ -654,6 +655,10 @@ class SocialUser(models.Model):
     A user on a social media website.
     """
     
+    def __unicode__(self):
+        return unicode('{0} on {1}'.format(
+                    (self.handle or self.user_id), self.platform    )   )
+    
     handle = models.CharField(max_length=500)
     """username, email, whatever is used to identify the user."""
     
@@ -716,6 +721,9 @@ class OAuthAccessToken(models.Model):
         verbose_name = "OAuth access token"
         verbose_name_plural = "OAuth access tokens"
 
+    def __unicode__(self):
+        return unicode('{0} on {1}'.format( 
+                (self.screen_name or self.user_id), self.platform   )  )
     
     created = models.DateTimeField(auto_now_add=True)
     
