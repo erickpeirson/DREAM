@@ -737,5 +737,9 @@ class OAuthAccessToken(models.Model):
     platform = models.ForeignKey(SocialPlatform, null=True, blank=True,
                 help_text="If adding a token, you will be directed to this" + \
                           " platform's website to log in.")
-                        
+
+    expires = models.DateTimeField(null=True, blank=True,
+                help_text = "Some platforms expire access tokens after some" + \
+                            " period of time. When a token expires, it will" + \
+                            " no longer be usable.")                        
                     

@@ -1,6 +1,8 @@
 import tweepy
 import urllib2
 import json
+from datetime import datetime, timedelta
+from util import localize_datetime
 
 from models import OAuthAccessToken, SocialPlatform
 
@@ -42,8 +44,10 @@ class FacebookOAuthManager(OAuthManager):
         rcontent = urllib2.urlopen(request_url).read()
         params = rcontent.split('&')
         access_token = params[0].split('=')[1]
-        expires = params[1].split('=')[1]
         
+        # "expires" parameter is seconds from now.
+        expires_in = timedelta(seconds=int(params[1].split('=')[1]))
+        expires = localize_datetime(datetime.now() + expires_in)
         
         # Debug token to get user id, other metadata.        
         app_token = self.consumer_key + "|" + self.consumer_secret
@@ -58,13 +62,14 @@ class FacebookOAuthManager(OAuthManager):
         ptoken = OAuthAccessToken(
                     oauth_access_token=access_token,
                     platform=platform,
-                    user_id=user_id
+                    user_id=user_id,
+                    expires=expires
                     )
         ptoken.save()
         
         self.cleanup()
                         
-        return ptoken_id
+        return ptoken.id
         
 class TwitterOAuthManager(OAuthManager):
     def __init__(self, *args, **kwargs):

@@ -13,6 +13,8 @@ from admin_actions import *
 from oauth_managers import TwitterOAuthManager, FacebookOAuthManager
 from dream import settings
 
+from datetime import datetime
+
 import uuid
 
 from django.db.models.signals import pre_delete
@@ -908,14 +910,21 @@ class DiffBotRequestAdmin(admin.ModelAdmin):
 
 
 class OAuthAccessTokenAdmin(admin.ModelAdmin):
-    list_display = [    'screen_name', 'platform', 'user_id', 'access_verified',
-                        'created'   ]
+    list_display = [    'user_id', 'screen_name', 'platform', 'access_verified',
+                        'created', 'expires'   ]
+    list_display_links = ['screen_name', 'user_id']
 
     def access_verified(self, obj):
         """
         Indicate whether OAuth authentication was successful.
         """
+        now = localize_datetime(datetime.now())
+        
         if obj.oauth_access_token is not None:
+            if obj.expires is not None:
+                if now >= obj.expires:
+                    return '<img src="{0}admin/img/icon-no.gif" />'.format(
+                                                        settings.STATIC_URL )
             return '<img src="{0}admin/img/icon-yes.gif" />'.format(
                                                         settings.STATIC_URL )
         return '<img src="{0}admin/img/icon-no.gif" />'.format(
@@ -963,11 +972,10 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
     # end OAuthAccessTokenAdmin.callback
 
     def response_add(self, request, obj, post_url_continue=None):
-        callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(), settings.APP_DIR)   +\
-                       'oauthaccesstoken/callback/{0}/'.format(obj.platform)
+        pattern = 'http://{0}{1}admin/dolon/oauthaccesstoken/callback/{2}/'
+        callback_url = pattern.format(
+                        request.get_host(), settings.APP_DIR, obj.platform  )
 
-#        callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(), settings.APP_DIR)   +\
-#                       'oauthaccesstoken/callback/{0}/'.format(obj.platform)
         logger.debug(callback_url)
         
         if obj.platform.name == 'Twitter':
@@ -1001,8 +1009,8 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
                                        'access_verified', 'creator', 'created' ]
             self.readonly_fields = []
         else:
-            self.readonly_fields = [ 'platform',  'user_id',
-                                     'access_verified', 'creator', 'created', ]
+            self.readonly_fields = [ 'platform',  'user_id', 'access_verified', 
+                                     'creator', 'created', ]
             self.exclude = exclude
 
         form = super(OAuthAccessTokenAdmin, self).get_form( request, obj,
