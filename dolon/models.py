@@ -719,21 +719,23 @@ class OAuthAccessToken(models.Model):
     
     created = models.DateTimeField(auto_now_add=True)
     
-    oauth_token = models.CharField(max_length=100)
+    oauth_token = models.CharField(max_length=1000)
     oauth_token_secret = models.CharField(max_length=100)
     
-    oauth_verifier = models.CharField(max_length=100, blank=True, null=True)
-    oauth_access_token = models.CharField(max_length=100, blank=True, null=True)
-    oauth_access_token_secret = models.CharField(max_length=100, blank=True, null=True)
+    oauth_verifier = models.CharField(max_length=1000, blank=True, null=True)
+    oauth_access_token = models.CharField(max_length=1000, blank=True, null=True)
+    oauth_access_token_secret = models.CharField(max_length=1000, blank=True, null=True)
     
     
     user_id = models.CharField(max_length=50, blank=True, null=True)
-    screen_name = models.CharField(max_length=100, blank=True, null=True)
+    screen_name = models.CharField(max_length=200, blank=True, null=True,
+                help_text="Some platforms won't provide a username; you can" + \
+                          " enter one manually if you like.")
     
     creator = models.ForeignKey(User, blank=True, null=True)
 
     platform = models.ForeignKey(SocialPlatform, null=True, blank=True,
                 help_text="If adding a token, you will be directed to this" + \
-                          "platform's website to log in.")
-    
+                          " platform's website to log in.")
+                        
                     

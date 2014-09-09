@@ -1,4 +1,6 @@
 import tweepy
+import urllib2
+import json
 
 from models import OAuthAccessToken, SocialPlatform
 
@@ -12,6 +14,57 @@ class OAuthManager(object):
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         self.callback_url = callback_url
+        
+    def cleanup(self):
+        # Clean up any unused OAuthAccessToken objects.
+        tokens = OAuthAccessToken.objects.all()
+        for token in tokens:
+            if token.oauth_access_token is None:
+                token.delete()
+                
+class FacebookOAuthManager(OAuthManager):
+    oauth_base = "https://www.facebook.com/dialog/oauth?"
+    dbg_base = "https://graph.facebook.com/debug_token?"
+    code_base = "https://graph.facebook.com/oauth/access_token?"
+    
+    def get_access_url(self, callback):
+        url = self.oauth_base + "client_id={0}&redirect_uri={1}".format(
+                                self.consumer_key, callback    )
+
+        return url
+
+    def get_access_token(self, request, redirect=None):
+        code = request.GET.get('code')
+        
+        request_url = self.code_base + "client_id={0}&redirect_uri={1}&client_secret={2}&code={3}".format(
+                                            self.consumer_key, redirect, self.consumer_secret, code )
+                            
+        rcontent = urllib2.urlopen(request_url).read()
+        params = rcontent.split('&')
+        access_token = params[0].split('=')[1]
+        expires = params[1].split('=')[1]
+        
+        
+        # Debug token to get user id, other metadata.        
+        app_token = self.consumer_key + "|" + self.consumer_secret
+        request_url = self.dbg_base + "input_token={0}&access_token={1}".format(
+                                            access_token, app_token  )
+        
+        response = urllib2.urlopen(request_url) # GET
+        rdata = json.load(response)['data']     # Parse JSON response.
+        user_id = rdata['user_id']
+        
+        platform = SocialPlatform.objects.get(name='Facebook')
+        ptoken = OAuthAccessToken(
+                    oauth_access_token=access_token,
+                    platform=platform,
+                    user_id=user_id
+                    )
+        ptoken.save()
+        
+        self.cleanup()
+                        
+        return ptoken_id
         
 class TwitterOAuthManager(OAuthManager):
     def __init__(self, *args, **kwargs):
@@ -57,9 +110,9 @@ class TwitterOAuthManager(OAuthManager):
                     )
         ptoken.save()
         
-        return redirect_url, ptoken.id
+        return redirect_url
     
-    def get_access_token(self, verifier, token):
+    def get_access_token(self, request):
         """
         Handles the verifier returned by Twitter to the callback url after the
         user authorizes Dolon. The verifier is used to retrieve an access token,
@@ -79,6 +132,9 @@ class TwitterOAuthManager(OAuthManager):
             The ID of the updated :class:`.OAuthAccessToken`\. Should be 
             identical to the provided ``token``.
         """
+
+        verifier = request.GET.get('oauth_verifier')
+        token = request.GET.get('oauth_token')        
         
         # We need the original request token in order to retrieve the
         #  authorization token.
@@ -100,11 +156,6 @@ class TwitterOAuthManager(OAuthManager):
         ptoken.user_id = user.id
         ptoken.save()
         
-        # Clean up any unused OAuthAccessToken objects.
-        tokens = OAuthAccessToken.objects.all()
-        for token in tokens:
-            if token.oauth_access_token is None:
-                token.delete()
+        self.cleanup()
         
-        return ptoken.id
-        
+        return ptoken.id    

@@ -10,7 +10,7 @@ from models import *
 from util import *
 from tasks import *
 from admin_actions import *
-from oauth_managers import TwitterOAuthManager
+from oauth_managers import TwitterOAuthManager, FacebookOAuthManager
 from dream import settings
 
 import uuid
@@ -938,32 +938,55 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
         """
         Receives verifier from OAuth service, and gets an access token.
         """
+                               
         if platform == 'Twitter':
             manager = TwitterOAuthManager(
                         consumer_key=settings.TWITTER_KEY,
                         consumer_secret=settings.TWITTER_SECRET
                         )
-            verifier = request.GET.get('oauth_verifier')
-            token = request.GET.get('oauth_token')
-            _ptoken_id = manager.get_access_token(verifier, token)
+            _ptoken_id = manager.get_access_token(request)
             ptoken = OAuthAccessToken.objects.get(pk=_ptoken_id)
-            logger.debug(ptoken)
-            return redirect(get_admin_url(ptoken))
+        elif platform == 'Facebook':
+            manager = FacebookOAuthManager(
+                        consumer_key=settings.FACEBOOK_ID,
+                        consumer_secret=settings.FACEBOOK_SECRET
+                        )
+            callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(), settings.APP_DIR)   +\
+                       'oauthaccesstoken/callback/{0}/'.format(platform)                        
+            _ptoken_id = manager.get_access_token(request, redirect=callback_url)
+            ptoken = OAuthAccessToken.objects.get(pk=_ptoken_id)
+        else:
+            return
+        logger.debug(ptoken)
+        return redirect(get_admin_url(ptoken))
+            
     # end OAuthAccessTokenAdmin.callback
 
     def response_add(self, request, obj, post_url_continue=None):
+        callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(), settings.APP_DIR)   +\
+                       'oauthaccesstoken/callback/{0}/'.format(obj.platform)
+
+#        callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(), settings.APP_DIR)   +\
+#                       'oauthaccesstoken/callback/{0}/'.format(obj.platform)
+        logger.debug(callback_url)
+        
         if obj.platform.name == 'Twitter':
-            callback_url = 'http://{0}{1}admin/dolon/'.format(request.get_host(), settings.APP_DIR)   +\
-                           'oauthaccesstoken/callback/{0}/'.format(obj.platform)
-            logger.debug(callback_url)
             manager = TwitterOAuthManager(
                         consumer_key=settings.TWITTER_KEY,
                         consumer_secret=settings.TWITTER_SECRET,
                         callback_url = callback_url
                         )
-            redirect_url, ptoken_id = manager.get_access_url(callback_url)
-
-            return redirect(redirect_url)
+        elif obj.platform.name == 'Facebook':
+            manager = FacebookOAuthManager(
+                        consumer_key=settings.FACEBOOK_ID,
+                        consumer_secret=settings.FACEBOOK_SECRET,
+                        callback_url = callback_url
+                        )            
+        else:
+            return
+            
+        redirect_url = manager.get_access_url(callback_url)            
+        return redirect(redirect_url)
 
     def get_form(self, request, obj=None, **kwargs):
         """
@@ -978,7 +1001,7 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
                                        'access_verified', 'creator', 'created' ]
             self.readonly_fields = []
         else:
-            self.readonly_fields = [ 'platform',  'user_id', 'screen_name',
+            self.readonly_fields = [ 'platform',  'user_id',
                                      'access_verified', 'creator', 'created', ]
             self.exclude = exclude
 
