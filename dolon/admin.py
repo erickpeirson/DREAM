@@ -999,6 +999,8 @@ class SocialUserAdmin(admin.ModelAdmin):
         if obj is not None:
             self.readonly_fields = [ 'handle', 'platform', 'profile_url',
                                      'user_id', 'content_by_this_user' ]
+        else:
+            self.readonly_fields = []
         form = super(SocialUserAdmin, self).get_form(request, obj, **kwargs)
         return form
 
