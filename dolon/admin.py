@@ -990,8 +990,6 @@ class OAuthAccessTokenAdmin(admin.ModelAdmin):
 
 class SocialUserAdmin(admin.ModelAdmin):
     list_display = ['handle', 'platform', 'user_id', 'profile']
-    fields = [  'handle', 'platform', 'profile_url', 'user_id', 'description',
-                'content_by_this_user' ]
 
 
     def get_form(self, request, obj=None, **kwargs):
@@ -999,8 +997,11 @@ class SocialUserAdmin(admin.ModelAdmin):
         if obj is not None:
             self.readonly_fields = [ 'handle', 'platform', 'profile_url',
                                      'user_id', 'content_by_this_user' ]
+            self.fields = [ 'handle', 'platform', 'profile_url', 'user_id',
+                            'description', 'content_by_this_user' ]                                     
         else:
             self.readonly_fields = []
+            self.fields = []
         form = super(SocialUserAdmin, self).get_form(request, obj, **kwargs)
         return form
 
