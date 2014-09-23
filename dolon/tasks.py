@@ -45,6 +45,10 @@ engineManagers = {
 }
 
 def _get_params(resultitem):
+    """
+    Reads standardized result parameters from a :class:`.QueryResultItem`\.
+    
+    """
     params = pickle.loads(str(resultitem.params))
     if 'length' in params: length = params['length']
     else: length = 0
@@ -62,6 +66,11 @@ def _get_params(resultitem):
 # end _get_params
 
 def _get_default(itemclass, resultitem):
+    """
+    Generates a :class:`.Item` and populates subtype-independent fields using
+    params from :class:`.QueryResultItem`\.
+    
+    """
     params, length, size, creator, date = _get_params(resultitem)
 
     try:
@@ -84,13 +93,14 @@ def _get_default(itemclass, resultitem):
     if itemclass is not ImageItem:  # Images don't have lengths.
         i.length = length
     
-    return i
+    # Return both the Item and the QueryResultItem parameters, to avoid
+    #  redundant calls to _get_params.
+    return i, (params, length, size, creator, date)
 # end _get_default
 
 def _create_image_item(resultitem):
-    params, length, size, creator, date = _get_params(resultitem)
-    
-    i = _get_default(ImageItem, resultitem)
+    i, parameters = _get_default(ImageItem, resultitem)
+    params, length, size, creator, date = parameters
 
     # Associate thumbnail, image, and context.
     if i.thumbnail is None and len(params['thumbnailURL']) > 0:
@@ -108,9 +118,8 @@ def _create_image_item(resultitem):
 # end _create_image_item
 
 def _create_video_item(resultitem):
-    params, length, size, creator, date = _get_params(resultitem)
-    
-    i = _get_default(VideoItem, resultitem)
+    i, parameters = _get_default(VideoItem, resultitem)
+    params, length, size, creator, date = parameters
 
     # Only add thumbnails to this VideoItem if it has none, and (naturally) if
     #  the search process yielded thumbnails to be had.
@@ -133,10 +142,9 @@ def _create_video_item(resultitem):
     return i, params
 # end _create_video_item
 
-def _create_audio_item(resultitem):
-    params, length, size, creator, date = _get_params(resultitem)
-    
-    i = _get_default(AudioItem, resultitem)    
+def _create_audio_item(resultitem):    
+    i, parameters = _get_default(AudioItem, resultitem)    
+    params, length, size, creator, date = parameters
                 
     # If AudioItem lacks a thumbnail, and one was found (in search), create it
     #  and trigger retrieval.
@@ -157,11 +165,9 @@ def _create_audio_item(resultitem):
 # end _create_audio_item
 
 def _create_text_item(resultitem):
-    params, length, size, creator, date = _get_params(resultitem)
+    i, parameters = _get_default(TextItem, resultitem)
+    params, length, size, creator, date = parameters    
 
-    i = _get_default(TextItem, resultitem)
-
-    
     if len(i.original_files.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
             txt,created = Text.objects.get_or_create(url=url)
