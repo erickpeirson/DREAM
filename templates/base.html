@@ -46,6 +46,7 @@
         <!-- Footer -->
         {% block footer %}
         <div id="foot">
+            <div id="admin"><a href="{% url 'admin:index' %}">Administration</a></div>
             <div id="powered-by">
                 <img id="logo" src='https://raw.githubusercontent.com/erickpeirson/Dolon/docs/dolon_smallest.jpg' width="50" />
                 <h4>Powered by <a href="https://github.com/erickpeirson/Dolon">Dolon {{ dolon_version }}</a><br />Developed by <a href="https://asu.academia.edu/ErickPeirson">E. Peirson</a></h4>

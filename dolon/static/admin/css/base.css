@@ -802,17 +802,20 @@ table#change-history tbody th {
 }
 
 #branding h1 {
+    padding-left: 60px;
+
     padding-top: 5px;
-    font-size: 30px;
+    font-size: 22px;
     margin-top: 0px;
-    font-weight: normal;
+    font-weight: strong;
     color: black;
+    letter-spacing: 6px;
 }
 
 #branding h2 {
-    padding-left: 100px;
-    font-size: 14px;
-    margin: -8px 0 8px 0;
+    padding-left: 60px;
+    font-size: 18px;
+    margin: 0px 0 8px 0;
     font-weight: normal;
     color: #404040;
 }

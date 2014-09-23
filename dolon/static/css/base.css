@@ -859,16 +859,22 @@ table#change-history tbody th {
 
 }
 
-#powered-by {
-    position: absolute;
-    width: 225px;
-    bottom: 0px;    
-    text-align: right;
-    right: 0px;
-}
+    #powered-by {
+        position: absolute;
+        width: 225px;
+        bottom: 0px;    
+        text-align: right;
+        right: 0px;
+    }
 
-    #powered-by #logo {
-        margin-left: 10px;
-        border-left: 1px solid gray;
-        float: right;
+        #powered-by #logo {
+            margin-left: 10px;
+            border-left: 1px solid gray;
+            float: right;
+        }
+
+    #admin {
+        position: absolute;
+        padding: 10px;
+        bottom: 0px;
     }
