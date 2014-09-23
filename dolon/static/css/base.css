@@ -855,6 +855,7 @@ table#change-history tbody th {
     background: #F0F0F0;
     height: 68px;
     border-top: 1px solid #B0B0B0;
+    min-width: 800px;
 
 }
 
