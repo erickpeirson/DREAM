@@ -604,7 +604,7 @@ class ItemAdmin(admin.ModelAdmin):
 
     def _format_audio_embed(self, audios):
         if len(audios) == 0:
-            return None
+            return 'No audio file available.'
         pattern = u'<audio controls>{0}</audio>'
         spattern = u'<source src="{0}" type="{1}" />'
 

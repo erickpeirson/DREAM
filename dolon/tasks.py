@@ -161,8 +161,7 @@ def _create_text_item(resultitem):
 
     i = _get_default(TextItem, resultitem)
 
-    logger.debug('TextItem.original_files: {0}'.format(i.original_files.all()))
-    logger.debug('params["files"]: {0}'.format(params['files']))
+    
     if len(i.original_files.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
             txt,created = Text.objects.get_or_create(url=url)
