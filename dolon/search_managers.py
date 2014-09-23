@@ -289,19 +289,29 @@ class InternetArchiveManager(BaseSearchManager):
             raise MediaTypeException(
                     'Unrecognized content or mtype not provided.'    )
 
+        # TODO: This may be overly simplistic. What if an item has multiple
+        #  content types (e.g. audio and video content)? 
         files = []
         thumbs = []
-        mtype_match = False
-        alttype_match = False
+        mtype_match = False    # Is at least one file the expected type?
+        alttype_match = False  # Is at least one file an alternate type?
+        
         for child in root:
             filename = child.attrib['name']
             ext = filename.split('.')[-1].lower()
-            if ext in known:   
-                files.append( ''.join([ baseurl, filename ]) )
+            
+            # Checks for media type mismatch.
+            if ext in known:
                 mtype_match = True
             elif ext in alt:
                 alttype_match = True
-                
+            
+            # If a file is not an XML or torrent file, consider it content.
+            #  TODO: Is this too liberal?
+            if ext not in ['xml', 'torrent']:
+                files.append( ''.join([ baseurl, filename ]) )
+            
+            # Some media have thumbnails associated with them.
             if child.find('format').text == 'Thumbnail':
                 thumbs.append(''.join([ baseurl, filename ]))
             
