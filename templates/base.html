@@ -1,0 +1,58 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static 'css/base.css' %}{% endblock %}" />
+        {% block extrastyle %}{% endblock %}
+        {% block extrahead %}{% endblock %}
+        {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}        
+    </head>
+
+    <body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
+
+        <!-- Container -->
+        <div id="container">
+
+            {% if not is_popup %}
+            <!-- Header -->
+            <div id="header">
+                <div id="branding">
+                {% block branding %}{% endblock %}
+                </div>
+
+                {% block nav-global %}{% endblock %}
+            </div>
+            <!-- END Header -->
+
+            {% endif %}
+        </div>
+
+        <!-- Content -->
+        {% block main %}
+        <div id="content" class="{% block coltype %}colM{% endblock %}">
+            {% block pretitle %}{% endblock %}
+            {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+            {% block content %}
+            {% block object-tools %}{% endblock %}
+            {{ content }}
+            {% endblock %}
+            {% block sidebar %}{% endblock %}
+            <br class="clear" />
+        </div>
+        {% endblock %}
+        <!-- END Content -->
+        
+        <!-- Footer -->
+        {% block footer %}
+        <div id="foot">
+            <div id="powered-by">
+                <img id="logo" src='https://raw.githubusercontent.com/erickpeirson/Dolon/docs/dolon_smallest.jpg' width="50" />
+                <h4>Powered by <a href="https://github.com/erickpeirson/Dolon">Dolon {{ dolon_version }}</a><br />Developed by <a href="https://asu.academia.edu/ErickPeirson">E. Peirson</a></h4>
+            </div>
+        </div>        
+        {% endblock %}
+        <!-- END Footer -->
+
+    </body>
+</html>

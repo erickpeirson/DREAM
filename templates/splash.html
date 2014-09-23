@@ -1,0 +1,24 @@
+{% extends "base.html" %} {% load i18n %} {% load staticfiles %}
+{% block title %}{{ title }} | {% trans 'Dolon' %} on {{ host }}{% endblock %}
+
+{% block extrastyle %}<link rel="stylesheet" type="text/css" href="{% static 'css/splash.css' %}" />{% endblock %}
+
+{% block main %}
+    <div id="main-wrapper">
+
+
+        <div class="center middle" id="main">    
+            <div class="background center middle">
+                {% if bodybackground %}<img src="{{ bodybackground }}" />{% endif %}
+            </div>            
+            <h1 class="splash">{{ splash_title }}</h1>
+            <h2>{% if splash_subtitle %}{{ splash_subtitle }}{% endif %}</h2>
+            <div id="stats">
+                <span class="stats"><span class="stat">{{ N_images }}</span> images</span>
+                <span class="stats"><span class="stat">{{ N_audio }}</span> audio recordings</span>
+                <span class="stats"><span class="stat">{{ N_videos }}</span> videos</span>
+                <span class="stats"><span class="stat">{{ N_texts }}</span> texts</span>
+            </div>
+        </div>
+    </div>
+{% endblock %}

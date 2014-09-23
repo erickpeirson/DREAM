@@ -1,0 +1,56 @@
+body {
+    height: 100%;
+    min-width: 800px;
+    min-height: 600px;
+}
+
+.center {
+    left: 15%;
+    right: 15%;
+    text-align: center;
+}
+
+.middle {
+    position: relative;
+    top: 200px;
+}
+
+div#main-wrapper {
+    height: 100%;
+    min-width: 800px; 
+    min-height: 600px;
+       
+}
+
+div#main {
+    width: 70%;
+}
+
+h1.splash {
+    font-size: 36pt;
+}
+
+div#stats {
+    margin-top: 20px;
+}
+
+span.stats {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+    span.stat {
+        color: orange;
+    }
+.background {
+    position: absolute;
+    top: -70%;
+}
+
+    .background img {
+        opacity: 0.05;
+        filter: alpha(opacity=0.05); /* For IE8 and earlier */
+        width: 100%;
+        max-width: 600px;
+        border: 2px solid gray;
+    }
