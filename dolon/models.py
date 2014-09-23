@@ -188,9 +188,6 @@ class QueryEvent(models.Model):
     search_task = models.ForeignKey(    
                         'GroupTask', null=True, blank=True, 
                         related_name='searchtaskevent'  )
-    thumbnail_tasks = models.ManyToManyField(   
-                        'GroupTask', 
-                        related_name='thumbtaskevent'  )
 
     creator = models.ForeignKey(User, related_name='created_events', blank=True)
 

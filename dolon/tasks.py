@@ -96,6 +96,8 @@ def _create_image_item(resultitem):
     if i.thumbnail is None and len(params['thumbnailURL']) > 0:
         i.thumbnail = Thumbnail.objects.get_or_create(
                             url=params['thumbnailURL'][0]   )[0]
+        
+        spawnThumbnails([i.thumbnail.id])
 
     if len(i.images.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
@@ -109,12 +111,20 @@ def _create_video_item(resultitem):
     params, length, size, creator, date = _get_params(resultitem)
     
     i = _get_default(VideoItem, resultitem)
-                
+
+    # Only add thumbnails to this VideoItem if it has none, and (naturally) if
+    #  the search process yielded thumbnails to be had.
     if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
+        thumb_ids = []  # Keep these for spawnThumbnails.
         for url in params['thumbnailURL']:
             thumb = Thumbnail.objects.get_or_create(url=url)[0]                        
             i.thumbnails.add(thumb)
-            
+            thumb_ids.append(thumb.id)
+        
+        # Creates Celery chains for retrieving thumbnail images.
+        spawnThumbnails(thumb_ids)
+
+    # If this VideoItem doesn't already have Videos attached, get/create them.
     if len(i.videos.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
             video = Video.objects.get_or_create(url=url)[0]
@@ -128,15 +138,21 @@ def _create_audio_item(resultitem):
     
     i = _get_default(AudioItem, resultitem)    
                 
+    # If AudioItem lacks a thumbnail, and one was found (in search), create it
+    #  and trigger retrieval.
     if i.thumbnail is None and len(params['thumbnailURL']) > 0:
         i.thumbnail = Thumbnail.objects.get_or_create(  # Case not tested.
-                            url=params['thumbnailURL'][0]   )[0]                                           
-                            
+                            url=params['thumbnailURL'][0]   )[0]     
+
+        # Creates a Celery chain for retrieving thumbnail image.
+        spawnThumbnails(i.thumbnail.id)                                                                  
+
+    # If no Audio exist for this AudioItem, get/create them.
     if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
             seg = Audio.objects.get_or_create(url=url)[0]
             i.audio_segments.add(seg)
-            
+
     return i, params
 # end _create_audio_item
 
@@ -508,62 +524,34 @@ def processSearch(searchresults, queryeventid, **kwargs):
     return results
     
 @shared_task
-def spawnThumbnails(processresults, queryeventid, **kwargs):
+def spawnThumbnails(thumb_ids, **kwargs):
     """
-    Dispatch tasks to retrieve and store thumbnails. Updates the corresponding
-    :class:`.QueryEvent` `thumbnail_task` property with task id.
+    Dispatch tasks to retrieve and store thumbnails. 
     
     Parameters
     ----------
-    processresult : tuple
-        Output from :func:`.processSearch`
+    thumb_ids : list
+        IDs of :class:`.Thumbnail` objects for which remote images should be
+        retrieved.
+    
+    Returns
+    -------
+    None
+
     """
+ 
+    logger.debug('Spawn chains for {0} thumbnails.'.format(len(thumb_ids)))
     
-    if processresults == 'ERROR':
-        qe = QueryEvent.objects.get(pk=queryeventid)
-        qe.state = 'ERROR'
-        qe.save()
-        return 'ERROR'
-    
-    thumbs = []
-    for processresult in processresults:
-        queryresultid, queryitemsid = processresult
-        logger.debug("{0}, {1}".format(queryresultid, queryitemsid))
-        queryresult = QueryResult.objects.get(id=queryresultid)
-        queryitems = [ QueryResultItem.objects.get(id=id) for id in queryitemsid ]
-    
-        logger.debug('spawnThumbnails: creating jobs')    
+    thumbs = [ Thumbnail.objects.get(pk=id) for id in thumb_ids ]
 
-        for qi in queryitems:
-            if hasattr(qi.item, 'audioitem'):
-                thumbs.append(qi.item.audioitem.thumbnail)            
-            elif hasattr(qi.item, 'imageitem'):
-                thumbs.append(qi.item.imageitem.thumbnail)
-            elif hasattr(qi.item, 'videoitem'):
-                thumbs += qi.item.videoitem.thumbnails.all()
+    for thumb in thumbs:    # Create a Celery chain for each thumbnail.
+        job = chain(    getFile.s(thumb.url)
+                        | storeThumbnail.s(thumb.id)    )
 
-    job = group( ( getFile.s(thumb.url) 
-                    | storeThumbnail.s(thumb.id) 
-                    ) for thumb in thumbs if thumb is not None )
+        # readResult will clear the result in RabbitMQ.
+        result = job.apply_async(link=readResult.s())
 
-    logger.debug('spawnThumbnails: dispatching jobs')
-    result = job.apply_async(link=readResult.s())    
-    
-    logger.debug('spawnThumbnails: jobs dispatched')
-
-    task = GroupTask(   task_id=result.id,
-                        subtask_ids=[r.id for r in result.results ] )
-    task.save()
-    
-    logger.debug('created new Task object')
-
-    queryevent = QueryEvent.objects.get(id=queryeventid)
-    queryevent.thumbnail_tasks.add(task)
-    queryevent.save()
-    
-    logger.debug('updated QueryEvent')
-
-    return task    
+    return
 
 @shared_task(rate_limit='4/s', max_retries=0)
 def getFile(url):
@@ -904,14 +892,12 @@ def spawnSearch(queryevent, **kwargs):
     start = queryevent.rangeStart
     end = queryevent.rangeEnd                                         
     
-    # Dispatch a group of search chains to Celery, divided into 10-item pages.
+    # Dispatch a group of search chains to Celery:
     #
-    #   * search() performs the image search for a 10-item page,
+    #   * search() performs the image search,
     #   |
     #   * processSearch() parses the search results and creates QueryResult 
-    #   | and QueryItem instances.
-    #   * spawnThumbnails() launches tasks to retrieve and store Thumbnail
-    #     instances. 
+    #     and QueryItem instances.
     #   
     # QueryEvent.id gets passed around so that the various tasks can attach
     #  the resulting objects to it.
@@ -921,7 +907,6 @@ def spawnSearch(queryevent, **kwargs):
                                 queryevent.engine.manager, 
                                 **kwargs   )
                     | processSearch.s(queryevent.id, **kwargs) 
-                    | spawnThumbnails.s(queryevent.id, **kwargs)
                 )
                     
 

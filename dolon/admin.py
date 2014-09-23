@@ -557,25 +557,18 @@ class ItemAdmin(admin.ModelAdmin):
     # end ItemAdmin._format_type_icon
 
     def _format_thumb(self, obj, thumb, list):
+        logger.debug((obj, thumb, list))
         pattern = u'<a href="{0}"><img src="{1}"/></a>'
-        if thumb is not None and thumb.image is not None:
 
-            if list:
-                fullsize_url = get_admin_url(obj)
-            else:
-                if hasattr(obj, 'imageitem'):
-                    if obj.imageitem.image is not None:
-                        fullsize_url = get_admin_url(obj.imageitem.image)
-                    else:
-                        fullsize_url = '#'
-                else:
-                    fullsize_url = '#'
-            return pattern.format(fullsize_url, thumb.image.url)
-        if list:
-            fullsize_url = get_admin_url(obj)
+        if list:  fullsize_url = get_admin_url(obj)
+        else:     fullsize_url = '#'
+
+        if thumb is not None:
+            thumb_url = thumb.image.url
         else:
-            fullsize_url = '#'
-        return pattern.format(fullsize_url, u'/dolon/media/static/file-by-Gurato.png')
+            thumb_url = u'/dolon/media/static/file-by-Gurato.png'
+
+        return pattern.format(fullsize_url, thumb_url)
     # end ItemAdmin._format_thumb
 
     def _format_embed(self, videos):
@@ -630,14 +623,15 @@ class ItemAdmin(admin.ModelAdmin):
         :class:`.Image`\.
         """
 
-        try:    # If something went wrong when downloading a thumbnail,
-                #  this will raise a ValueError.
-            if hasattr(obj, 'imageitem'):
-                obj.imageitem.thumbnail.image.url
-        except:# ValueError, AttributeError:
-            return None
+#        try:    # If something went wrong when downloading a thumbnail,
+#                #  this will raise a ValueError.
+#            if hasattr(obj, 'imageitem'):
+#                obj.imageitem.thumbnail.image.url
+#        except:# ValueError, AttributeError:
+#            return None
 
         if hasattr(obj, 'imageitem'):
+            logger.debug( 'image item!')
             return self._format_thumb(obj, obj.imageitem.thumbnail, list)
         elif hasattr(obj, 'audioitem'):
             audios = obj.audioitem.audio_segments.all()
