@@ -199,13 +199,14 @@ def create_item(resultitem):
     logger.debug('Creating item for {0} with mtype {1}'
                                            .format(resultitem, resultitem.type))
     
+    # Item creation manifold, based on type.
     if resultitem.type == 'image':
         i, params = _create_image_item(resultitem)
     elif resultitem.type == 'video':
         i, params = _create_video_item(resultitem)
     elif resultitem.type == 'audio':
         i, params = _create_audio_item(resultitem)
-    elif resultitem.type == 'texts':        # Case not tested.
+    elif resultitem.type == 'texts':
         i, params = _create_text_item(resultitem)
 
     if 'retrieved' in params:
@@ -213,8 +214,9 @@ def create_item(resultitem):
     if 'creationDate' in params:
         i.creationDate = params['creationDate']
 
+    # Get or create a Context for this Item.
     context, created = Context.objects.get_or_create(url=resultitem.contextURL)
-    if 'context' in params:
+    if 'context' in params: # Populate Context with available metadata.
         for key, value in params['context'].iteritems():
             setattr(context, key, value)
         context.save()
