@@ -872,21 +872,7 @@ def performDiffBotRequest(rq):
         context.language = robject['humanLanguage']
     context.save()
     
-#    u'images': [
-#        {u'title': u'A failed bill to legalize and educate children of immigrants would have provided clemency for new immigrants in the same way it was applied for early immigrants from Europe.', 
-#        u'diffbotUri': u'image|3|-2117292392', 
-#        u'primary': True, 
-#        u'url': u'http://media.washtimes.com/media/community/photos/blog/entries/2010/09/27/dream_act_girl-600_s640x427.jpg?73b8e21685896c3f2859310aaa5adb253919b641', 
-#        u'pixelWidth': 640, 
-#        u'pixelHeight': 427
-#        }, 
-#        
-#        {u'diffbotUri': u'image|3|-1533405046', 
-#        u'url': u'http://media.washtimes.com/media/community/image/2010/09/27/dream_act_girl-full.jpg', 
-#        u'pixelHeight': 783, 
-#        u'pixelWidth': 268, 
-#        u'title': u'The Dream Act'}]
-    
+    # TODO: refactor; perhaps create a separate method for cleanliness.
     # Generate Items from the DiffBot response.
     if 'images' in robject:
         logger.debug('DiffBot response contains {0} media items'
@@ -966,8 +952,6 @@ def performDiffBotRequest(rq):
             logger.debug('Created item with id {0}'.format(i.id))
             i.events.add(queryevent)
             i.save()
-        
-    
 # end performDiffBotRequest    
 
 @shared_task
