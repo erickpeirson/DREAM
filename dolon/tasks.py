@@ -884,7 +884,8 @@ def performDiffBotRequest(rq):
         engine = Engine.objects.get_or_create(  
                         name='DiffBot', 
                         defaults={  'parameters':[''],
-                                    'manager':'None'  }   )[0]
+                                    'manager':'None',
+                                    'hidden': True      }   )[0]
         logger.debug('Got Engine {0}'.format(engine))
     
         # Dummy QueryString for this Context.

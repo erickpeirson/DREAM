@@ -87,6 +87,8 @@ class Engine(models.Model):
     A search engine.
     """
     
+    hidden = models.BooleanField(default=False)
+    
     name = models.CharField(max_length=100, null=True, blank=True)
     
     parameters = ListField()    # GET params.

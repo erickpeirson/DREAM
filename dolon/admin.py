@@ -149,13 +149,13 @@ class QueryStringAdmin(admin.ModelAdmin):
         should be able to see a matrix of querystrings versus engines.
         """
 
-        querystrings = { q.id:q.querystring for q in QueryString.objects.all() }
+        querystrings = { q.id:q.querystring for q in QueryString.objects.filter(hidden=False) }
 
-        engines = { e.id:unicode(e) for e in Engine.objects.all() }
+        engines = { e.id:unicode(e) for e in Engine.objects.filter(hidden=False) }
 
         values = { q:{ g:0 for g in engines.keys() } 
                         for q in querystrings.keys() }
-        events = QueryEvent.objects.all()
+        events = QueryEvent.objects.filter(hidden=False)
         for e in events:
             if e.search_by == 'ST':
                 items = Item.objects.filter(events__id=e.id).exclude(hide=True)
@@ -205,6 +205,14 @@ class QueryStringAdmin(admin.ModelAdmin):
             return super(QueryStringAdmin, self).get_inline_instances(request, obj)
         return []
     # end QueryStringAdmin.get_inline_instances
+    
+    def queryset(self, request):
+        """
+        Removes any hidden QueryStrings from the list display.
+        """
+        
+        qs = super(QueryStringAdmin, self).queryset(request)
+        return qs.filter(hidden=False)    
 # end QueryStringAdmin class
 
 class QueryEventAdmin(admin.ModelAdmin):
