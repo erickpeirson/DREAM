@@ -597,22 +597,26 @@ def getFile(url):
             getFile.retry(exc=exc)
         except (IOError, HTTPError) as exc:
             logger.info((exc.code, exc.read()))
-    
-    try:    # Perhaps no content-type is provided?
-        mime = dict(response.info())['content-type']
-    except KeyError:
-        mime = ''
+            
+    code = response.getcode()
+    if code == 200:    
+        try:    # Perhaps no content-type is provided?
+            mime = dict(response.info())['content-type']
+        except KeyError:
+            mime = ''
+            
+        try:    # Catch missing content-length and move on, re issue #33.
+            size = int(dict(response.info())['content-length'])
+        except KeyError:    
+            size = 0
         
-    try:    # Catch missing content-length and move on, re issue #33.
-        size = int(dict(response.info())['content-length'])
-    except KeyError:    
-        size = 0
-    
-    f_,fpath = tempfile.mkstemp()
-    with open(fpath, 'w') as f:
-        f.write(response.read())
+        f_,fpath = tempfile.mkstemp()
+        with open(fpath, 'w') as f:
+            f.write(response.read())
 
-    return url, filename, fpath, mime, size
+        return url, filename, fpath, mime, size
+    else:   # Fail loudly!
+        raise RuntimeError('Encountered code {0} at {1}'.format(code, url))
     
 @shared_task
 def storeThumbnail(result, thumbnailid):
