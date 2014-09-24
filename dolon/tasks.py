@@ -876,7 +876,9 @@ def performDiffBotRequest(rq):
         context.language = robject['humanLanguage']
     context.save()
     
-    # TODO: refactor; perhaps create a separate method for cleanliness.
+    extractImagesFromDiffBot(robject, context.url)
+    
+def extractImagesFromDiffBot(robject, context_url):
     # Generate Items from the DiffBot response.
     if 'images' in robject:
         logger.debug('DiffBot response contains {0} media items'
@@ -894,7 +896,7 @@ def performDiffBotRequest(rq):
     
         # Dummy QueryString for this Context.
         querystring = QueryString.objects.get_or_create(
-                        querystring='DiffBot for {0}'.format(context.url),
+                        querystring='DiffBot for {0}'.format(context_url),
                         defaults={  'hidden': True  }   # Not useful for search.
                         )[0]
         querystring.save()
@@ -931,7 +933,7 @@ def performDiffBotRequest(rq):
             # Define parameters for QueryResultItem.
             params = {
                 'url': mitem['url'],
-                'contextURL': context.url,
+                'contextURL': context_url,
                 'type': 'image',
                 'files': [mitem['url']],
                 'thumbnailURL': [mitem['url']],
@@ -943,7 +945,7 @@ def performDiffBotRequest(rq):
                 
             qri = QueryResultItem(
                         url=mitem['url'],
-                        contextURL=context.url,
+                        contextURL=context_url,
                         type='image',
                         params=pickle.dumps(params),
                         title=params['title'],
@@ -959,6 +961,7 @@ def performDiffBotRequest(rq):
             logger.debug('Created item with id {0}'.format(i.id))
             i.events.add(queryevent)
             i.save()
+        
 # end performDiffBotRequest    
 
 @shared_task
