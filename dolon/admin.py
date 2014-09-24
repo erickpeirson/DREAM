@@ -558,7 +558,7 @@ class ItemAdmin(admin.ModelAdmin):
 
     def _format_thumb(self, obj, thumb, list):
         logger.debug((obj, thumb, list))
-        pattern = u'<a href="{0}"><img src="{1}"/></a>'
+        pattern = u'<a href="{0}"><img src="{1}" style="max-width: 200px;" /></a>'
 
         if list:  fullsize_url = get_admin_url(obj)
         else:     fullsize_url = '#'

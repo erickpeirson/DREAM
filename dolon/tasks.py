@@ -202,12 +202,16 @@ def create_item(resultitem):
     # Item creation manifold, based on type.
     if resultitem.type == 'image':
         i, params = _create_image_item(resultitem)
+        i.type = 'Image'
     elif resultitem.type == 'video':
         i, params = _create_video_item(resultitem)
+        i.type = 'Video'
     elif resultitem.type == 'audio':
         i, params = _create_audio_item(resultitem)
+        i.type = 'Audio'
     elif resultitem.type == 'texts':
         i, params = _create_text_item(resultitem)
+        i.type = 'Text'
 
     if 'retrieved' in params:
         i.retrieved = params['retrieved']
@@ -815,6 +819,7 @@ def createDiffBotRequest(type, url, opt_params=[]):
 
 @shared_task
 def performDiffBotRequest(rq):
+    logger.debug('DBRequest: {0}'.format(rq))
     manager = DiffBotManager(DIFFBOT_TOKEN)
     
     this_timezone = timezone(TIME_ZONE)
@@ -839,22 +844,119 @@ def performDiffBotRequest(rq):
     except IndexError:
         return
     
-    dtformat = '%a, %d %b %Y %X GMT'
-    date = this_timezone.localize(
-            datetime.strptime(result['objects'][0]['date'], dtformat)   )
-
     robject = result['objects'][0]
-    if context.publicationDate is None:
-        context.publicationDate = date
+    logger.debug(robject)
+    
+    dtformat = '%a, %d %b %Y %X GMT'
+
+    if 'date' in robject:
+        if context.publicationDate is None:
+            date = datetime.strptime(robject['date'], dtformat)
+            context.publicationDate = this_timezone.localize(date)
     if 'text' in robject:
-        context.text_content = result['objects'][0]['text']
+        context.text_content = robject['text']
     if 'author' in robject:
-        context.author = result['objects'][0]['author']
+        context.author = robject['author']
     if 'title' in robject:
-        context.title = result['objects'][0]['title']   # Case not tested.
-    if 'language' in robject:
-        context.language = result['objects'][0]['humanLanguage']
+        context.title = robject['title']   # Case not tested.
+    if 'humanLanguage' in robject:
+        context.language = robject['humanLanguage']
     context.save()
+    
+#    u'images': [
+#        {u'title': u'A failed bill to legalize and educate children of immigrants would have provided clemency for new immigrants in the same way it was applied for early immigrants from Europe.', 
+#        u'diffbotUri': u'image|3|-2117292392', 
+#        u'primary': True, 
+#        u'url': u'http://media.washtimes.com/media/community/photos/blog/entries/2010/09/27/dream_act_girl-600_s640x427.jpg?73b8e21685896c3f2859310aaa5adb253919b641', 
+#        u'pixelWidth': 640, 
+#        u'pixelHeight': 427
+#        }, 
+#        
+#        {u'diffbotUri': u'image|3|-1533405046', 
+#        u'url': u'http://media.washtimes.com/media/community/image/2010/09/27/dream_act_girl-full.jpg', 
+#        u'pixelHeight': 783, 
+#        u'pixelWidth': 268, 
+#        u'title': u'The Dream Act'}]
+    
+    # Generate Items from the DiffBot response.
+    if 'images' in robject:
+        logger.debug('DiffBot response contains {0} media items'
+                        .format(len(robject['images']))
+                        )
+                        
+        # We use a dummy Engine called 'DiffBot' to differentiate our 
+        #  QueryEvents.
+        engine = Engine.objects.get_or_create(  
+                        name='DiffBot', 
+                        defaults={  'parameters':[''],
+                                    'manager':'None'  }   )[0]
+        logger.debug('Got Engine {0}'.format(engine))
+    
+        # Dummy QueryString for this Context.
+        querystring = QueryString.objects.get_or_create(
+                        querystring='DiffBot for {0}'.format(context.url)
+                        )[0]
+        querystring.save()
+        logger.debug('Got QueryString {0}'.format(querystring))
+                        
+        # We then create a QueryEvent based on this Context.                        
+        queryevent = QueryEvent.objects.get_or_create(
+                        querystring__id=querystring.id, 
+                        defaults={
+                            'engine': engine,
+                            'dispatched': True,
+                            'state': 'SUCCESS',
+                            'querystring': querystring,
+                        }   )[0]
+        logger.debug('Got QueryEvent {0}'.format(queryevent))
+        
+        # ...and a corresponding QueryResult.
+        queryresult = QueryResult(
+                        rangeStart=0,
+                        rangeEnd=0,
+                        result=json.dumps(robject['images'])
+                        )
+        queryresult.save()
+        queryevent.queryresults.add(queryresult)
+        queryevent.save()
+        logger.debug('Added QueryResult {0}'.format(queryresult))
+
+        # Now generate QueryResultItems and Items.
+        for mitem in robject['images']:
+            # Create the QueryResultItem.
+            logger.debug('Create QRI with {0}'.format(mitem['url']))
+            
+            # Define parameters for QueryResultItem.
+            params = {
+                'url': mitem['url'],
+                'contextURL': context.url,
+                'type': 'image',
+                'files': [mitem['url']],
+                'thumbnailURL': [mitem['url']],
+            }
+            if 'title' in mitem:
+                params['title'] = mitem['title']
+                
+            qri = QueryResultItem(
+                        url=mitem['url'],
+                        contextURL=context.url,
+                        type='image',
+                        params=pickle.dumps(params),
+                        title=params['title'],
+                    )
+            qri.save()
+            
+            # Add to QueryResult.
+            queryresult.resultitems.add(qri)
+            queryresult.save()
+            
+            # Create the Item.
+            i = create_item(qri)
+            logger.debug('Created item with id {0}'.format(i.id))
+            i.events.add(queryevent)
+            i.save()
+        
+    
 # end performDiffBotRequest    
 
 @shared_task

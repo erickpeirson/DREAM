@@ -25,6 +25,7 @@ engineManagers = (
     ( 'InternetArchiveManager', 'Internet Archive'),
     ( 'TwitterManager', 'Twitter'),
     ( 'FacebookManager', 'Facebook'),
+    ( 'None','None' )
 )
 
 # Create your models here.
@@ -189,7 +190,7 @@ class QueryEvent(models.Model):
                         'GroupTask', null=True, blank=True, 
                         related_name='searchtaskevent'  )
 
-    creator = models.ForeignKey(User, related_name='created_events', blank=True)
+    creator = models.ForeignKey(User, related_name='created_events', blank=True, null=True)
 
     queryresults = models.ManyToManyField(
                         'QueryResult', blank=True, null=True,
