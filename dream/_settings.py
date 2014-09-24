@@ -1,1 +1,0 @@
-LOGGING_FORMAT = '%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s'
