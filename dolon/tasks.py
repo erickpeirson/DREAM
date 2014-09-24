@@ -889,7 +889,8 @@ def performDiffBotRequest(rq):
     
         # Dummy QueryString for this Context.
         querystring = QueryString.objects.get_or_create(
-                        querystring='DiffBot for {0}'.format(context.url)
+                        querystring='DiffBot for {0}'.format(context.url),
+                        defaults={  'hidden': True  }   # Not useful for search.
                         )[0]
         querystring.save()
         logger.debug('Got QueryString {0}'.format(querystring))

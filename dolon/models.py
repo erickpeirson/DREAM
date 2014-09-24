@@ -64,6 +64,11 @@ class QueryString(models.Model):
     qs_helptext = 'Enter some search terms to use in your queries.'
     querystring = models.CharField(max_length=1000, verbose_name='Search terms',
                                     help_text=qs_helptext, unique=True)
+                                    
+    hidden_text = 'If selected, this QueryString will not appear as an option'+\
+                  ' in future QueryEvents.'
+    hidden = models.BooleanField(default=False, 
+                help_text=hidden_text)
 
     def __unicode__(self):
         return unicode(self.querystring)

@@ -41,6 +41,16 @@ def itemDeleteReceiver(sender, **kwargs):
 ### Forms ###
 
 class QueryEventForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(QueryEventForm, self).__init__(*args, **kwargs)
+        
+        # Limit QueryStrings to those not hidden.
+        try:    
+            self.fields['querystring'].queryset = QueryString.objects.filter(
+                                                    hidden=False    )
+        except KeyError:    # In case we exclude this field in certain cases.
+            pass
+        
     class Meta:
         model = QueryEvent
     # end QueryEventForm.Meta class
@@ -224,7 +234,6 @@ class QueryEventAdmin(admin.ModelAdmin):
             }),
         )
 
-
     def query(self, obj):
         if obj.search_by == 'ST':
             param = obj.querystring.querystring
@@ -304,7 +313,6 @@ class QueryEventAdmin(admin.ModelAdmin):
         """
 
         exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults', 'state' ]
-        print obj, self.exclude
         if obj is None:
             self.exclude = exclude + ['dispatched', 'creator']
 
@@ -312,8 +320,8 @@ class QueryEventAdmin(admin.ModelAdmin):
             pass
         form = super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
 
-        # List for initial form values in GET request.
         if request.method == 'GET':
+            # Apply initial form values from GET request.
             for key in request.GET:
                 try:
                     form.__dict__[key].initial = request.GET[key]
