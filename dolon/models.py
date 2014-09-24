@@ -142,13 +142,19 @@ class QueryEvent(models.Model):
         verbose_name = 'query'
         verbose_name_plural = 'queries'
         
-    helptext = {}
+    helptext = {
+        'hidden': 'If selected, this query will not appear in the list of' + \
+                  ' queries.',
+    }
     
     search_options = (
             ('ST','String'),
             ('UR','User'),
             ('TG','Tag'),
         )
+    
+
+    hidden = models.BooleanField(default=False, help_text=helptext['hidden'])
     
     # Entered by user.
     search_by = models.CharField(

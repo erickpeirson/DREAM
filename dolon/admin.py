@@ -218,7 +218,7 @@ class QueryEventAdmin(admin.ModelAdmin):
 
     fieldsets = (
             (None, {
-                'fields': ('search_by','engine')
+                'fields': ('search_by','engine', 'hidden')
             }),
             ('Search by string', {
                 'classes': ('collapse',),
@@ -315,9 +315,9 @@ class QueryEventAdmin(admin.ModelAdmin):
         exclude = [ 'search_task', 'thumbnail_tasks', 'queryresults', 'state' ]
         if obj is None:
             self.exclude = exclude + ['dispatched', 'creator']
-
         else:
             pass
+
         form = super(QueryEventAdmin, self).get_form(request, obj, **kwargs)
 
         if request.method == 'GET':
@@ -337,6 +337,15 @@ class QueryEventAdmin(admin.ModelAdmin):
             obj.creator = request.user
         obj.save()
     # end QueryEventAdmin.save_model
+    
+    def queryset(self, request):
+        """
+        Removes any hidden QueryEvents from the list display.
+        """
+        
+        qs = super(QueryEventAdmin, self).queryset(request)
+        return qs.filter(hidden=False)
+        
 # end QueryEventAdmin class
 
 class ItemAdmin(admin.ModelAdmin):

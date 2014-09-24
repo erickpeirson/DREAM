@@ -903,6 +903,7 @@ def performDiffBotRequest(rq):
                             'dispatched': True,
                             'state': 'SUCCESS',
                             'querystring': querystring,
+                            'hidden': True, # Won't appear in list.
                         }   )[0]
         logger.debug('Got QueryEvent {0}'.format(queryevent))
         
