@@ -557,14 +557,17 @@ class ItemAdmin(admin.ModelAdmin):
     # end ItemAdmin._format_type_icon
 
     def _format_thumb(self, obj, thumb, list):
-        logger.debug((obj, thumb, list))
-        pattern = u'<a href="{0}"><img src="{1}" style="max-width: 200px;" /></a>'
+        pattern = u'<a href="{0}"><img src="{1}" class="thumbnail" /></a>'
 
+        # In the list view, the thumbnail shoud link to the Item change view.
         if list:  fullsize_url = get_admin_url(obj)
         else:     fullsize_url = '#'
 
+        # Sometimes a Thumbnail image is not downloaded (for whatever reason). 
+        #  In that case, thumb.image.name should be blank (u'')...
         if thumb is not None and thumb.image.name != u'':
             thumb_url = thumb.image.url
+        # ...and we will use a generic file icon instead.
         else:
             thumb_url = u'/dolon/media/static/file-by-Gurato.png'
 
