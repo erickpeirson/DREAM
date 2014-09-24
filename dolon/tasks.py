@@ -103,7 +103,9 @@ def _create_image_item(resultitem):
     params, length, size, creator, date = parameters
 
     # Associate thumbnail, image, and context.
-    if i.thumbnail is None and len(params['thumbnailURL']) > 0:
+    Nthumb = len(params['thumbnailURL'])
+    logger.debug('QRI has {0} thumbnails'.format(Nthumb))
+    if i.thumbnail is None and Nthumb > 0:
         i.thumbnail = Thumbnail.objects.get_or_create(
                             url=params['thumbnailURL'][0]   )[0]
         
@@ -943,6 +945,8 @@ def performDiffBotRequest(rq):
             }
             if 'title' in mitem:
                 params['title'] = mitem['title']
+            else:
+                params['title'] = u''
                 
             qri = QueryResultItem(
                         url=mitem['url'],

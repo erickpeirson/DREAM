@@ -563,7 +563,7 @@ class ItemAdmin(admin.ModelAdmin):
         if list:  fullsize_url = get_admin_url(obj)
         else:     fullsize_url = '#'
 
-        if thumb is not None:
+        if thumb is not None and thumb.image.name != u'':
             thumb_url = thumb.image.url
         else:
             thumb_url = u'/dolon/media/static/file-by-Gurato.png'
