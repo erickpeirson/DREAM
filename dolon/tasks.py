@@ -745,7 +745,7 @@ def getStoreContext(url, contextid):
 
     context = Context.objects.get(pk=contextid)
     context.content = soup.html()
-    context.title = str(title)
+    context.title = unidecode(title)
     context.retrieved = True
     context.save()
     
