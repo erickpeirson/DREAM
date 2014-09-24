@@ -596,8 +596,15 @@ def getFile(url):
         except (IOError, HTTPError) as exc:
             logger.info((exc.code, exc.read()))
     
-    mime = dict(response.info())['content-type']
-    size = int(dict(response.info())['content-length'])
+    try:    # Perhaps no content-type is provided?
+        mime = dict(response.info())['content-type']
+    except KeyError:
+        mime = ''
+        
+    try:    # Catch missing content-length and move on, re issue #33.
+        size = int(dict(response.info())['content-length'])
+    except KeyError:    
+        size = 0
     
     f_,fpath = tempfile.mkstemp()
     with open(fpath, 'w') as f:
