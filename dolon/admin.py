@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.conf.urls import patterns, url
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, redirect
-
+from django.utils.translation import ugettext_lazy as _
 
 import autocomplete_light
 from models import *
@@ -356,6 +356,60 @@ class QueryEventAdmin(admin.ModelAdmin):
         
 # end QueryEventAdmin class
 
+class QueryStringListFilter(admin.SimpleListFilter):
+    """
+    Primarily used to hide 'hidden' QueryStrings from the filter options.
+    """
+    
+    title = _('search string')
+    
+    parameter_name = 'search_string'
+    
+    def lookups(self, request, model_admin):
+        """
+        Removes hidden :class:`.QueryString`\s from list of filter options.
+        """
+        
+        querystrings = QueryString.objects.filter(hidden=False)
+        options = ( (q.id, q.querystring) for q in querystrings )
+        return options
+        
+    def queryset(self, request, queryset):
+        """
+        Filters by ID, if a filter option is selected.
+        """
+        
+        if self.value() is None:
+            return queryset
+        return queryset.filter(events__querystring__id=self.value())
+# end QueryStringListFilter class
+
+class QueryEventListFilter(admin.SimpleListFilter):
+    """
+    Primarily used to hide 'hidden' QueryEvents from the filter options.
+    """
+    
+    title = _('search event')
+    parameter_name = 'search_event'
+    
+    def lookups(self, request, model_admin):
+        """
+        Removes hidden :class:`.QueryEvent`\s from list of filter options.
+        """
+        
+        queryevents = QueryEvent.objects.filter(hidden=False)
+        options = ( (qe.id, qe.__unicode__()) for qe in queryevents )
+        return options
+        
+    def queryset(self, request, queryset):
+        """
+        Filters by ID, if a filter option is selected.
+        """
+        if self.value() is None:
+            return queryset
+        return queryset.filter(events__id=self.value())
+# end QueryEventListFilter class
+
 class ItemAdmin(admin.ModelAdmin):
     form = autocomplete_light.modelform_factory(Item)
     list_display = ('icon', 'list_preview','title', 'status','retrieved', 'type' )
@@ -364,7 +418,7 @@ class ItemAdmin(admin.ModelAdmin):
                         'contexts', 'creationDate',  'children', 'parent',  )
     exclude = ( 'image', 'thumbnail', 'events', 'merged_with', 'url',
                 'hide', 'context'  )
-    list_filter = ('status','events__querystring', 'events__engine', 'tags', 'type','events')
+    list_filter = ('status',QueryStringListFilter, 'events__engine', 'tags', 'type', QueryEventListFilter)
     list_editable = ['title',]
     list_select_related = True
     search_fields = ['title',]
@@ -660,7 +714,6 @@ class ItemAdmin(admin.ModelAdmin):
 #            return None
 
         if hasattr(obj, 'imageitem'):
-            logger.debug( 'image item!')
             return self._format_thumb(obj, obj.imageitem.thumbnail, list)
         elif hasattr(obj, 'audioitem'):
             audios = obj.audioitem.audio_segments.all()
@@ -668,7 +721,6 @@ class ItemAdmin(admin.ModelAdmin):
         elif hasattr(obj, 'videoitem'):
             videos = obj.videoitem.videos.all()
             icon = self._format_type_icon('video')
-
             return self._format_embed(videos)
         elif hasattr(obj, 'textitem'):
             if obj.textitem.snippet is not None:

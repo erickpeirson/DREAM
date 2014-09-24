@@ -859,7 +859,6 @@ def performDiffBotRequest(rq):
         return
     
     robject = result['objects'][0]
-    logger.debug(robject)
     
     dtformat = '%a, %d %b %Y %X GMT'
 
