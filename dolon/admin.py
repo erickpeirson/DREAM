@@ -203,6 +203,7 @@ class QueryEventAdmin(admin.ModelAdmin):
     list_display = ('id', 'query', 'engine', 'created', 'range',
                     'dispatched', 'search_status', 'results')
     list_display_links = ('query',)
+    list_filter = ('engine',)
     actions = [dispatch, reset]
 
     fieldsets = (
