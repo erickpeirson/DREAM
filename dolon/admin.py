@@ -234,10 +234,10 @@ class QueryStringAdmin(admin.ModelAdmin):
         values_ = []
         for k, vals in values.iteritems():
             for g in engines:
-                url = reverse(  admin:dolon_item_changelist,
+                url = reverse(  "admin:dolon_item_changelist",
                                 kwargs={
                                     'events__engine__id__exact': g,
-                                     'events__querystring__id__exact': k)
+                                     'events__querystring__id__exact': k
                                 }   )
                 values_.append((url, vals[g], g, k))
 
@@ -1249,7 +1249,7 @@ class ContextAdmin(HiddenAdmin):
             return False
         except IndexError:
             return False
-    status.boolean = True
+    diffbot.boolean = True
     # end ContextAdmin.diffbot
 
     def queryset(self, request):
@@ -1569,7 +1569,7 @@ class AudioAdmin(HiddenAdmin):
     """
     
     readonly_fields = ( 'preview', 'url', 'size', 'length', 'mime'  )
-    exclude = ( 'audio_file'    )
+    exclude = ( 'audio_file' ,   )
 
     def preview(self, obj, *args, **kwargs):
         """
@@ -1612,7 +1612,7 @@ class VideoAdmin(HiddenAdmin):
     """
     
     readonly_fields = ( 'preview', 'url', 'size', 'length', 'mime'  )
-    exclude = ( 'video' )
+    exclude = ( 'video', )
 
     def preview(self, obj, *args, **kwargs):
         """
