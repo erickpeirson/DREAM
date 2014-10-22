@@ -107,7 +107,7 @@ class QueryString(models.Model):
 
     events = property(_Nevents)
 
-class Engine(models.Model):
+class Engine(HeritableObject):
     """
     A search engine.
     """
@@ -116,51 +116,22 @@ class Engine(models.Model):
     
     name = models.CharField(max_length=100, null=True, blank=True)
     
-    parameters = ListField()    # GET params.
-    manager = models.CharField(max_length=100, choices=engineManagers)
-    
-    oauth_token = models.ForeignKey('OAuthAccessToken', null=True, blank=True,
-                    help_text='Select an OAuth access token if required for ' +\
-                              'this service.')
-    
     ## Limits ##
     
-    # Number of requests per second.
-    ratelimit = models.IntegerField(blank=True, null=True,
-                    verbose_name='max calls per second')
-    
-   # Number of requests per day.   
-    daylimit = models.IntegerField(blank=True, null=True, 
-                    verbose_name='max calls per day')
     #   Counter for daily requests.                    
-    dayusage = models.IntegerField(default=0, verbose_name='calls made today')
-    
-    # Number of requests per month.
-    monthlimit = models.IntegerField(blank=True, null=True,
-                    verbose_name='max calls per month')
+    dayusage = models.IntegerField(default=0)
+    dayusage.verbose_name = 'calls made today'
+
     #   Counter for monthly requests.
-    monthusage = models.IntegerField(default=0, 
-                    verbose_name='calls made this month') 
-    
-    # Pages.
-    pagesize = models.IntegerField(default=10,  # Max no. items per page.
-                    verbose_name='max results per page')  
-    pagelimit = models.IntegerField(blank=True, null=True, 
-                    verbose_name='max number of pages') # Max no. pages.
-        
+    monthusage = models.IntegerField(default=0)
+    monthusage.verbose_name = 'calls made this month'
+
     class Meta:
         verbose_name_plural = 'Custom search engines'
         verbose_name = 'Custom search engine'
-
-    def __unicode__(self):
-        if self.name is None:
-            return unicode( [ label for value, label in engineManagers 
-                            if value == self.manager ][0] + ' ' + str(self.id) )
-        else:
-            return unicode(self.name)
 # end Engine class.
 
-class BaseQueryEvent(HeritableObject):
+class QueryEvent(HeritableObject):
     """
     Generated whenever a user creates a new query.
     """
@@ -200,9 +171,9 @@ class BaseQueryEvent(HeritableObject):
     rangeEnd = models.IntegerField(     verbose_name='Ending at', 
                                         null=True, blank=True, default=10   )
     
-#    engine = models.ForeignKey(         'Engine',
-#                                        related_name='engine_events',
-#                                        verbose_name='Search engine'   )    
+    engine = models.ForeignKey(         'Engine',
+                                        related_name='engine_events',
+                                        verbose_name='Search engine'   )    
 
     # Search by User.
     user = models.ForeignKey(           'SocialUser', blank=True, null=True   )
@@ -332,7 +303,7 @@ class Item(models.Model):
     context = models.ManyToManyField('Context', related_name='items',
                                                           blank=True, null=True)
                                                           
-    events = models.ManyToManyField('BaseQueryEvent', related_name='items', 
+    events = models.ManyToManyField('QueryEvent', related_name='items', 
                                                           blank=True, null=True)
                                                           
     creator = models.CharField(max_length=400, blank=True, null=True)

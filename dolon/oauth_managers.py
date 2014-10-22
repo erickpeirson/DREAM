@@ -72,6 +72,12 @@ class FacebookOAuthManager(OAuthManager):
         return ptoken.id
         
 class TwitterOAuthManager(OAuthManager):
+
+
+#    oauth_token = models.ForeignKey('OAuthAccessToken', null=True, blank=True,
+#                    help_text='Select an OAuth access token if required for ' +\
+#                              'this service.')
+
     def __init__(self, *args, **kwargs):
         super(TwitterOAuthManager, self).__init__(*args, **kwargs)
         

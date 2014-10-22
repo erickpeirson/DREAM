@@ -1,23 +1,14 @@
 from __future__ import absolute_import
 
-import logging
-logging.basicConfig(filename=None, format='%(asctime)-6s: %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(lineno)d - %(message)s')
-logger = logging.getLogger(__name__)
-logger.setLevel('DEBUG')
-
+# Django imports.
 from django.core.files import File
 from django.http import HttpRequest
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
-import tempfile
-import urllib2
-from urllib2 import HTTPError
-import cPickle as pickle
-
-import os
-import math
-import warnings
+# Celery imports.
+from celery import shared_task, group, task, chain
+from celery.exceptions import MaxRetriesExceededError
 
 # Parsing
 from BeautifulSoup import BeautifulSoup
@@ -30,15 +21,27 @@ from pytz import timezone
 import pytz
 import time
 
+# General imports.
+import tempfile
+import urllib2
+from urllib2 import HTTPError
+import cPickle as pickle
+import os
+import math
+import warnings
+
+# Dolon imports.
 import dolon.search_managers as M
 from dolon.models import *
 from dolon.services import DiffBotManager
-from dream.settings import DIFFBOT_TOKEN, TIME_ZONE
+from dream.settings import DIFFBOT_TOKEN, TIME_ZONE, LOGGING_FORMAT
 
+import logging
+logging.basicConfig(filename=None, format=LOGGING_FORMAT)
+logger = logging.getLogger(__name__)
+logger.setLevel('INFO')
 
-from celery import shared_task, group, task, chain
-from celery.exceptions import MaxRetriesExceededError
-
+# TODO: remove this?
 engineManagers = {
     'GoogleImageSearchManager': M.GoogleImageSearchManager,
     'InternetArchiveManager': M.InternetArchiveManager,
@@ -48,7 +51,19 @@ def _get_params(resultitem):
     """
     Reads standardized result parameters from a :class:`.QueryResultItem`\.
     
+    Parameters
+    ----------
+    resultitem : :class:`.QueryResultItem`
+    
+    Returns
+    -------
+    params : dict
+    length : int
+    size : int
+    creator : str
+    date : datetime
     """
+    
     params = pickle.loads(str(resultitem.params))
     if 'length' in params: length = params['length']
     else: length = 0
@@ -68,19 +83,33 @@ def _get_params(resultitem):
 def _get_default(itemclass, resultitem):
     """
     Generates a :class:`.Item` and populates subtype-independent fields using
-    params from :class:`.QueryResultItem`\.
+    params from a :class:`.QueryResultItem`\.
     
+    Parameters
+    ----------
+    itemclass : :class:`type`
+        Must be a subclass of :class:`.Item`\.
+    resultitem : :class:`.QueryResultItem`
+    
+    Returns
+    -------
+    item : :class:`.Item`
+    parameters : tuple
+        Contains return values from :func:`._get_params`\.
     """
+    
+    # These will get passed along as a return value.
     params, length, size, creator, date = _get_params(resultitem)
 
     try:
-        i, created = itemclass.objects.get_or_create(url = resultitem.url,
-                        defaults = {
-                                'title': resultitem.title,
-                                'creator': creator,
-                                'creationDate': date
-                            })
-    # An IntegrityError is raised when an Item with resultitem.url exist, but                            
+        item, created = itemclass.objects.get_or_create(
+                                            url = resultitem.url,
+                                            defaults = {
+                                                    'title': resultitem.title,
+                                                    'creator': creator,
+                                                    'creationDate': date
+                                                    })
+    # An IntegrityError is raised when an Item with resultitem.url exist, but
     # itemclass is the wrong subtype (e.g. matching item is an AudioItem, but
     # itemclass is ImageItem).
     except IntegrityError:
@@ -91,96 +120,159 @@ def _get_default(itemclass, resultitem):
                          'wrong Item subclass.')
             
     if itemclass is not ImageItem:  # Images don't have lengths.
-        i.length = length
+        item.length = length
     
     # Return both the Item and the QueryResultItem parameters, to avoid
     #  redundant calls to _get_params.
-    return i, (params, length, size, creator, date)
+    return item, (params, length, size, creator, date)
 # end _get_default
 
 def _create_image_item(resultitem):
-    i, parameters = _get_default(ImageItem, resultitem)
+    """
+    Generates or updates a :class:`.ImageItem` based on a 
+    :class:`.QueryResultItem`\.
+    
+    Parameters
+    ----------
+    resultitem : :class:`.QueryResultItem`
+    
+    Returns
+    -------
+    item : :class:`.ImageItem`
+    params : tuple
+        Contains return values from :func:`._get_params`\.
+    """
+
+    # Populate subclass-independent attributes.
+    item, parameters = _get_default(ImageItem, resultitem)
     params, length, size, creator, date = parameters
 
-    # Associate thumbnail, image, and context.
+    # Associate Thumbnail.
     Nthumb = len(params['thumbnailURL'])
     logger.debug('QRI has {0} thumbnails'.format(Nthumb))
-    if i.thumbnail is None and Nthumb > 0:
-        i.thumbnail = Thumbnail.objects.get_or_create(
+    if item.thumbnail is None and Nthumb > 0:
+        item.thumbnail = Thumbnail.objects.get_or_create(
                             url=params['thumbnailURL'][0]   )[0]
         
-        spawnThumbnails([i.thumbnail.id])
+        spawnThumbnails([item.thumbnail.id])
 
-    if len(i.images.all()) == 0 and len(params['files']) > 0:
+    # Associate Image(s).
+    if len(item.images.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
             image = Image.objects.get_or_create(url=url)[0]
-            i.images.add(image)
+            item.images.add(image)
 
-    return i, params
+    return item, params
 # end _create_image_item
 
 def _create_video_item(resultitem):
-    i, parameters = _get_default(VideoItem, resultitem)
+    """
+    Generates or updates a :class:`.VideoItem` based on a
+    :class:`.QueryResultItem`\.
+    
+    Parameters
+    ----------
+    resultitem : :class:`.QueryResultItem`
+    
+    Returns
+    -------
+    item : :class:`.VideoItem`
+    params : tuple
+        Contains return values from :func:`._get_params`\.
+    """
+    
+    item, parameters = _get_default(VideoItem, resultitem)
     params, length, size, creator, date = parameters
 
     # Only add thumbnails to this VideoItem if it has none, and (naturally) if
     #  the search process yielded thumbnails to be had.
-    if len(i.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
+    if len(item.thumbnails.all()) == 0 and len(params['thumbnailURL']) > 0:
         thumb_ids = []  # Keep these for spawnThumbnails.
         for url in params['thumbnailURL']:
             thumb = Thumbnail.objects.get_or_create(url=url)[0]                        
-            i.thumbnails.add(thumb)
+            item.thumbnails.add(thumb)
             thumb_ids.append(thumb.id)
         
         # Creates Celery chains for retrieving thumbnail images.
         spawnThumbnails(thumb_ids)
 
     # If this VideoItem doesn't already have Videos attached, get/create them.
-    if len(i.videos.all()) == 0 and len(params['files']) > 0:
+    if len(item.videos.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
             video = Video.objects.get_or_create(url=url)[0]
-            i.videos.add(video)
+            item.videos.add(video)
 
-    return i, params
+    return item, params
 # end _create_video_item
 
-def _create_audio_item(resultitem):    
-    i, parameters = _get_default(AudioItem, resultitem)    
+def _create_audio_item(resultitem):
+    """
+    Generates or updates a :class:`.AudioItem` based on a
+    :class:`.QueryResultItem`\.
+    
+    Parameters
+    ----------
+    resultitem : :class:`.QueryResultItem`
+    
+    Returns
+    -------
+    item : :class:`.AudioItem`
+    params : tuple
+        Contains return values from :func:`._get_params`\.
+    """
+    
+    item, parameters = _get_default(AudioItem, resultitem)
     params, length, size, creator, date = parameters
                 
     # If AudioItem lacks a thumbnail, and one was found (in search), create it
     #  and trigger retrieval.
-    if i.thumbnail is None and len(params['thumbnailURL']) > 0:
-        i.thumbnail = Thumbnail.objects.get_or_create(  # Case not tested.
+    if item.thumbnail is None and len(params['thumbnailURL']) > 0:
+        item.thumbnail = Thumbnail.objects.get_or_create(  # Case not tested.
                             url=params['thumbnailURL'][0]   )[0]     
 
         # Creates a Celery chain for retrieving thumbnail image.
-        spawnThumbnails(i.thumbnail.id)                                                                  
+        spawnThumbnails(item.thumbnail.id)
 
     # If no Audio exist for this AudioItem, get/create them.
-    if len(i.audio_segments.all()) == 0 and len(params['files']) > 0:
+    if len(item.audio_segments.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
             seg = Audio.objects.get_or_create(url=url)[0]
-            i.audio_segments.add(seg)
+            item.audio_segments.add(seg)
 
-    return i, params
+    return item, params
 # end _create_audio_item
 
 def _create_text_item(resultitem):
-    i, parameters = _get_default(TextItem, resultitem)
+    """
+    Generates or updates a :class:`.TextItem` based on a
+    :class:`.QueryResultItem`\.
+    
+    Parameters
+    ----------
+    resultitem : :class:`.QueryResultItem`
+    
+    Returns
+    -------
+    item : :class:`.TextItem`
+    params : tuple
+        Contains return values from :func:`._get_params`\.
+    """
+    
+    item, parameters = _get_default(TextItem, resultitem)
     params, length, size, creator, date = parameters    
 
-    if len(i.original_files.all()) == 0 and len(params['files']) > 0:
+    if len(item.original_files.all()) == 0 and len(params['files']) > 0:
         for url in params['files']:
             txt,created = Text.objects.get_or_create(url=url)
             logger.debug('Text: {0}'.format(txt))
-            i.original_files.add(txt)
+            item.original_files.add(txt)
 
     if 'contents' in params:
-        i.contents = params['contents'].decode('utf-8')
-        i.snippet = params['contents'].decode('utf-8')[0:500]
+        item.contents = params['contents'].decode('utf-8')
+        # Snippet is just the first 500 characters of the Text contents.
+        item.snippet = params['contents'].decode('utf-8')[0:500]
 
-    return i, params
+    return item, params
 # end _create_text_item
 
 def create_item(resultitem):
@@ -195,7 +287,7 @@ def create_item(resultitem):
     
     Returns
     -------
-    i : :class:`.Item`
+    item : :class:`.Item`
     
     """
     logger.debug('Creating item for {0} with mtype {1}'
@@ -203,22 +295,22 @@ def create_item(resultitem):
     
     # Item creation manifold, based on type.
     if resultitem.type == 'image':
-        i, params = _create_image_item(resultitem)
-        i.type = 'Image'
+        item, params = _create_image_item(resultitem)
+        item.type = 'Image'
     elif resultitem.type == 'video':
-        i, params = _create_video_item(resultitem)
-        i.type = 'Video'
+        item, params = _create_video_item(resultitem)
+        item.type = 'Video'
     elif resultitem.type == 'audio':
-        i, params = _create_audio_item(resultitem)
-        i.type = 'Audio'
+        item, params = _create_audio_item(resultitem)
+        item.type = 'Audio'
     elif resultitem.type == 'texts':
-        i, params = _create_text_item(resultitem)
-        i.type = 'Text'
+        item, params = _create_text_item(resultitem)
+        item.type = 'Text'
 
     if 'retrieved' in params:
-        i.retrieved = params['retrieved']
+        item.retrieved = params['retrieved']
     if 'creationDate' in params:
-        i.creationDate = params['creationDate']
+        item.creationDate = params['creationDate']
 
     # Get or create a Context for this Item.
     context, created = Context.objects.get_or_create(url=resultitem.contextURL)
@@ -227,29 +319,36 @@ def create_item(resultitem):
             setattr(context, key, value)
         context.save()
 
-    i.context.add(context)
-    i.save()
+    item.context.add(context)
+    item.save()
     
-    logger.debug('Generated item {0}'.format(i))
+    logger.debug('Generated item {0}'.format(item))
 
-    return i
+    return item
+# end create_item
 
 ### Scheduled Tasks ###
 
 @shared_task
 def trigger_diffbot_requests(*args, **kwargs):
     """
-    Try to perform any pending :class:`.DiffBotRequest`\s.
+    Identify and perform any pending :class:`.DiffBotRequest`\s.
+    
+    Returns
+    -------
+    requests : :class:`django.db.models.query.QuerySet`
+        :class:`django.db.models.query.QuerySet` of of 
+        :class:`.DiffBotRequest`\s.
     """
 
+    # Get all pending (non-completed) DiffBotRequests.
     requests = DiffBotRequest.objects.filter(completed=None)
-    
     logger.debug('Found {0} pending DiffBotRequests'.format(len(requests)))
     
+    # Perform one request every half-second.
     for req in requests:
         performDiffBotRequest(req)
         time.sleep(0.5)
-
     logger.debug('Performed {0} DiffBotRequests'.format(len(requests)))
     
     return requests
@@ -257,7 +356,7 @@ def trigger_diffbot_requests(*args, **kwargs):
 @shared_task    # Scheduled.
 def trigger_dispatchers(*args, **kwargs):
     """
-    Try to dispatch all pending :class:`.QueryEvent`\s.
+    Identify and dispatch all pending :class:`.QueryEvent`\s.
     
     Returns
     -------
@@ -290,7 +389,6 @@ def trigger_retrieve(*args, **kwargs):  # Case not tested.
     
     # Get all approved, non-retrieved Items.
     items = Item.objects.filter(status='AP').filter(retrieved=False)
-    
     logger.info('Found {0} approved Items.'.format(len(items)))
     
     retrieved = []
@@ -304,30 +402,29 @@ def try_retrieve(obj, *args, **kwargs): # Case not tested.
     """
     Attempt to retrieve content for an :class:`.Item` instance.
     
+    TODO: add retriever for TextItems.
+    
     Parameters
     ----------
     obj : :class:`.Item`
+    
+    Returns
+    -------
+    None
     """
     
-    images = []
-    videos = []
-    audio = []
-    contexts = []
+    # Use a different retriever function for each Item type.
     if hasattr(obj, 'imageitem'):
-        images += obj.imageitem.images.all()
-        contexts += [ c for c in obj.imageitem.context.all() ]
+        spawnRetrieveImages(obj.imageitem.images.all())
+        spawnRetrieveContexts(obj.imageitem.context.all())
     elif hasattr(obj, 'videoitem'):
-        videos += obj.videoitem.videos.all()
-        contexts += [ c for c in obj.videoitem.context.all() ]            
+        spawnRetrieveVideo(obj.videoitem.videos.all())
+        spawnRetrieveContexts(obj.videoitem.context.all())
     elif hasattr(obj, 'audioitem'):
-        audio += obj.audioitem.audio_segments.all()
-        contexts += [ c for c in obj.audioitem.context.all() ]            
-    
-    spawnRetrieveImages(images)
-    spawnRetrieveAudio(audio)
-    spawnRetrieveVideo(videos)
-    spawnRetrieveContexts(contexts)
-    
+        spawnRetrieveAudio(obj.audioitem.audio_segments.all())
+        spawnRetrieveContexts(obj.audioitem.context.all())
+
+    # Update object.
     obj.retrieved = True
     obj.save()
         
@@ -353,24 +450,13 @@ def try_dispatch(queryevent):
     
     # Calculate remaining daily and monthly usage. If there are no limits, then
     #  set remaining values unreasonably high.
-    if engine.daylimit is None:
-        remaining_today = 4000000000000     # Case not tested.
-    else:
-        remaining_today = engine.daylimit - engine.dayusage
-    
-    if engine.monthlimit is None:           # Case not tested.
-        remaining_month = 4000000000000
-    else:
-        remaining_month = engine.monthlimit - engine.monthusage
-    
+    remaining_today = (engine.daylimit or int(4e15)) - engine.dayusage
+    remaining_month = (engine.monthlimit or int(4e15)) - engine.monthusage
     logger.debug('Remaining today: {0}, remaining this month: {1}'
                                       .format(remaining_today, remaining_month))
 
     # Get the page limit for this engine.
-    if engine.pagelimit is not None:        # Case not tested.
-        pagelimit = engine.pagelimit
-    else:
-        pagelimit = 400000000000    # Is this high enough?
+    pagelimit = (engine.pagelimit or int(4e15))
 
     # Make sure that the resulting queries won't exceed limits, and that the
     #  starting and ending indices are sensical.
@@ -378,19 +464,22 @@ def try_dispatch(queryevent):
     start = queryevent.rangeStart
     end = min(queryevent.rangeEnd, pagelimit*pagesize)
 
+    # If the search range is nonsensical, bail on the whole operation.
     if start >= end:    # Search range out of bounds.
         logger.debug('Search range out of bounds, aborting.') # Case not tested.
         return
 
-    # Maximum number of requests.
+    # Calculate the maximum number of requests possible for today.
     Nrequests = math.ceil(float(end-start)/pagesize)
 
     # Only dispatch if within daily and monthly limits.
     day_remains = Nrequests < remaining_today or engine.daylimit is None
     month_remains = Nrequests < remaining_month or engine.monthlimit is None
     if day_remains and month_remains:
-        logger.debug('Attempting dispatch.')
-        dispatchQueryEvent(queryevent.id)   
+        # Go ahead and dispatch.
+        dispatchQueryEvent(queryevent.id)
+        
+        # Update daily and monthly usage counters for this Engine.
         engine.dayusage += Nrequests
         engine.monthusage += Nrequests
         engine.save()
@@ -408,6 +497,8 @@ def try_dispatch(queryevent):
 def reset_dayusage(*args, **kwargs):
     """
     Set dayusage to 0 for all :class:`.Engine`\s.
+    
+    Should be scheduled to execute daily in dream/celeryconfig.py.
     """
     
     for engine in Engine.objects.all():
@@ -418,6 +509,8 @@ def reset_dayusage(*args, **kwargs):
 def reset_monthusage(*args, **kwargs):
     """
     Set monthusage to 0 for all :class:`.Engine`\s.
+    
+    Should be scheduled to execute monthly in dream/celeryconfig.py.
     """
 
     for engine in Engine.objects.all():
@@ -429,79 +522,77 @@ def reset_monthusage(*args, **kwargs):
 @shared_task(rate_limit="1/s", ignore_result=False, max_retries=0)
 def search(queryevent_id, manager_name, **kwargs):
     """
-    Perform a search for ``string`` using a provided ``manager`` instance.
+    Perform the search described by a :class:`.QueryEvent` using the manager
+    indicated by ``manager_name``.
     
     Parameters
     ----------
-    qstring : str
-        Search query.
-    start : int
-        Start index for results.
-    end : int
-        End index for results.
-    manager : __name__ of a manager in :mod:`.search_managers`
-    params : list
-        A list of parameters to pass to the remote search service.
+    queryevent_id : int
+        Must be the ID of a :class:`.QueryEvent`\.
+    manager : str
+        __name__ of a manager in :mod:`.search_managers`\.
+    **kwargs
     
     Returns
     -------
-    result : dict
-        Contains structured search results amenable to :class:`.QueryItem`
-    response : dict
-        Full parsed JSON response.
+    results : list
+        A list of 2-tuples containing two dicts: ``result`` contains structured
+        search results amenable to generating :class:`.Item`\s, and ``response``
+        is the full parsed JSON response from the remote service.
     """
     
-    if not kwargs.get('testing', False):
-        manager = getattr(M, manager_name)()
+    manager = getattr(M, manager_name)()
+    try:
+        results = manager.search( queryevent_id )
+    except Exception as exc:    # Case not tested.
         try:
-            results = manager.search( queryevent_id )
-        except Exception as exc:    # Case not tested.
-            try:
-                search.retry(exc=exc)
-            except (IOError, HTTPError) as exc:
-                logger.info((exc.code, exc.read()))
-                return 'ERROR'
-        
-    else:   # When testing we don't want to make remote calls.
-        import cPickle as pickle
-        with open('./dolon/testdata/searchresult.pickle', 'r') as f:
-            result = pickle.load(f)
-        with open('./dolon/testdata/searchresponse.pickle', 'r') as f:
-            response = pickle.load(f)
-        
+            search.retry(exc=exc)
+        except (IOError, HTTPError) as exc:
+            logger.info((exc.code, exc.read()))
+            return 'ERROR'
+    
     return results
     
 @shared_task
 def processSearch(searchresults, queryeventid, **kwargs):
     """
-    Create a :class:`.QueryResult` and a set of :class:`.Item` from a
+    Create a :class:`.QueryResult` and a set of :class:`.Item`\s from a
     search result.
     
     Parameters
     ----------
-    searchresult : tuple
-        ( result(dict), response(dict) ) from :func:`.search`
+    searchresults : list
+        A list of 2-tuples containing two dicts: ``result`` contains structured
+        search results amenable to generating :class:`.Item`\s, and ``response``
+        is the full parsed JSON response from the remote service.
+    queryeventid : int
+        ID for the :class:`.QueryEvent` that generated ``searchresults``.
     
     Returns
     -------
-    queryResult : int
-        ID for a :class:`.QueryResult`
-    queryItems : list
-        A list of IDs for :class:`.` instances.
+    results : list
+        A list of 2-tuples, each containing a :class:`.QueryResult` ID (int) and
+        a list of :class:`.QueryResultItem` IDs (int).
     """
     
+    # Propagate errors down the task chain.
     if searchresults == 'ERROR': # Case not tested.
         return 'ERROR'
     
+    # Retrieve the QueryEvent responsible for these results.
+    queryevent = QueryEvent.objects.get(id=queryeventid)
+
     results = []
     for searchresult in searchresults:
-        result, response = searchresult
+        result, response = searchresult     # result contains the relevant data.
         
+        # Each batch of results is represented by a QueryResult.
         queryResult = QueryResult(  rangeStart=result['start'],
                                     rangeEnd=result['end'],
                                     result=response )
         queryResult.save()
 
+        # Each item in the result set is represented by a QueryResultItem.
         queryItems = []
         for item in result['items']:
             queryItem = QueryResultItem(
@@ -512,28 +603,36 @@ def processSearch(searchresults, queryeventid, **kwargs):
                             type = item['type']
                         )
             queryItem.save()
+            
+            # Create or retrieve an Item based on this QueryResultItem's URL.
+            #
+            # TODO: see note below about retaining these pointers.
             queryItem.item = create_item(queryItem)
             queryItem.save()
             
+            # Associate the QueryResultItem with this QueryResult.
             queryResult.resultitems.add(queryItem)
             queryItems.append(queryItem.id)
-
         queryResult.save()
 
-        if not kwargs.get('testing', False):    # TODO: get rid of this.
-            queryevent = QueryEvent.objects.get(id=queryeventid)
-            queryevent.queryresults.add(queryResult)
-            queryevent.save()
+
+        # Associate the QueryResult created above with the QueryEvent for this
+        #  batch of result sets.
+        queryevent.queryresults.add(queryResult)
             
-        # Attach event to items.
+        # Associate QueryEvent with Items.
+        #
+        # TODO: would it be more efficient (wrt database calls) to retain
+        #  pointers to the Item objects when they are created/retrieved above?
         for item in queryItems:
             qi = QueryResultItem.objects.get(id=item)
             i = Item.objects.get(id=qi.item.id)
             i.events.add(queryevent)
             i.save()      
-         
+        
         results.append((queryResult.id, queryItems))
-
+        
+    queryevent.save()
     return results
     
 @shared_task

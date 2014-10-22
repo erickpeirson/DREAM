@@ -13,16 +13,20 @@ class GoogleSearchManager(BaseSearchManager):
     name = 'Google'
     max_results = 100
     max_pagesize = 10
+    month_limit = 30000
+    day_limit = 1000
+    second_limit = 2
+    
+    
     
     parameters = (
         'exactTerms_id', 'orTerms', 'highRange', 'num', 'cr','imgType','gl','q',
-        'relatedSite','searchType', 'cx','fileType', 'imgDominantColor','start',
+        'relatedSite','searchType', 'fileType', 'imgDominantColor','start',
         'lr','siteSearch', 'excludeTerms_id','cref','sort','hq','c2coff',
         'googlehost','safe','exactTerms','hl','lowRange','imgSize',
         'imgColorType','rights','excludeTerms','filter','linkSite',
         'siteSearchFilter','dateRestrict'
         )
-
                     
     def validate_num(self, num):
         """

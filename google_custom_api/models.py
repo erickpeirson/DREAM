@@ -1,5 +1,5 @@
 from django.db import models
-from dolon.models import BaseQueryEvent
+from dolon.models import QueryEvent, Engine
 
 from . import choices
 
@@ -8,7 +8,14 @@ optional = {
     'null':True,
     }
 
-class GoogleQueryEvent(BaseQueryEvent):
+class GoogleEngine(Engine):
+    cx = models.CharField(max_length=255)
+    cx.verbose_name = 'custome search engine ID'
+    api_key = models.CharField(max_length=255)
+
+    manager = 'GoogleSearchManager'
+
+class GoogleQueryEvent(QueryEvent):
     """
     Docstrings are based on the `Google Custom Search JSON API documentation
     <https://developers.google.com/custom-search/json-api/v1/reference/cse/list>`_.
@@ -73,8 +80,7 @@ class GoogleQueryEvent(BaseQueryEvent):
 
     
     cr = models.CharField(max_length=9, choices=choices.cl_choices, **optional)
-    """'),
-('
+    """
     Restricts search results to documents originating in a particular country. 
     
     * You may use Boolean operators in the cr parameter's value.
@@ -158,14 +164,6 @@ class GoogleQueryEvent(BaseQueryEvent):
     cref.verbose_name = 'custom search URL'
     cref.help_text = 'The URL of a linked custom search engine specification' +\
                      ' to use for this request.'
-    
-    cx = models.CharField(max_length=255, **optional)
-    """
-    The custom search engine ID to use for this request.
-    
-    * If both cx and cref are specified, the cx value is used.
-    
-    """
     
     dateRestrict_value = models.IntegerField(**optional)
     """
