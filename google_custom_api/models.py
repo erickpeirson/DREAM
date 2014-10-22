@@ -1,5 +1,5 @@
 from django.db import models
-import dolon
+from dolon.models import BaseQueryEvent
 
 from . import choices
 
@@ -8,7 +8,7 @@ optional = {
     'null':True,
     }
 
-class QueryEvent(dolon.models.QueryEvent):
+class GoogleQueryEvent(BaseQueryEvent):
     """
     Docstrings are based on the `Google Custom Search JSON API documentation
     <https://developers.google.com/custom-search/json-api/v1/reference/cse/list>`_.
@@ -20,6 +20,27 @@ class QueryEvent(dolon.models.QueryEvent):
         The search expression.
         """
         return self.querystring.querystring
+
+    @property
+    def dateRestrict(self):
+        if self.dateRestrict_by is None or self.dateRestrict_value is None:
+            return None
+            
+        return self.dateRestrict_by + str(self.dateRestrict_value)
+        
+    @property
+    def hq(self):
+        if self.hq_data.count() == 0:
+            return None
+            
+        return ' '.join([ qs.querystring for qs in self.hq_data.all() ])
+    
+    @property
+    def orTerms(self):
+        if self.orTerms_data.count() == 0:
+            return None
+            
+        return ' '.join([ qs.querystring for qs in self.orTerms_data.all() ])
 
     searchType = models.CharField(
                     max_length=5, choices=choices.searchType_choices,
@@ -52,7 +73,8 @@ class QueryEvent(dolon.models.QueryEvent):
 
     
     cr = models.CharField(max_length=9, choices=choices.cl_choices, **optional)
-    """
+    """'),
+('
     Restricts search results to documents originating in a particular country. 
     
     * You may use Boolean operators in the cr parameter's value.
@@ -180,16 +202,16 @@ class QueryEvent(dolon.models.QueryEvent):
     excludeTerms.help_text = 'Identifies a word or phrase that should not' +\
                              ' appear in any documents in the search results.'
                              
-    hq = models.ManyToManyField('dolon.QueryString', **optional)
+    hq_data = models.ManyToManyField('dolon.QueryString', **optional)
     """
     Appends the specified query terms to the query, as if they were combined
     with a logical AND operator.
     """
-    hq.verbose_name = 'extra AND terms'
-    hq.help_text = 'Appends the specified query terms to the query, as if' +\
-                   ' they were combined with a logical AND operator.'
+    hq_data.verbose_name = 'extra AND terms'
+    hq_data.help_text = 'Appends the specified query terms to the query, as'+\
+                        ' if they were combined with a logical AND operator.'
     
-    orTerms = models.ManyToManyField(
+    orTerms_data = models.ManyToManyField(
                         'dolon.QueryString', related_name='google_orTerms',
                         **optional)
     """
@@ -197,11 +219,11 @@ class QueryEvent(dolon.models.QueryEvent):
     document in the search results must contain at least one of the additional
     search terms.
     """
-    orTerms.verbose_name = 'extra OR terms'
-    orTerms.help_text = 'Provides additional search terms to check for in a'+\
-                        ' document, where each document in the search results'+\
-                        ' must contain at least one of the additional search'+\
-                        ' terms.'                                 
+    orTerms_data.verbose_name = 'extra OR terms'
+    orTerms_data.help_text = 'Provides additional search terms to check for'+\
+                        ' in a document, where each document in the search'+\
+                        ' results must contain at least one of the additional'+\
+                        ' search terms.'                                 
     
     fileType = models.CharField(max_length=10, **optional)
     """

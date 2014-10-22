@@ -34,6 +34,67 @@ class BaseSearchManager(object):
     def __init__(self, *args, **kwargs):
         pass
         
+    def search(self, queryevent_id): #params, query, start=1, end=10):
+        """
+        Performs an image search for ``query`` via the Google Custom Search API.
+
+        Returns
+        -------
+        response : string
+            JSON response.
+        """
+        
+        self.queryevent = BaseQueryEvent.objects.get(pk=queryevent_id).cast()
+        
+        if type(self.queryevent) is not self.queryevent_class:
+            raise ValueError('Must be a GoogleQueryEvent')
+        
+        self.pdata = { 
+            param:getattr(self.queryevent, param)
+            for param in self.parameters 
+            if getattr(self.queryevent, param) is not None 
+            }
+            
+        self.clean()
+#        print self.send_request(self.encode_parameters())
+
+    def send_request(self, encoded_parameters):
+        return urllib2.urlopen(self.endpoint + encoded_parameters)
+
+
+    def encode_parameters(self):
+        """
+        Get the encoded parameter string for the GET request.
+        """
+        
+        return '&'.join([ '{0}={1}'.format(k,urllib2.quote(v)) 
+                            for k,v in self.pdata.iteritems() ])
+    
+    def clean(self):
+        """
+        Transform parameter values so that they are amenable to encoding.
+        """
+        
+        self.validate()
+        
+        for param, value in self.pdata.iteritems():
+            if hasattr(self, "clean_" + param):
+                cleaner = getattr(self, "clean_" + param)
+                if callable(cleaner):
+                    value = cleaner(value)
+            self.pdata[param] = str(value)
+    
+    def validate(self):
+        """
+        Perform validation on parameters, where validation methods are defined.
+        """
+        
+        for param, value in self.pdata.iteritems():
+            if hasattr(self, "validate_" + param):
+                validator = getattr(self, "validate_" + param)
+                if callable(validator):
+                    validator(value)        
+        
 class FacebookManager(BaseSearchManager):
     base = "https://graph.facebook.com"
     

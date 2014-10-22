@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -28,7 +29,31 @@ engineManagers = (
     ( 'None','None' )
 )
 
-# Create your models here.
+class HeritableObject(models.Model):
+    """
+    An object that is aware of its "real" type, i.e. the subclass that it 
+    instantiates.
+    """
+    
+    real_type = models.ForeignKey(ContentType, editable=False)
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.real_type = self._get_real_type()
+        super(HeritableObject, self).save(*args, **kwargs)
+
+    def _get_real_type(self):
+        return ContentType.objects.get_for_model(type(self))
+
+    def cast(self):
+        """
+        Re-cast this object using its "real" subclass.
+        """
+
+        return self.real_type.get_object_for_this_type(pk=self.pk)
+
+    class Meta:
+        abstract = True
 
 class ListField(models.TextField):
     """
@@ -135,7 +160,7 @@ class Engine(models.Model):
             return unicode(self.name)
 # end Engine class.
 
-class QueryEvent(models.Model):
+class BaseQueryEvent(HeritableObject):
     """
     Generated whenever a user creates a new query.
     """
@@ -175,9 +200,9 @@ class QueryEvent(models.Model):
     rangeEnd = models.IntegerField(     verbose_name='Ending at', 
                                         null=True, blank=True, default=10   )
     
-    engine = models.ForeignKey(         'Engine',
-                                        related_name='engine_events',
-                                        verbose_name='Search engine'   )    
+#    engine = models.ForeignKey(         'Engine',
+#                                        related_name='engine_events',
+#                                        verbose_name='Search engine'   )    
 
     # Search by User.
     user = models.ForeignKey(           'SocialUser', blank=True, null=True   )
@@ -209,20 +234,20 @@ class QueryEvent(models.Model):
                         'QueryResult', blank=True, null=True,
                         related_name='event_instance'   )
 
-    def __unicode__(self):
-        if self.search_by == 'ST':
-            pattern = 'String "{0}" in {1}, items {2}-{3}'
-            value = self.querystring.querystring
-        elif self.search_by == 'UR':
-            pattern = 'User {0} in {1}, items {2}-{3}'
-            value = self.user.handle
-        elif self.search_by == 'TG':
-            pattern = 'Tag {0} in {1}, items {2}-{3}'
-            value = self.tag.string
-            
-        repr = pattern.format(  value, self.engine, 
-                                self.rangeStart, self.rangeEnd  )
-        return unicode(repr)
+#    def __unicode__(self):
+#        if self.search_by == 'ST':
+#            pattern = 'String "{0}" in {1}, items {2}-{3}'
+#            value = self.querystring.querystring
+#        elif self.search_by == 'UR':
+#            pattern = 'User {0} in {1}, items {2}-{3}'
+#            value = self.user.handle
+#        elif self.search_by == 'TG':
+#            pattern = 'Tag {0} in {1}, items {2}-{3}'
+#            value = self.tag.string
+#            
+#        repr = pattern.format(  value, self.engine, 
+#                                self.rangeStart, self.rangeEnd  )
+#        return unicode(repr)
 
     def items(self):
         qs = Item.objects.filter(events__id=obj.id).exclude(hide=True)
@@ -307,7 +332,7 @@ class Item(models.Model):
     context = models.ManyToManyField('Context', related_name='items',
                                                           blank=True, null=True)
                                                           
-    events = models.ManyToManyField('QueryEvent', related_name='items', 
+    events = models.ManyToManyField('BaseQueryEvent', related_name='items', 
                                                           blank=True, null=True)
                                                           
     creator = models.CharField(max_length=400, blank=True, null=True)
